@@ -1,0 +1,98 @@
+body{
+  background-color: black;
+}
+.todolist{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tasks{
+  color: white;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.inputfield{
+  height: 45px;
+  border-radius: 10px;
+  padding-left:10px;
+  padding-right:10px;
+  margin-top:10px;
+}
+.inputfield1{
+  height: 45px;
+  border-radius: 10px;
+  padding-left:13px;
+  padding-right:13px;
+  min-width: 176px;
+  margin-top:10px;
+}
+.card{  
+  background-color: #ebfffe;
+  border: 1px solid #bababa;
+  border-radius:  10px;
+  box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.4);  
+  text-align:center;
+  max-width: 96%;
+  display:flex;
+  margin-bottom: 20px; 
+}
+.profileimg{
+  max-width: 60px;
+  max-height: 60px;
+  border-radius:10%;
+  padding-top: 20px;
+}
+.card .profileimg{
+  max-width: 60px;
+  max-height: 60px;
+  border-radius:10%;
+  padding: 4px;
+  padding-left: 10px;
+}
+
+.profiletitle{
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.card .profiletitle{
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 20px;
+  font-family: Arial, sans-serif;
+}
+
+
+
+.profileinfo{
+  font-size: 1em;
+  margin-left: 20px;
+  margin-right: 20px;
+  font-family: Arial, sans-serif;
+  opacity: 80%;
+}
+
+.card2{  
+  background-color: #e5fff2;
+  border: 1px solid #bababa;
+  border-radius:  10px;
+  box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
+  text-align:center;
+  min-width: 300px;
+  display:inline-block;
+  margin: 15px;
+}
+.outercard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

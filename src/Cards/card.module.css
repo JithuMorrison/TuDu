@@ -1,0 +1,11 @@
+.basecard{
+    border: 1px solid #bababa;
+    border-radius:  10px;
+    box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.3);
+    padding: 20px;
+    margin: 10px;
+    text-align:center;
+    width: 96%;
+    display:inline-block;
+  }
+  
