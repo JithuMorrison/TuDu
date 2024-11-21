@@ -10,13 +10,5 @@ function BaseCard(hes){
     </div>
   );
 }
-BaseCard.defaultProps = {
-  cardsdata: [
-    { name: "Jithu", para: "software dev", stu: true },
-    { name: "Yk", para: "designer", stu: false },
-    { name: "Hello", para: "manager", stu: true },
-    { name: "nam", para: "engineer", stu: false }
-  ]  
-}
 
 export default BaseCard

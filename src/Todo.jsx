@@ -7,7 +7,7 @@ function ToDo(){
   const [time,setTime] = useState(new Date());
   const input = useRef(null);
   const items = task.map((item,index) => (
-    <Card name={item.name} para = {item.para} time={item.time} index={index} settask={setTask} tasks={task} ded={item.deadline}></Card>
+    <Card key={index} name={item.name} para = {item.para} time={item.time} index={index} settask={setTask} tasks={task} ded={item.deadline}></Card>
   ));
 
   useEffect(()=>{
@@ -54,7 +54,7 @@ function ToDo(){
         </div>
       <input className='inputfield' type="datetime-local" ref={input}></input>
       <div>
-        <input className = "inputfield1" type="text" value={time.toDateString()+" "+time.toLocaleTimeString()} placeholder='Enter a task'/>
+        <input className = "inputfield1" type="text" value={time.toDateString()+" "+time.toLocaleTimeString()} placeholder='Enter a task' readOnly/>
           </div>
       <ol>{items}</ol>
     </div>

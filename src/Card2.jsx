@@ -11,10 +11,5 @@ function Card2(ip){
     </div>
   );
 }
-Card2.defaultProps = {
-  name: "Lion",
-  para: "Lions are the only cats",
-  stu: false,
-}
 
 export default Card2

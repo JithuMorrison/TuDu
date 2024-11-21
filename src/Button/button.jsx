@@ -13,8 +13,4 @@ function Button(props) {
     </button>
   );
 }
-Button.defaultProps = {
-  text: "Click me",
-  onclick: null,
-};
 export default Button;
