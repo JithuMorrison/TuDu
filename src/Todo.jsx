@@ -46,17 +46,33 @@ function ToDo(){
   
   
   return (
-    <div className='todolist'>
-      <h1 className='tasks'>Tasks</h1>
-      <div>
-      <input className = "inputfield" type="text" value={newtask} placeholder='Enter a task' onChange={(e) => setNewtask(e.target.value)}/>
-      <Button onClick={(e)=>handleSubmit(e)} text = "Add"/>
-        </div>
-      <input className='inputfield' type="datetime-local" ref={input}></input>
-      <div>
-        <input className = "inputfield1" type="text" value={time.toDateString()+" "+time.toLocaleTimeString()} placeholder='Enter a task' readOnly/>
-          </div>
-      <ol>{items}</ol>
+    <div>
+    <div className="todolist">
+      <h1 className="tasks">Tasks</h1>
+      <div className="input-container">
+        <input
+          className="inputfield"
+          type="text"
+          value={newtask}
+          placeholder="Enter a task"
+          onChange={(e) => setNewtask(e.target.value)}
+        />
+        <input className="inputfield" type="datetime-local" ref={input} />
+        <input
+          className="inputfield read-only"
+          type="text"
+          value={`${time.toDateString()} ${time.toLocaleTimeString()}`}
+          readOnly
+        />
+        <Button onClick={(e) => handleSubmit(e)} text="Add Task" />
+      </div>
+    </div>
+    <div style={{display: 'flex',width:'1500px',marginLeft:'-100px'}}>
+    <div className='toka'>
+    <ol className="task-list">{items}</ol>
+    </div>
+    <div className='toka1'>hi</div>
+    </div>
     </div>
   );
 }

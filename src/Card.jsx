@@ -2,7 +2,7 @@ import Button from "./Button/Button";
 import Card2 from "./Card2";  
 import Card3 from "./Card3";  
 import {useState} from "react";
-
+import { faTrash, faArrowUp, faArrowDown, faEdit, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Card(ip){
 
@@ -43,15 +43,22 @@ function Card(ip){
     <div className = "outercard">
     <div className="card">
       <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
+      <div>
       <h2 className="profiletitle">{ip.name}</h2>
+      <div style={{display:'flex'}}>
       <p className="profileinfo">{new Date(ip.ded).toDateString()}</p>
       <p className="profileinfo">{new Date(ip.ded).toLocaleTimeString()}</p>
-      <p className="profileinfo">{ip.stu ? "Yes" : "No"}</p>
-      <Button text="Delete" onClick = {deletetask} color="linear-gradient(to right, #ec3257, #f5758e)"></Button>
-      <Button text="⬆️" onClick = {moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)"></Button>
-      <Button text="⬇️" onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)"></Button>
+      </div>
+      </div>
+      <Button icon={faTrash} onClick = {deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'55px'}></Button>
+      <div>
+      <Button icon={faArrowUp} onClick = {moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
+      <Button icon={faArrowDown} onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
+      </div>
+      <div>
       <Button text="Edit" onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)"></Button>   
       <Button text="Change" onClick = {displaychange} ></Button>  
+      </div>
     </div>
       {showinfo ? iron : null}
       {showinf ? iron2 : null}
