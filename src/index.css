@@ -86,15 +86,37 @@ button:hover {
     flex-direction: column;
   }
 }
+
 .inputfield1{
   height: 45px;
-  border-radius: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  padding: 10px;
   padding-left:13px;
   padding-right:13px;
   min-width: 176px;
   margin-left: 5px;
   margin-right: 5px;
+  font-size: 16px;
+  height: 30px;
 }
+
+.inputfield2{
+  height: 45px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+  padding-left:13px;
+  padding-right:13px;
+  min-width: 176px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  height: 30px;
+}
+
 .card{
   border-radius:  10px;
   text-align:center;
@@ -158,6 +180,7 @@ button:hover {
   min-width: 300px;
   display:inline-block;
   margin: 15px;
+  padding-bottom: 10px;
 }
 .outercard {
   display: flex;

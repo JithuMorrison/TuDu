@@ -1,18 +1,14 @@
 import Button from "./Button/Button";
-import Card2 from "./Card2";  
-import Card3 from "./Card3";  
-import {useState} from "react";
-import { faTrash, faArrowUp, faArrowDown, faEdit, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye} from "@fortawesome/free-solid-svg-icons";
 
 function Card(ip){
 
-  const [showinfo,setShowinfo] = useState(false);
-  const [showinf,setShowinf] = useState(false);
   function deletetask(){
     const updatetask = ip.tasks.filter((_,i) => i != ip.index);   
     ip.settask(updatetask);
     localStorage.setItem('data', JSON.stringify(updatetask));
   }
+  
   function moveup()
   {
     if(ip.index>0){
@@ -22,6 +18,7 @@ function Card(ip){
       localStorage.setItem('data', JSON.stringify(updatetask));
     }
   }  
+
   function movedown()
   {
     if(ip.index<ip.tasks.length-1){
@@ -31,14 +28,17 @@ function Card(ip){
       localStorage.setItem('data', JSON.stringify(updatetask));
     }
   }
+
   function displayinfo(){
-    setShowinfo(!showinfo);
+    ip.setInd(ip.index);
+    ip.setShow(1);
   }
+
   function displaychange(){
-    setShowinf(!showinf);
+    ip.setInd(ip.index);
+    ip.setShow(0);
   }
-  const iron = (<Card2 name={ip.name} para = {ip.para} time={ip.time} index={ip.index}/>);
-  const iron2 = (<Card3 task={ip.tasks} settask={ip.settask} index={ip.index}/>);
+
   return(
     <div className = "outercard">
     <div className="card">
@@ -56,12 +56,10 @@ function Card(ip){
       <Button icon={faArrowDown} onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
       </div>
       <div>
-      <Button text="Edit" onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)"></Button>   
-      <Button text="Change" onClick = {displaychange} ></Button>  
+      <Button icon={faEye} onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'55px'}></Button>   
+      <Button icon={faEdit} onClick = {displaychange} width={'55px'}></Button>  
       </div>
     </div>
-      {showinfo ? iron : null}
-      {showinf ? iron2 : null}
       </div>
   );
 }

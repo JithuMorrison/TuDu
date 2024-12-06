@@ -35,9 +35,9 @@ function Card3(ip) {
         src="https://www.zoologiste.com/images/main/lion.jpg"
         alt="profile picture"
       ></img><br></br>
-      <input placeholder="task-name" className="inputfield" ref={nameref}></input><br></br>
+      <input placeholder="task-name" className="inputfield2" ref={nameref}></input><br></br>
       <input type="datetime-local" className="inputfield1" ref={input}></input><br></br>
-      <Button title="Click" onClick={(e)=>changetask(e)}></Button>
+      <Button text="Click" onClick={(e)=>changetask(e)} width={'75px'}></Button>
     </div>
   );
 }
