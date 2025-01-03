@@ -1,5 +1,6 @@
 import Button from "./Button/Button";
-import { faTrash, faArrowUp, faArrowDown, faEdit, faEye} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle} from "@fortawesome/free-solid-svg-icons";
 
 function Card(ip){
 
@@ -39,9 +40,29 @@ function Card(ip){
     ip.setShow(0);
   }
 
+  const iconButtonStyle = {
+    background: 'none',
+    border: 'none',
+    padding: '0',
+    cursor: 'pointer',
+    fontSize: '24px',
+    color: ip.status ? 'green' : 'black',
+    marginRight: '20px',
+  };
+
+  function handleChecked(){
+    const updatetask = [...ip.tasks];
+    updatetask[ip.index].status=!updatetask[ip.index].status;
+    ip.settask(updatetask);
+    localStorage.setItem('data', JSON.stringify(updatetask));
+  }
+
   return(
     <div className = "outercard">
     <div className="card">
+      <button style={iconButtonStyle} onClick={handleChecked}>
+        <FontAwesomeIcon icon={faCheckCircle} />
+      </button>
       <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
       <div>
       <h2 className="profiletitle">{ip.name}</h2>

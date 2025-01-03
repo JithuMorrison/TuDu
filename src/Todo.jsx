@@ -11,7 +11,7 @@ function ToDo(){
   const [show,setShow] = useState(-1);
   const input = useRef(null);
   const items = task.map((item,index) => (
-    <Card key={index} name={item.name} para = {item.para} time={item.time} index={index} settask={setTask} tasks={task} ded={item.deadline} setInd={setInd} setShow={setShow}></Card>
+    <Card key={index} name={item.name} para = {item.para} time={item.time} index={index} settask={setTask} tasks={task} ded={item.deadline} setInd={setInd} setShow={setShow} status={item.status}></Card>
   ));
 
   useEffect(()=>{
@@ -44,7 +44,7 @@ function ToDo(){
     const handleSubmit = (e) => {
       e.preventDefault();
       if (newtask.trim() != ""){
-      addItem({name: newtask,para: time.toDateString(),time:time.toLocaleTimeString(),deadline:input.current.value});
+      addItem({name: newtask,para: time.toDateString(),time:time.toLocaleTimeString(),deadline:input.current.value,status:false});
       }
     };
   
