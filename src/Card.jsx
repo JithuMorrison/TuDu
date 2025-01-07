@@ -55,17 +55,19 @@ function Card(ip){
   };
 
   function handleChecked(){
-    const updatetask = [...ip.tasks];
-    updatetask[ip.index].status=!updatetask[ip.index].status;
-    ip.settask(updatetask);
-    localStorage.setItem('data', JSON.stringify(updatetask));
+    if(daysDifference<0){
+      const updatetask = [...ip.tasks];
+      updatetask[ip.index].status=!updatetask[ip.index].status;
+      ip.settask(updatetask);
+      localStorage.setItem('data', JSON.stringify(updatetask));
+    }
   }
 
   return(
     <div className = "outercard">
     <div className="card">
       <button style={iconButtonStyle} onClick={handleChecked}>
-        <FontAwesomeIcon icon={ Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
+        <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
       </button>
       <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
       <div>
