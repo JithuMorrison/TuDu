@@ -1,8 +1,12 @@
 import Button from "./Button/Button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle} from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning} from "@fortawesome/free-solid-svg-icons";
 
 function Card(ip){
+  const currentDate = new Date();
+  const ipDate = new Date(ip.ded);
+  const timeDifference = currentDate - ipDate;
+  const daysDifference = timeDifference / (1000 * 3600 * 24);
 
   function deletetask(){
     const updatetask = ip.tasks.filter((_,i) => i != ip.index);   
@@ -46,7 +50,7 @@ function Card(ip){
     padding: '0',
     cursor: 'pointer',
     fontSize: '24px',
-    color: ip.status ? 'green' : 'black',
+    color: ip.status ? 'green' : (currentDate > ipDate ? 'red' : 'black'),
     marginRight: '20px',
   };
 
@@ -61,7 +65,7 @@ function Card(ip){
     <div className = "outercard">
     <div className="card">
       <button style={iconButtonStyle} onClick={handleChecked}>
-        <FontAwesomeIcon icon={faCheckCircle} />
+        <FontAwesomeIcon icon={ Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
       </button>
       <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
       <div>
