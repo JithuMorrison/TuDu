@@ -1,4 +1,4 @@
-import Button from "./Button/Button";
+import Button from './Button/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning} from "@fortawesome/free-solid-svg-icons";
 

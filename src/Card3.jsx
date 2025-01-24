@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import Button from "./Button/Button";
+import Button from './Button/button';
 
 function Card3(ip) {
   const nameref = useRef(null);
