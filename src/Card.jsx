@@ -65,28 +65,47 @@ function Card(ip){
 
   return(
     <div className = "outercard">
-    <div className="card">
-      <button style={iconButtonStyle} onClick={handleChecked}>
-        <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
-      </button>
-      <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
-      <div>
-      <h2 className="profiletitle">{ip.name}</h2>
-      <div style={{display:'flex'}}>
-      <p className="profileinfo">{new Date(ip.ded).toDateString()}</p>
-      <p className="profileinfo">{new Date(ip.ded).toLocaleTimeString()}</p>
-      </div>
-      </div>
-      <Button icon={faTrash} onClick = {deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'55px'}></Button>
-      <div>
-      <Button icon={faArrowUp} onClick = {moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
-      <Button icon={faArrowDown} onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
-      </div>
-      <div>
-      <Button icon={faEye} onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'55px'}></Button>   
-      <Button icon={faEdit} onClick = {displaychange} width={'55px'}></Button>  
-      </div>
-    </div>
+      {ip.isMobileView ? 
+        <div className="card">
+        <button style={iconButtonStyle} onClick={handleChecked}>
+          <FontAwesomeIcon icon={ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning} />
+        </button>
+        <div>
+          <h2 className="profiletitle1">{ip.name}</h2>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+          <p className="profileinfo1">{new Date(ip.ded).toDateString()}</p>
+          <p className="profileinfo1">{new Date(ip.ded).toLocaleTimeString()}</p>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexDirection: 'row' }}>
+          <Button icon={faTrash} onClick={deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'50px'} />
+          <Button icon={faArrowUp} onClick={moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'50px'} />
+          <Button icon={faArrowDown} onClick={movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'50px'} />
+          <Button icon={faEye} onClick={displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'50px'} />
+          <Button icon={faEdit} onClick={displaychange} width={'50px'} />
+        </div>
+        </div>
+      </div>      
+      : 
+      <div className="card">
+        <button style={iconButtonStyle} onClick={handleChecked}>
+          <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
+        </button>
+        <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
+        <div>
+        <h2 className="profiletitle">{ip.name}</h2>
+        <div style={{display:'flex'}}>
+        <p className="profileinfo">{new Date(ip.ded).toDateString()}</p>
+        <p className="profileinfo">{new Date(ip.ded).toLocaleTimeString()}</p>
+        </div>
+        </div>
+        <Button icon={faTrash} onClick = {deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'55px'}></Button>
+        <Button icon={faArrowUp} onClick = {moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
+        <Button icon={faArrowDown} onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
+        <Button icon={faEye} onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'55px'}></Button>   
+        <Button icon={faEdit} onClick = {displaychange} width={'55px'}></Button>  
+      </div> 
+      }
       </div>
   );
 }
