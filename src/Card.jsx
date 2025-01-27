@@ -78,11 +78,11 @@ function Card(ip){
         </div>
         
         <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexDirection: 'row' }}>
-          <Button icon={faTrash} onClick={deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'50px'} />
-          <Button icon={faArrowUp} onClick={moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'50px'} />
-          <Button icon={faArrowDown} onClick={movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'50px'} />
-          <Button icon={faEye} onClick={displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'50px'} />
-          <Button icon={faEdit} onClick={displaychange} width={'50px'} />
+          <Button icon={faTrash} onClick={deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'35px'} />
+          <Button icon={faArrowUp} onClick={moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'35px'} />
+          <Button icon={faArrowDown} onClick={movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'35px'} />
+          <Button icon={faEye} onClick={displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'35px'} />
+          <Button icon={faEdit} onClick={displaychange} width={'35px'} />
         </div>
         </div>
       </div>      

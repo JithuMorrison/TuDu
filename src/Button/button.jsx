@@ -18,8 +18,9 @@ function Button(props) {
         <FontAwesomeIcon 
         icon={props.icon} 
         style={{ 
-          fontSize: "20px", 
+          fontSize: props.width === '55px' ? "20px" : "10px", 
           color: "#fff", 
+          marginBottom: props.width !== '55px' ? "40px" : "0px"
         }} 
       />      
       ) : (
