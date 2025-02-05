@@ -29,7 +29,7 @@ function Card3(ip) {
     localStorage.setItem('data', JSON.stringify(updatetask));
   }
   return (
-    <div className="card2">
+    <div className={ip.isMobileView ? "card21" : "card2"} >
       <img
         className="profileimg"
         src="https://www.zoologiste.com/images/main/lion.jpg"

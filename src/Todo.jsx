@@ -88,7 +88,7 @@ function ToDo() {
   };
 
   const dialogStyle = {
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 8,
     width: '95%',
@@ -141,7 +141,7 @@ function ToDo() {
               {show === 1 ? (
                 <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
               ) : show === 0 ? (
-                <Card3 task={task} settask={setTask} index={ind} />
+                <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
               ) : (
                 <div>No TuDu selected</div>
               )}
@@ -154,9 +154,9 @@ function ToDo() {
         {!isMobileView && (
           <div className='toka1'>
             {show === 1 ? (
-              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} />
+              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
             ) : show === 0 ? (
-              <Card3 task={task} settask={setTask} index={ind} />
+              <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
             ) : (
               <div>No TuDu selected</div>
             )}
