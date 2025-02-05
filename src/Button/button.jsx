@@ -20,7 +20,8 @@ function Button(props) {
         style={{ 
           fontSize: props.width === '55px' ? "20px" : "10px", 
           color: "#fff", 
-          marginBottom: props.width !== '55px' ? "40px" : "0px"
+          marginBottom: props.width !== '55px' ? "60px" : "0px",
+          marginTop: props.width !== '55px' ? "-3px" : "0px",
         }} 
       />      
       ) : (

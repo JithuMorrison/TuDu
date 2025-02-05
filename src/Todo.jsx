@@ -90,7 +90,7 @@ function ToDo() {
   const dialogStyle = {
     position: 'absolute',
     top: 0,
-    left: 6,
+    left: 8,
     width: '95%',
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -113,7 +113,7 @@ function ToDo() {
 
   return (
     <div>
-    <div className="todolist" style={isMobileView ? { width: '105%', marginLeft: '-30px',marginRight: '-30px'} : {}}>
+    <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px',marginRight: '-30px'} : {}}>
       <h1 className="tasks">Tasks</h1>
       <div className="input-container">
         <input
@@ -134,7 +134,7 @@ function ToDo() {
       </div>
     </div>
       <div style={containerStyle}>
-        <div className='toka' style={isMobileView ? { width: '105%', marginLeft: '-30px',marginRight: '-30px' } : {}} >{items}</div>
+        <div className='toka' style={isMobileView ? { width: '107%', marginLeft: '-30px',marginRight: '-30px' } : {}} >{items}</div>
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
             <div style={{ backgroundColor: '#fff', color: '#000', padding: '20px', borderRadius: '10px', width: '80%' }}>

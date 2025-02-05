@@ -171,17 +171,11 @@ button:hover {
 }
 
 .profileinfo1{
-  font-size: 0.5em;
-  font-family: Arial, sans-serif;
-  width: 70px;
-  opacity: 80%;
-  margin-top: -10px;
-}
-
-.profileinfo1{
-  font-size: 1em;
-  margin-left: 20px;
+  font-size: 0.8em;
+  margin-left: 15px;
   margin-right: 20px;
+  margin-top: -10px;
+  margin-bottom: -10px;
   font-family: Arial, sans-serif;
   opacity: 80%;
 }
