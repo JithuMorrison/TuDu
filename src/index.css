@@ -159,7 +159,7 @@ button:hover {
 .profileinfo{
   font-size: 1em;
   font-family: Arial, sans-serif;
-  width: 120px;
+  width: 130px;
   opacity: 80%;
   margin-top: -10px;
 }
@@ -193,6 +193,18 @@ button:hover {
   box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
   text-align:center;
   min-width: 300px;
+  display:inline-block;
+  margin: 15px;
+  padding-bottom: 10px;
+}
+
+.card21{  
+  background-color: #e5fff2;
+  border: 1px solid #bababa;
+  border-radius:  10px;
+  box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
+  text-align:center;
+  width: 90%;
   display:inline-block;
   margin: 15px;
   padding-bottom: 10px;

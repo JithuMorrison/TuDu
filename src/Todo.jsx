@@ -90,8 +90,8 @@ function ToDo() {
   const dialogStyle = {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: '100%',
+    left: 6,
+    width: '95%',
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     color: '#fff',
@@ -113,7 +113,7 @@ function ToDo() {
 
   return (
     <div>
-    <div className="todolist" style={isMobileView ? { width: '315px', marginLeft: '-30px',marginRight: '-30px' } : {}}>
+    <div className="todolist" style={isMobileView ? { width: '105%', marginLeft: '-30px',marginRight: '-30px'} : {}}>
       <h1 className="tasks">Tasks</h1>
       <div className="input-container">
         <input
@@ -134,12 +134,12 @@ function ToDo() {
       </div>
     </div>
       <div style={containerStyle}>
-        <div className='toka' style={isMobileView ? { width: '315px', marginLeft: '-30px',marginRight: '-30px' } : {}} >{items}</div>
+        <div className='toka' style={isMobileView ? { width: '105%', marginLeft: '-30px',marginRight: '-30px' } : {}} >{items}</div>
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
-            <div style={{ backgroundColor: '#fff', color: '#000', padding: '20px', borderRadius: '10px', width: '85%' }}>
+            <div style={{ backgroundColor: '#fff', color: '#000', padding: '20px', borderRadius: '10px', width: '80%' }}>
               {show === 1 ? (
-                <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} />
+                <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
               ) : show === 0 ? (
                 <Card3 task={task} settask={setTask} index={ind} />
               ) : (
