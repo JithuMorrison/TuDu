@@ -10,26 +10,35 @@ function ToDo() {
   const [time, setTime] = useState(new Date());
   const [ind, setInd] = useState(0);
   const [show, setShow] = useState(-1);
-  const [isMobileView, setIsMobileView] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
+  const [cato, setCato] = useState([]);
+  const [fetcho, setFetcho] = useState('Todo');
+  const [matcho, setMatcho] = useState('');
   const input = useRef(null);
 
-  const items = task.map((item, index) => (
-    <Card
-      key={index}
-      name={item.name}
-      para={item.para}
-      time={item.time}
-      index={index}
-      settask={setTask}
-      tasks={task}
-      ded={item.deadline}
-      setInd={setInd}
-      setShow={setShow}
-      status={item.status}
-      isMobileView = {isMobileView}
-    />
-  ));
+  // Fetch stored tasks from localStorage on category change
+  useEffect(() => {
+    const storedData = localStorage.getItem(fetcho);
+    const storedCategories = localStorage.getItem('data');
+    
+    if (storedCategories) {
+      setCato(JSON.parse(storedCategories));
+    }
 
+    if (storedData) {
+      setTask(JSON.parse(storedData));
+    } else {
+      fetch('/data.json')
+        .then((response) => response.json())
+        .then((task) => {
+          localStorage.setItem(fetcho, JSON.stringify(task));
+          setTask(task);
+        })
+        .catch((error) => console.error('Error fetching data:', error));
+    }
+  }, [fetcho]);
+
+  // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
       setTime(new Date());
@@ -37,34 +46,35 @@ function ToDo() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const storedData = localStorage.getItem('data');
-    if (storedData) {
-      setTask(JSON.parse(storedData));
-    } else {
-      fetch('/data.json')
-        .then((response) => response.json())
-        .then((task) => {
-          localStorage.setItem('data', JSON.stringify(task));
-        })
-        .catch((error) => console.error('Error fetching data:', error));
-    }
-  }, []);
-
+  // Handle window resize for mobile view
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth <= 768);
     };
     window.addEventListener('resize', handleResize);
-    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const addItem = (newIte) => {
-    const updatedData = [...task, newIte];
+  const addItem = (newItem) => {
+    const updatedData = [...task, newItem];
     setTask(updatedData);
-    localStorage.setItem('data', JSON.stringify(updatedData));
+    localStorage.setItem(fetcho, JSON.stringify(updatedData));
+
+    if (!cato.includes(fetcho)) {
+      const updatedCat = [...cato, fetcho];
+      setCato(updatedCat);
+      localStorage.setItem('data', JSON.stringify(updatedCat));
+    }
   };
+
+  const updateTask = () => {
+    const storedData = localStorage.getItem(fetcho);
+    if (storedData) {
+      setTask(JSON.parse(storedData));
+    } else {
+      setTask([]);
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,6 +87,21 @@ function ToDo() {
         status: false,
       });
       setNewtask("");
+    }
+  };
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    const storedData = localStorage.getItem(matcho);
+    if (storedData) {
+      alert("Already present");
+    }
+    else{
+      const updatedCat = [...cato, matcho];
+      setCato(updatedCat);
+      localStorage.setItem('data', JSON.stringify(updatedCat));
+      localStorage.setItem(matcho,JSON.stringify([]));
+      setTask([]);
     }
   };
 
@@ -113,28 +138,78 @@ function ToDo() {
 
   return (
     <div>
-    <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px',marginRight: '-30px'} : {}}>
-      <h1 className="tasks">Tasks</h1>
-      <div className="input-container">
-        <input
-          className="inputfield"
-          type="text"
-          value={newtask}
-          placeholder="Enter a task"
-          onChange={(e) => setNewtask(e.target.value)}
-        />
-        <input className="inputfield" type="datetime-local" ref={input} />
-        <input
-          className="inputfield read-only"
-          type="text"
-          value={`${time.toDateString()} ${time.toLocaleTimeString()}`}
-          readOnly
-        />
-        <Button onClick={(e) => handleSubmit(e)} text="Add Task" />
+      {/* Task Input Section */}
+      <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
+        <h1 className="tasks">Tasks</h1>
+        <div className="input-container">
+          <input
+            className="inputfield"
+            type="text"
+            value={newtask}
+            placeholder="Enter a task"
+            onChange={(e) => setNewtask(e.target.value)}
+          />
+          <input className="inputfield" type="datetime-local" ref={input} />
+          <input
+            className="inputfield read-only"
+            type="text"
+            value={`${time.toDateString()} ${time.toLocaleTimeString()}`}
+            readOnly
+          />
+          <Button onClick={handleSubmit} text="Add Task" />
+        </div>
       </div>
-    </div>
+
+      {/* Task Selection Section */}
+      <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
+        <div className="input-container">
+          <select 
+            className="inputfield"
+            value={fetcho} 
+            onChange={(e) => {
+              setFetcho(e.target.value); 
+              updateTask(e.target.value); // Call task update function
+            }}
+          >
+            <option value="" disabled>Select a category</option>
+            {cato.map((category, index) => (
+              <option key={index} value={category}>{category}</option>
+            ))}
+          </select>
+          <input
+            className="inputfield"
+            type="text"
+            value={matcho}
+            placeholder="Enter category"
+            onChange={(e) => setMatcho(e.target.value)}
+          />
+          <Button onClick={handleClick} text="Select" />
+        </div>
+      </div>
+
+      {/* Tasks Display Section */}
       <div style={containerStyle}>
-        <div className='toka' style={isMobileView ? { width: '107%', marginLeft: '-30px',marginRight: '-30px' } : {}} >{items}</div>
+        <div className='toka' style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
+          {task.map((item, index) => (
+            <Card
+              key={index}
+              name={item.name}
+              para={item.para}
+              time={item.time}
+              index={index}
+              settask={setTask}
+              tasks={task}
+              ded={item.deadline}
+              setInd={setInd}
+              setShow={setShow}
+              status={item.status}
+              isMobileView={isMobileView}
+              fetcho={fetcho}
+            />
+          ))}
+        </div>
+
+        {/* Dialog Box for Mobile View */}
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
             <div style={{ backgroundColor: '#fff', color: '#000', padding: '20px', borderRadius: '10px', width: '80%' }}>
@@ -143,14 +218,14 @@ function ToDo() {
               ) : show === 0 ? (
                 <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
               ) : (
-                <div>No TuDu selected</div>
+                <div>No Task Selected</div>
               )}
-              <button style={buttonStyle} onClick={() => setShow(-1)}>
-                Close
-              </button>
+              <button style={buttonStyle} onClick={() => setShow(-1)}>Close</button>
             </div>
           </div>
         )}
+
+        {/* Desktop View Task Details */}
         {!isMobileView && (
           <div className='toka1'>
             {show === 1 ? (
@@ -158,7 +233,7 @@ function ToDo() {
             ) : show === 0 ? (
               <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
             ) : (
-              <div>No TuDu selected</div>
+              <div>No Task Selected</div>
             )}
           </div>
         )}

@@ -11,7 +11,7 @@ function Card(ip){
   function deletetask(){
     const updatetask = ip.tasks.filter((_,i) => i != ip.index);   
     ip.settask(updatetask);
-    localStorage.setItem('data', JSON.stringify(updatetask));
+    localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
   }
   
   function moveup()
@@ -20,7 +20,7 @@ function Card(ip){
     const updatetask = [...ip.tasks];
     [updatetask[ip.index],updatetask[ip.index-1]]=[updatetask[ip.index-1],updatetask[ip.index]];
       ip.settask(updatetask);
-      localStorage.setItem('data', JSON.stringify(updatetask));
+      localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
   }  
 
@@ -30,7 +30,7 @@ function Card(ip){
     const updatetask = [...ip.tasks];
     [updatetask[ip.index],updatetask[ip.index+1]]=[updatetask[ip.index+1],updatetask[ip.index]];
       ip.settask(updatetask);
-      localStorage.setItem('data', JSON.stringify(updatetask));
+      localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
   }
 
@@ -59,7 +59,7 @@ function Card(ip){
       const updatetask = [...ip.tasks];
       updatetask[ip.index].status=!updatetask[ip.index].status;
       ip.settask(updatetask);
-      localStorage.setItem('data', JSON.stringify(updatetask));
+      localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
   }
 

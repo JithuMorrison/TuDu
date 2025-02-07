@@ -54,6 +54,13 @@ body{
   height: 30px;
 }
 
+select.inputfield {
+  appearance: none;
+  height: 50px;
+  background-color: white;
+  cursor: pointer;
+}
+
 .inputfield.read-only {
   background-color: #e9ecef;
   cursor: not-allowed;
@@ -176,6 +183,14 @@ button:hover {
   margin-right: 20px;
   margin-top: -10px;
   margin-bottom: -10px;
+  font-family: Arial, sans-serif;
+  opacity: 80%;
+}
+
+.profileinfo2{
+  font-size: 0.8em;
+  margin-left: 15px;
+  margin-right: 20px;
   font-family: Arial, sans-serif;
   opacity: 80%;
 }

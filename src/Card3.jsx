@@ -26,7 +26,7 @@ function Card3(ip) {
     nameref.current.value='';
     input.current.value='';
     ip.settask(updatetask);
-    localStorage.setItem('data', JSON.stringify(updatetask));
+    localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
   }
   return (
     <div className={ip.isMobileView ? "card21" : "card2"} >
