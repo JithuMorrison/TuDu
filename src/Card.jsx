@@ -1,4 +1,5 @@
 import Button from './Button/button';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning} from "@fortawesome/free-solid-svg-icons";
 
@@ -7,6 +8,20 @@ function Card(ip){
   const ipDate = new Date(ip.ded);
   const timeDifference = currentDate - ipDate;
   const daysDifference = timeDifference / (1000 * 3600 * 24);
+  const [profileImg, setProfileImg] = useState('');
+
+  const profileImages = [
+    'https://www.zoologiste.com/images/main/lion.jpg',
+    'https://images.pexels.com/photos/1661179/pexels-photo-1661179.jpeg?cs=srgb&dl=animal-close-up-little-1661179.jpg&fm=jpg',
+    'https://th.bing.com/th/id/OIP.fPKaGCVJYDhdLlhcczZongHaE8?rs=1&pid=ImgDetMain',
+    'https://th.bing.com/th/id/R.cf87e97d9ccbf04e804a806f3c1cb70b?rik=pU4q47rzTixncA&riu=http%3a%2f%2f2.bp.blogspot.com%2f-mv4naWQw3NA%2fT-IIUEYnEvI%2fAAAAAAAAA5c%2f2GtpbqI6bf4%2fs1600%2fCougar%2bCute%2bDesktop%2bAnimal%2bPictures.jpg&ehk=9i46tFYhFXMu2uUYTkFLis0VnDFT8BxYECwmgPocSD4%3d&risl=&pid=ImgRaw&r=0',
+    'https://th.bing.com/th/id/OIP.2KDrlQ3f5OSl13qi2Z3kgQHaEo?rs=1&pid=ImgDetMain'
+  ];
+
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * profileImages.length);
+    setProfileImg(profileImages[randomIndex]);
+  }, []);
 
   function deletetask(){
     const updatetask = ip.tasks.filter((_,i) => i != ip.index);   
@@ -91,7 +106,7 @@ function Card(ip){
         <button style={iconButtonStyle} onClick={handleChecked}>
           <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
         </button>
-        <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile picture"></img>
+        <img className="profileimg" src={profileImg} alt="profile picture"></img>
         <div>
         <h2 className="profiletitle">{ip.name}</h2>
         <div style={{display:'flex'}}>
