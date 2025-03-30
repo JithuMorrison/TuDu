@@ -138,11 +138,12 @@ button:hover {
   max-height: 60px;
   border-radius:10%;
   padding-top: 20px;
+  border-radius: 20%;
 }
 .card .profileimg{
   max-width: 60px;
   max-height: 60px;
-  border-radius:10%;
+  border-radius:20%;
   padding: 4px;
 }
 
