@@ -78,50 +78,83 @@ function Card(ip){
     }
   }
 
+  const cardStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '20px',
+    margin: '10px 0',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#ffffff',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)'
+    }
+  };
+
+  const profileImageStyle = {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    marginRight: '20px',
+    border: '2px solid #e0e0e0'
+  };
+
+  const buttonGroupStyle = {
+    display: 'flex',
+    gap: '0px',
+    padding: '8px',
+    borderRadius: '8px',
+    backgroundColor: '#f5f5f5'
+  };
+
   return(
-    <div className = "outercard">
+    <div className="outercard">
       {ip.isMobileView ? 
-        <div className="card">
-        <button style={iconButtonStyle} onClick={handleChecked}>
-          <FontAwesomeIcon icon={ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning} />
-        </button>
-        <div>
-          <h2 className="profiletitle1">{ip.name}</h2>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-          <p className="profileinfo1">{new Date(ip.ded).toDateString()}</p>
-          <p className="profileinfo1">{new Date(ip.ded).toLocaleTimeString()}</p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '0px', marginTop: '10px', flexDirection: 'row' }}>
-          <Button icon={faTrash} onClick={deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'35px'} />
-          <Button icon={faArrowUp} onClick={moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'35px'} />
-          <Button icon={faArrowDown} onClick={movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'35px'} />
-          <Button icon={faEye} onClick={displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'35px'} />
-          <Button icon={faEdit} onClick={displaychange} width={'35px'} />
-        </div>
-        </div>
-      </div>      
+        <div style={cardStyle}>
+          <button style={iconButtonStyle} onClick={handleChecked}>
+            <FontAwesomeIcon icon={ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning} />
+          </button>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.2rem' }}>{ip.name}</h2>
+            <div style={{ display: 'flex', gap: '10px', color: '#718096' }}>
+              <p>{new Date(ip.ded).toDateString()}</p>
+              <p>{new Date(ip.ded).toLocaleTimeString()}</p>
+            </div>
+            <div style={buttonGroupStyle}>
+              <Button icon={faTrash} onClick={deletetask} color="#ec3257" width={'35px'} />
+              <Button icon={faArrowUp} onClick={moveup} color="#2a8bd5" width={'35px'} />
+              <Button icon={faArrowDown} onClick={movedown} color="#2a8bd5" width={'35px'} />
+              <Button icon={faEye} onClick={displayinfo} color="#cde708" width={'35px'} />
+              <Button icon={faEdit} onClick={displaychange} width={'35px'} />
+            </div>
+          </div>
+        </div>      
       : 
-      <div className="card">
+      <div style={cardStyle}>
         <button style={iconButtonStyle} onClick={handleChecked}>
           <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
         </button>
-        <img className="profileimg" src={profileImg} alt="profile picture"></img>
-        <div>
-        <h2 className="profiletitle">{ip.name}</h2>
-        <div style={{display:'flex'}}>
-        <p className="profileinfo">{new Date(ip.ded).toDateString()}</p>
-        <p className="profileinfo">{new Date(ip.ded).toLocaleTimeString()}</p>
+        <img style={profileImageStyle} src={profileImg} alt="profile" />
+        <div style={{ flex: 1 }}>
+          <h2 style={{ margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.2rem', marginBottom: '-10px' }}>{ip.name}</h2>
+          <div style={{ display: 'flex', gap: '10px', color: '#718096' }}>
+            <p>{new Date(ip.ded).toDateString()}</p>
+            <p>{new Date(ip.ded).toLocaleTimeString()}</p>
+          </div>
         </div>
+        <div style={{...buttonGroupStyle, marginLeft: '10px'}}>
+          <Button icon={faTrash} onClick={deletetask} color="#ec3257" width={'35px'} />
+          <Button icon={faArrowUp} onClick={moveup} color="#2a8bd5" width={'35px'} />
+          <Button icon={faArrowDown} onClick={movedown} color="#2a8bd5" width={'35px'} />
+          <Button icon={faEye} onClick={displayinfo} color="#cde708" width={'35px'} />
+          <Button icon={faEdit} onClick={displaychange} width={'35px'} />
         </div>
-        <Button icon={faTrash} onClick = {deletetask} color="linear-gradient(to right, #ec3257, #f5758e)" width={'55px'}></Button>
-        <Button icon={faArrowUp} onClick = {moveup} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
-        <Button icon={faArrowDown} onClick = {movedown} color="linear-gradient(to right, #2a8bd5, #6bc7f5)" width={'55px'}></Button>
-        <Button icon={faEye} onClick = {displayinfo} color="linear-gradient(to right, #cde708, #c9d56c)" width={'55px'}></Button>   
-        <Button icon={faEdit} onClick = {displaychange} width={'55px'}></Button>  
       </div> 
       }
-      </div>
+    </div>
   );
 }
 
