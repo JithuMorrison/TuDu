@@ -3,6 +3,7 @@ import Card from './Card';
 import Card3 from './Card3';
 import Card2 from './Card2';
 import Button from './Button/button';
+import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 
 function ToDo() {
   const [task, setTask] = useState([]);
@@ -108,88 +109,166 @@ function ToDo() {
   const containerStyle = {
     display: 'flex',
     flexDirection: isMobileView ? 'column' : 'row',
-    alignItems: 'flex-start',
+    gap: '24px',
     width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '24px'
+  };
+
+  const inputContainerStyle = {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    marginBottom: '24px',
+    marginLeft: isMobileView? '0px' : '-150px',
+    width: isMobileView? '75%' : '122%'
+  };
+
+  const taskListStyle = {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+  };
+
+  const detailPaneStyle = {
+    width: isMobileView ? '100%' : '400px',
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   };
 
   const dialogStyle = {
     position: 'fixed',
     top: 0,
-    left: 8,
-    width: '95%',
+    left: 0,
+    width: '100%',
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     color: '#fff',
     zIndex: 1000,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-  };
-
-  const buttonStyle = {
-    marginTop: '10px',
-    padding: '10px 20px',
-    backgroundColor: '#007BFF',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
+    alignItems: 'center'
   };
 
   return (
-    <div>
-      {/* Task Input Section */}
-      <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
-        <h1 className="tasks">Tasks</h1>
-        <div className="input-container">
-          <input
-            className="inputfield"
-            type="text"
-            value={newtask}
-            placeholder="Enter a task"
-            onChange={(e) => setNewtask(e.target.value)}
-          />
-          <input className="inputfield" type="datetime-local" ref={input} />
-          <input
-            className="inputfield read-only"
-            type="text"
-            value={`${time.toDateString()} ${time.toLocaleTimeString()}`}
-            readOnly
-          />
-          <Button onClick={handleSubmit} text="Add Task" />
-        </div>
+    <div style={{ backgroundColor: '#f8f9fa', minHeight: '100vh'}}>
+      {/* Header */}
+      <div style={{ backgroundColor: '#ffffff', padding: '16px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#2d3748' }}>Task Manager</h1>
       </div>
 
-      {/* Task Selection Section */}
-      <div className="todolist" style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
-        <div className="input-container">
-          <select 
-            className="inputfield"
-            value={fetcho} 
-            onChange={(e) => {
-              setFetcho(e.target.value); 
-              updateTask(e.target.value); // Call task update function
-            }}
-          >
-            <option value="" disabled>Select a category</option>
-            {cato.map((category, index) => (
-              <option key={index} value={category}>{category}</option>
-            ))}
-          </select>
-          <input
-            className="inputfield"
-            type="text"
-            value={matcho}
-            placeholder="Enter category"
-            onChange={(e) => setMatcho(e.target.value)}
-          />
-          <Button onClick={handleClick} text="Select" />
-        </div>
-      </div>
-
-      {/* Tasks Display Section */}
+      {/* Main Content */}
       <div style={containerStyle}>
-        <div className='toka' style={isMobileView ? { width: '107%', marginLeft: '-30px' } : {}}>
+        {/* Task Input Section */}
+        <div style={{ width: '100%' }}>
+          <div style={inputContainerStyle}>
+            <h2 style={{ marginBottom: '16px', fontSize: '1.25rem', color: '#2d3748' }}>Add New Task</h2>
+            <div style={{ display: 'flex', gap: '16px', flexDirection: isMobileView ? 'column' : 'row' }}>
+              <input
+                style={{ 
+                  flex: 1,
+                  padding: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+                type="text"
+                value={newtask}
+                placeholder="Enter task name"
+                onChange={(e) => setNewtask(e.target.value)}
+              />
+              <input
+                style={{ 
+                  padding: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+                type="datetime-local"
+                ref={input}
+              />
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#4299e1',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500'
+                }}
+                onClick={handleSubmit}
+              >
+                Add Task
+              </button>
+            </div>
+          </div>
+
+          {/* Category Section */}
+          <div style={{ ...inputContainerStyle, marginTop: '16px' }}>
+            <h2 style={{ marginBottom: '16px', fontSize: '1.25rem', color: '#2d3748' }}>Manage Categories</h2>
+            <div style={{ display: 'flex', gap: '16px', flexDirection: isMobileView ? 'column' : 'row' }}>
+              <select
+                style={{ 
+                  flex: 1,
+                  padding: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+                value={fetcho}
+                onChange={(e) => {
+                  setFetcho(e.target.value);
+                  updateTask(e.target.value);
+                }}
+              >
+                <option value="" disabled>Select a category</option>
+                {cato.map((category, index) => (
+                  <option key={index} value={category}>{category}</option>
+                ))}
+              </select>
+              <input
+                style={{ 
+                  flex: 1,
+                  padding: '12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+                type="text"
+                value={matcho}
+                placeholder="Enter new category"
+                onChange={(e) => setMatcho(e.target.value)}
+              />
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#48bb78',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500'
+                }}
+                onClick={handleClick}
+              >
+                Add Category
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tasks Display Section */}
+        <div style={taskListStyle}>
+          <h2 style={{ marginBottom: '16px', fontSize: '1.25rem', color: '#2d3748' }}>Tasks</h2>
           {task.map((item, index) => (
             <Card
               key={index}
@@ -209,10 +288,25 @@ function ToDo() {
           ))}
         </div>
 
-        {/* Dialog Box for Mobile View */}
+        {/* Task Details Section */}
+        {!isMobileView && (
+          <div style={detailPaneStyle}>
+            {show === 1 ? (
+              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
+            ) : show === 0 ? (
+              <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
+            ) : (
+              <div style={{ color: '#718096', textAlign: 'center', padding: '24px' }}>
+                Select a task to view details
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Dialog */}
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
-            <div style={{ backgroundColor: '#fff', color: '#000', padding: '20px', borderRadius: '10px', width: '80%' }}>
+            <div style={{ backgroundColor: '#ffffff', color: '#000', padding: '24px', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
               {show === 1 ? (
                 <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
               ) : show === 0 ? (
@@ -220,21 +314,22 @@ function ToDo() {
               ) : (
                 <div>No Task Selected</div>
               )}
-              <button style={buttonStyle} onClick={() => setShow(-1)}>Close</button>
+              <button
+                style={{
+                  marginTop: '16px',
+                  padding: '12px 24px',
+                  backgroundColor: '#4299e1',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+                onClick={() => setShow(-1)}
+              >
+                Close
+              </button>
             </div>
-          </div>
-        )}
-
-        {/* Desktop View Task Details */}
-        {!isMobileView && (
-          <div className='toka1'>
-            {show === 1 ? (
-              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
-            ) : show === 0 ? (
-              <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
-            ) : (
-              <div>No Task Selected</div>
-            )}
           </div>
         )}
       </div>
