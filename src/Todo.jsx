@@ -113,7 +113,8 @@ function ToDo() {
     width: isMobileView ? '100%': '70%',
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '24px'
+    padding: '24px',
+    marginLeft: isMobileView? '0px' : '220px'
   };
 
   const inputContainerStyle = {
@@ -123,7 +124,7 @@ function ToDo() {
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     marginBottom: '24px',
     marginLeft: isMobileView? '0px' : '-150px',
-    width: isMobileView? '75%' : '122%'
+    width: isMobileView? '75%' : '135%'
   };
 
   const taskListStyle = {
@@ -133,6 +134,8 @@ function ToDo() {
     padding: '24px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     width: isMobileView? '75%' : '100%',
+    minWidth: isMobileView ? '0px' : '600px',
+    marginLeft: isMobileView? '0px' : '50px',
   };
 
   const detailPaneStyle = {
