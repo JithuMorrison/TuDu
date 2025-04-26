@@ -110,7 +110,7 @@ function ToDo() {
     display: 'flex',
     flexDirection: isMobileView ? 'column' : 'row',
     gap: '24px',
-    width: '100%',
+    width: isMobileView ? '100%': '70%',
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '24px'
@@ -131,11 +131,12 @@ function ToDo() {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
     padding: '24px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    width: isMobileView? '75%' : '100%',
   };
 
   const detailPaneStyle = {
-    width: isMobileView ? '100%' : '400px',
+    width: isMobileView ? '90%' : '340px',
     backgroundColor: '#ffffff',
     borderRadius: '12px',
     padding: '24px',
@@ -146,7 +147,7 @@ function ToDo() {
     position: 'fixed',
     top: 0,
     left: 0,
-    width: '100%',
+    width: '89%',
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     color: '#fff',
@@ -264,6 +265,21 @@ function ToDo() {
               </button>
             </div>
           </div>
+
+          {/* Task Details Section */}
+        {!isMobileView && (
+          <div style={detailPaneStyle}>
+            {show === 1 ? (
+              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
+            ) : show === 0 ? (
+              <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
+            ) : (
+              <div style={{ color: '#718096', textAlign: 'center', padding: '24px' }}>
+                Select a task to view details
+              </div>
+            )}
+          </div>
+        )}
         </div>
 
         {/* Tasks Display Section */}
@@ -288,25 +304,10 @@ function ToDo() {
           ))}
         </div>
 
-        {/* Task Details Section */}
-        {!isMobileView && (
-          <div style={detailPaneStyle}>
-            {show === 1 ? (
-              <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
-            ) : show === 0 ? (
-              <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
-            ) : (
-              <div style={{ color: '#718096', textAlign: 'center', padding: '24px' }}>
-                Select a task to view details
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Mobile Dialog */}
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
-            <div style={{ backgroundColor: '#ffffff', color: '#000', padding: '24px', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
+            <div style={{ backgroundColor: '#ffffff', color: '#000', padding: '24px', borderRadius: '12px', width: '80%', maxWidth: '500px' }}>
               {show === 1 ? (
                 <Card2 name={task[ind].name} para={task[ind].para} time={task[ind].time} index={ind} isMobileView={isMobileView} />
               ) : show === 0 ? (

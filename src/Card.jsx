@@ -81,7 +81,7 @@ function Card(ip){
   const cardStyle = {
     display: 'flex',
     alignItems: 'center',
-    padding: '20px',
+    padding: '10px',
     margin: '10px 0',
     borderRadius: '12px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
