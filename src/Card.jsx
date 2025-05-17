@@ -1,9 +1,9 @@
-import Button from './Button/button';
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning} from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock } from "@fortawesome/free-solid-svg-icons";
+import Button from './Button/button';
 
-function Card(ip){
+function Card(ip) {
   const currentDate = new Date();
   const ipDate = new Date(ip.ded);
   const timeDifference = currentDate - ipDate;
@@ -23,56 +23,44 @@ function Card(ip){
     setProfileImg(profileImages[randomIndex]);
   }, []);
 
-  function deletetask(){
-    const updatetask = ip.tasks.filter((_,i) => i != ip.index);   
+  function deletetask() {
+    const updatetask = ip.tasks.filter((_, i) => i != ip.index);   
     ip.settask(updatetask);
     localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
   }
   
-  function moveup()
-  {
-    if(ip.index>0){
-    const updatetask = [...ip.tasks];
-    [updatetask[ip.index],updatetask[ip.index-1]]=[updatetask[ip.index-1],updatetask[ip.index]];
+  function moveup() {
+    if (ip.index > 0) {
+      const updatetask = [...ip.tasks];
+      [updatetask[ip.index], updatetask[ip.index-1]] = [updatetask[ip.index-1], updatetask[ip.index]];
       ip.settask(updatetask);
       localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
   }  
 
-  function movedown()
-  {
-    if(ip.index<ip.tasks.length-1){
-    const updatetask = [...ip.tasks];
-    [updatetask[ip.index],updatetask[ip.index+1]]=[updatetask[ip.index+1],updatetask[ip.index]];
+  function movedown() {
+    if (ip.index < ip.tasks.length-1) {
+      const updatetask = [...ip.tasks];
+      [updatetask[ip.index], updatetask[ip.index+1]] = [updatetask[ip.index+1], updatetask[ip.index]];
       ip.settask(updatetask);
       localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
   }
 
-  function displayinfo(){
+  function displayinfo() {
     ip.setInd(ip.index);
     ip.setShow(1);
   }
 
-  function displaychange(){
+  function displaychange() {
     ip.setInd(ip.index);
     ip.setShow(0);
   }
 
-  const iconButtonStyle = {
-    background: 'none',
-    border: 'none',
-    padding: '0',
-    cursor: 'pointer',
-    fontSize: '24px',
-    color: ip.status ? 'green' : (currentDate > ipDate ? 'red' : 'black'),
-    marginRight: '20px',
-  };
-
-  function handleChecked(){
-    if(daysDifference<0){
+  function handleChecked() {
+    if (daysDifference < 0) {
       const updatetask = [...ip.tasks];
-      updatetask[ip.index].status=!updatetask[ip.index].status;
+      updatetask[ip.index].status = !updatetask[ip.index].status;
       ip.settask(updatetask);
       localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
     }
@@ -81,81 +69,136 @@ function Card(ip){
   const cardStyle = {
     display: 'flex',
     alignItems: 'center',
-    padding: '10px',
-    margin: '10px 0',
+    padding: '16px',
     borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
     backgroundColor: '#ffffff',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.2s ease',
+    borderLeft: `4px solid ${ip.status ? '#10b981' : currentDate > ipDate ? '#ef4444' : '#3b82f6'}`,
     '&:hover': {
       transform: 'translateY(-2px)',
-      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)'
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
     }
   };
 
   const profileImageStyle = {
-    width: '40px',
-    height: '40px',
+    width: '48px',
+    height: '48px',
     borderRadius: '50%',
     objectFit: 'cover',
-    marginRight: '20px',
-    border: '2px solid #e0e0e0'
+    marginRight: '16px',
+    border: '2px solid #f3f4f6'
   };
 
   const buttonGroupStyle = {
     display: 'flex',
-    gap: '0px',
-    padding: '8px',
-    borderRadius: '8px',
-    backgroundColor: '#f5f5f5'
+    gap: '8px',
+    marginLeft: 'auto'
   };
 
-  return(
-    <div className="outercard">
-      {ip.isMobileView ? 
-        <div style={cardStyle}>
-          <button style={iconButtonStyle} onClick={handleChecked}>
-            <FontAwesomeIcon icon={ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning} />
-          </button>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.2rem' }}>{ip.name}</h2>
-            <div style={{ display: 'flex', gap: '10px', color: '#718096' }}>
-              <p>{new Date(ip.ded).toDateString()}</p>
-              <p>{new Date(ip.ded).toLocaleTimeString()}</p>
-            </div>
-            <div style={buttonGroupStyle}>
-              <Button icon={faTrash} onClick={deletetask} color="#ec3257" width={'35px'} />
-              <Button icon={faArrowUp} onClick={moveup} color="#2a8bd5" width={'35px'} />
-              <Button icon={faArrowDown} onClick={movedown} color="#2a8bd5" width={'35px'} />
-              <Button icon={faEye} onClick={displayinfo} color="#cde708" width={'35px'} />
-              <Button icon={faEdit} onClick={displaychange} width={'35px'} />
-            </div>
-          </div>
-        </div>      
-      : 
-      <div style={cardStyle}>
-        <button style={iconButtonStyle} onClick={handleChecked}>
-          <FontAwesomeIcon icon={ ip.tasks[ip.index].status ? faCheckCircle : Math.abs(daysDifference) > 3 ? faCheckCircle : faWarning } />
-        </button>
+  const iconStyle = {
+    color: ip.status ? '#10b981' : currentDate > ipDate ? '#ef4444' : '#3b82f6',
+    marginRight: '16px',
+    fontSize: '20px',
+    flexShrink: 0
+  };
+
+  const contentStyle = {
+    flex: 1,
+    minWidth: 0
+  };
+
+  const titleStyle = {
+    margin: '0 0 4px 0',
+    color: '#1f2937',
+    fontSize: '1rem',
+    fontWeight: '500',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  };
+
+  const timeStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    color: '#6b7280',
+    fontSize: '0.875rem'
+  };
+
+  const deadlineStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    color: currentDate > ipDate ? '#ef4444' : '#6b7280',
+    fontSize: '0.75rem',
+    marginTop: '4px'
+  };
+
+  return (
+    <div style={cardStyle}>
+      <FontAwesomeIcon 
+        icon={ip.status ? faCheckCircle : currentDate > ipDate ? faWarning : faClock} 
+        style={iconStyle}
+        onClick={handleChecked}
+      />
+      
+      {!ip.isMobileView && (
         <img style={profileImageStyle} src={profileImg} alt="profile" />
-        <div style={{ flex: 1 }}>
-          <h2 style={{ margin: '0 0 8px 0', color: '#2d3748', fontSize: '1.2rem', marginBottom: '-10px' }}>{ip.name}</h2>
-          <div style={{ display: 'flex', gap: '10px', color: '#718096' }}>
-            <p>{new Date(ip.ded).toDateString()}</p>
-            <p>{new Date(ip.ded).toLocaleTimeString()}</p>
-          </div>
+      )}
+      
+      <div style={contentStyle}>
+        <h3 style={titleStyle}>{ip.name}</h3>
+        <div style={timeStyle}>
+          <span>{ip.time}</span>
+          <span>•</span>
+          <span>{ip.para}</span>
         </div>
-        <div style={{...buttonGroupStyle, marginLeft: '10px'}}>
-          <Button icon={faTrash} onClick={deletetask} color="#ec3257" width={'35px'} />
-          <Button icon={faArrowUp} onClick={moveup} color="#2a8bd5" width={'35px'} />
-          <Button icon={faArrowDown} onClick={movedown} color="#2a8bd5" width={'35px'} />
-          <Button icon={faEye} onClick={displayinfo} color="#cde708" width={'35px'} />
-          <Button icon={faEdit} onClick={displaychange} width={'35px'} />
+        <div style={deadlineStyle}>
+          <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
+          <span>Due: {new Date(ip.ded).toLocaleString()}</span>
         </div>
-      </div> 
-      }
+      </div>
+      
+      <div style={buttonGroupStyle}>
+        <Button 
+          icon={faEye} 
+          onClick={displayinfo} 
+          color="#3b82f6" 
+          width="36px"
+          tooltip="View details"
+        />
+        <Button 
+          icon={faEdit} 
+          onClick={displaychange} 
+          color="#f59e0b" 
+          width="36px"
+          tooltip="Edit task"
+        />
+        <Button 
+          icon={faArrowUp} 
+          onClick={moveup} 
+          color="#10b981" 
+          width="36px"
+          tooltip="Move up"
+        />
+        <Button 
+          icon={faArrowDown} 
+          onClick={movedown} 
+          color="#10b981" 
+          width="36px"
+          tooltip="Move down"
+        />
+        <Button 
+          icon={faTrash} 
+          onClick={deletetask} 
+          color="#ef4444" 
+          width="36px"
+          tooltip="Delete task"
+        />
+      </div>
     </div>
   );
 }
 
-export default Card
+export default Card;
