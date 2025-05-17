@@ -115,7 +115,8 @@ function Card(ip) {
     fontWeight: '500',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    textOverflow: 'ellipsis',
+    marginTop: '0px',
   };
 
   const timeStyle = {
@@ -149,20 +150,31 @@ function Card(ip) {
         <img style={profileImageStyle} src={profileImg} alt="profile" />
       )}
       
+      {!ip.isMobileView && (
       <div style={contentStyle}>
         <h3 style={titleStyle}>{ip.name}</h3>
-        {!ip.isMobileView && (
         <div style={timeStyle}>
           <span>{ip.time}</span>
           <span>•</span>
           <span>{ip.para}</span>
         </div>
-        )}
         <div style={deadlineStyle}>
           <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
           <span>Due: {new Date(ip.ded).toLocaleString()}</span>
         </div>
       </div>
+    )}
+    {(
+      ip.isMobileView && (
+        <div style={contentStyle}>
+          <h3 style={titleStyle}>{ip.name}</h3>
+          <div style={deadlineStyle}>
+            <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
+            <span>Due: {new Date(ip.ded).toLocaleString()}</span> 
+          </div>
+        </div>
+        )
+    )}
       
       <div style={buttonGroupStyle}>
         <Button 
