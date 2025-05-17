@@ -1,17 +1,117 @@
-function Card2(ip){
-  return(
-    <div className={ip.isMobileView ? "card21" : "card2"}>
-      <img className="profileimg" src="https://www.zoologiste.com/images/main/lion.jpg" alt="profile" />
-      <div className="card-content">
-        <h2 className="profiletitle">{ip.name}</h2>
-        <p className="profileinfo2">{ip.para}</p>
-        <div className="info-grid">
-          <p className="info-item"><span>Time:</span> {ip.time}</p>
-          <p className="info-item"><span>Status:</span> {ip.stu ? "Yes" : "No"}</p>
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarAlt, faClock, faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+
+function Card2(ip) {
+  const cardStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '24px',
+    borderRadius: '12px',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+    maxWidth: '400px',
+    margin: '0 auto'
+  };
+
+  const profileImageStyle = {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    marginBottom: '16px',
+    border: '3px solid #e5e7eb'
+  };
+
+  const titleStyle = {
+    margin: '0 0 8px 0',
+    color: '#1f2937',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    textAlign: 'center'
+  };
+
+  const infoGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '16px',
+    width: '100%',
+    marginTop: '16px'
+  };
+
+  const infoItemStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px'
+  };
+
+  const labelStyle = {
+    color: '#6b7280',
+    fontSize: '0.875rem',
+    fontWeight: '500'
+  };
+
+  const valueStyle = {
+    color: '#1f2937',
+    fontSize: '1rem',
+    fontWeight: '600'
+  };
+
+  const iconStyle = {
+    marginRight: '8px',
+    color: '#4f46e5'
+  };
+
+  return (
+    <div style={cardStyle}>
+      <img 
+        style={profileImageStyle} 
+        src="https://randomuser.me/api/portraits/men/1.jpg" 
+        alt="profile" 
+      />
+      <h2 style={titleStyle}>{ip.name}</h2>
+      
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '8px',
+        color: '#6b7280',
+        marginBottom: '16px'
+      }}>
+        <FontAwesomeIcon icon={faCalendarAlt} />
+        <span>{ip.para}</span>
+      </div>
+      
+      <div style={infoGridStyle}>
+        <div style={infoItemStyle}>
+          <span style={labelStyle}>
+            <FontAwesomeIcon icon={faClock} style={iconStyle} />
+            Time
+          </span>
+          <span style={valueStyle}>{ip.time}</span>
+        </div>
+        
+        <div style={infoItemStyle}>
+          <span style={labelStyle}>
+            <FontAwesomeIcon 
+              icon={ip.stu ? faCheckCircle : faTimesCircle} 
+              style={{ 
+                ...iconStyle,
+                color: ip.stu ? '#10b981' : '#ef4444'
+              }} 
+            />
+            Status
+          </span>
+          <span style={{
+            ...valueStyle,
+            color: ip.stu ? '#10b981' : '#ef4444'
+          }}>
+            {ip.stu ? "Completed" : "Pending"}
+          </span>
         </div>
       </div>
     </div>
   );
 }
 
-export default Card2
+export default Card2;
