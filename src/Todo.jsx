@@ -106,7 +106,7 @@ function ToDo() {
     display: 'flex',
     flexDirection: isMobileView ? 'column' : 'row',
     gap: '24px',
-    width: isMobileView ? '100%' : '90%',
+    width: isMobileView ? '90%' : '90%',
     maxWidth: '1400px',
     margin: '0 auto',
     padding: isMobileView ? '16px' : '24px',
@@ -120,7 +120,7 @@ function ToDo() {
     padding: '24px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
     marginBottom: '24px',
-    width: isMobileView ? '100%' : '100%'
+    width: isMobileView ? '88%' : '100%'
   };
 
   const taskListStyle = {
@@ -129,9 +129,10 @@ function ToDo() {
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
-    width: isMobileView ? '100%' : '100%',
+    width: isMobileView ? '89%' : '100%',
     maxHeight: isMobileView ? 'auto' : 'calc(100vh - 180px)',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    marginLeft: isMobileView? '0px' : '50px'
   };
 
   const detailPaneStyle = {
