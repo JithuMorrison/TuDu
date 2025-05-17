@@ -131,8 +131,10 @@ function Card(ip) {
     alignItems: 'center',
     gap: '4px',
     color: currentDate > ipDate ? '#ef4444' : '#6b7280',
-    fontSize: '0.75rem',
-    marginTop: '4px'
+    fontSize: ip.isMobileView ? '0.875rem' : '0.75rem',
+    marginTop: ip.isMobileView ? '-70px' : '4px',
+    width: ip.isMobileView ? '300px' : 'auto',
+    flexWrap: ip.isMobileView ? 'wrap' : 'nowrap'
   };
 
   return (
@@ -149,11 +151,13 @@ function Card(ip) {
       
       <div style={contentStyle}>
         <h3 style={titleStyle}>{ip.name}</h3>
+        {!ip.isMobileView && (
         <div style={timeStyle}>
           <span>{ip.time}</span>
           <span>•</span>
           <span>{ip.para}</span>
         </div>
+        )}
         <div style={deadlineStyle}>
           <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
           <span>Due: {new Date(ip.ded).toLocaleString()}</span>
