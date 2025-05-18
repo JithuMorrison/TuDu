@@ -219,7 +219,7 @@ function ToDo() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
       {/* Header */}
       <div style={headerStyle}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Task Manager</h1>
+        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
         <div style={timeStyle}>
           {time.toLocaleDateString()} | {time.toLocaleTimeString()}
         </div>
