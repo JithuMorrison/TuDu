@@ -66,7 +66,7 @@ function Card2(ip) {
     <div style={cardStyle}>
       <img 
         style={profileImageStyle} 
-        src="https://randomuser.me/api/portraits/men/1.jpg" 
+        src="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/lizzie-ally-animals-to-follow-on-instagram-1568303611.jpg?crop=0.993xw:0.795xh;0.00519xw,0.114xh&resize=480:*" 
         alt="profile" 
       />
       <h2 style={titleStyle}>{ip.name}</h2>
