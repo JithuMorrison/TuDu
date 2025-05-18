@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock } from "@fortawesome/free-solid-svg-icons";
 import Button from './Button/button';
+import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 
 function Card(ip) {
   const currentDate = new Date();
@@ -93,7 +94,9 @@ function Card(ip) {
   const buttonGroupStyle = {
     display: 'flex',
     gap: '8px',
-    marginLeft: 'auto'
+    marginLeft: 'auto',
+    marginTop: ip.isMobileView? '10px' : '0px',
+    marginBottom: ip.isMobileView? '-10px' : '0px'
   };
 
   const iconStyle = {
@@ -116,7 +119,10 @@ function Card(ip) {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    marginTop: '0px',
+    marginTop: ip.isMobileView? '-27px' : '0px',
+    marginLeft: ip.isMobileView? '-35px' : '0px',
+    width: ip.isMobileView? '85px' : 'auto',
+    flexWrap: ip.isMobileView? 'wrap' : 'nowrap'
   };
 
   const timeStyle = {
@@ -133,9 +139,10 @@ function Card(ip) {
     gap: '4px',
     color: currentDate > ipDate ? '#ef4444' : '#6b7280',
     fontSize: ip.isMobileView ? '0.875rem' : '0.75rem',
-    marginTop: ip.isMobileView ? '-70px' : '4px',
-    width: ip.isMobileView ? '300px' : 'auto',
-    flexWrap: ip.isMobileView ? 'wrap' : 'nowrap'
+    marginTop: ip.isMobileView ? '-30px' : '4px',
+    marginLeft: ip.isMobileView? '15px' : '0px',
+    width: ip.isMobileView ? '500px' : 'auto',
+    flexWrap: ip.isMobileView ? 'wrap' : 'nowrap',
   };
 
   return (
@@ -167,10 +174,12 @@ function Card(ip) {
     {(
       ip.isMobileView && (
         <div style={contentStyle}>
-          <h3 style={titleStyle}>{ip.name}</h3>
-          <div style={deadlineStyle}>
-            <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
-            <span>Due: {new Date(ip.ded).toLocaleString()}</span> 
+          <div style={{display: "flex", flexDirection: 'row', width: '500px', marginTop: '-8px'}}>
+            <h3 style={titleStyle}>{ip.name}</h3>
+            <div style={deadlineStyle}>
+              <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
+              <span>Due: {new Date(ip.ded).toLocaleString()}</span> 
+            </div>
           </div>
         </div>
         )
