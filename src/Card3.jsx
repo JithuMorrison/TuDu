@@ -95,7 +95,7 @@ function Card3(ip) {
     <div style={cardStyle}>
       <img
         style={profileImageStyle}
-        src="https://randomuser.me/api/portraits/men/1.jpg"
+        src="https://th.bing.com/th/id/R.c0ad17e72403623d19623c61c98abb00?rik=J9%2bdJj2aBRlSzg&riu=http%3a%2f%2fwallpapercave.com%2fwp%2fozun9n8.jpg&ehk=NtZHPyOCXiZeKAp52FDbKy5%2fVIHpLlD4PI2xMnzAI8w%3d&risl=&pid=ImgRaw&r=0"
         alt="profile"
       />
       
