@@ -10,6 +10,7 @@ function Card(ip) {
   const timeDifference = currentDate - ipDate;
   const daysDifference = timeDifference / (1000 * 3600 * 24);
   const [profileImg, setProfileImg] = useState('');
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const profileImages = [
     'https://www.zoologiste.com/images/main/lion.jpg',
@@ -159,7 +160,26 @@ function Card(ip) {
       
       {!ip.isMobileView && (
       <div style={contentStyle}>
-        <h3 style={titleStyle}>{ip.name}</h3>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <h3 style={titleStyle}  onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>{ip.name}</h3>
+          {showTooltip && (
+            <div style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#333',
+              color: '#fff',
+              padding: '3px 7px',
+              borderRadius: '4px',
+              whiteSpace: 'nowrap',
+              fontSize: '0.7rem',
+              zIndex: 10
+            }}>
+              {ip.name}
+            </div>
+          )}
+        </div>
         <div style={timeStyle}>
           <span>{ip.time}</span>
           <span>•</span>
@@ -181,7 +201,26 @@ function Card(ip) {
       ip.isMobileView && (
         <div style={contentStyle}>
           <div style={{display: "flex", flexDirection: 'row', width: '500px', marginTop: '-8px'}}>
-            <h3 style={titleStyle}>{ip.name}</h3>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <h3 style={titleStyle}  onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>{ip.name}</h3>
+            {showTooltip && (
+              <div style={{
+                position: 'absolute',
+                marginTop: '-60px',
+                left: '-80%',
+                backgroundColor: '#333',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+                fontSize: '0.8rem',
+                zIndex: 10,
+                pointerEvents: 'none',
+              }}>
+                {ip.name}
+              </div>
+            )}
+          </div>
             <div style={deadlineStyle}>
               {ip.ded ? (
                 <>
