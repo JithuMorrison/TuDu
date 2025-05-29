@@ -91,12 +91,16 @@ function ToDo() {
   const handleClick = (e) => {
     e.preventDefault();
     const storedData = localStorage.getItem(matcho);
-    if (storedData) {
+    if (matcho=="") {
+      alert("Enter a category");
+    }
+    else if (storedData) {
       alert("Category already exists");
     }
     else{
       const updatedCat = [...cato, matcho];
       setCato(updatedCat);
+      setFetcho(matcho);
       localStorage.setItem('data', JSON.stringify(updatedCat));
       localStorage.setItem(matcho,JSON.stringify([]));
       setTask([]);
