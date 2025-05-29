@@ -166,8 +166,14 @@ function Card(ip) {
           <span>{ip.para}</span>
         </div>
         <div style={deadlineStyle}>
-          <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
-          <span>Due: {new Date(ip.ded).toLocaleString()}</span>
+          {ip.ded ? (
+            <>
+              <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
+              <span>Due: {new Date(ip.ded).toLocaleString()}</span>
+            </>
+          ) : (
+            <span>Daily Task</span>
+          )}
         </div>
       </div>
     )}
@@ -177,8 +183,14 @@ function Card(ip) {
           <div style={{display: "flex", flexDirection: 'row', width: '500px', marginTop: '-8px'}}>
             <h3 style={titleStyle}>{ip.name}</h3>
             <div style={deadlineStyle}>
-              <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
-              <span>Due: {new Date(ip.ded).toLocaleString()}</span> 
+              {ip.ded ? (
+                <>
+                  <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
+                  <span>Due: {new Date(ip.ded).toLocaleString()}</span>
+                </>
+              ) : (
+                <span>Daily Task</span>
+              )}
             </div>
           </div>
         </div>

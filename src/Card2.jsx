@@ -94,19 +94,29 @@ function Card2(ip) {
         <div style={infoItemStyle}>
           <span style={labelStyle}>
             <FontAwesomeIcon 
-              icon={ip.status ? faCheckCircle : faTimesCircle} 
+              icon={ip.stu ? faCheckCircle : faTimesCircle} 
               style={{ 
                 ...iconStyle,
-                color: ip.status ? '#10b981' : '#ef4444'
+                color: ip.stu ? '#10b981' : '#ef4444'
               }} 
             />
             Status
           </span>
           <span style={{
             ...valueStyle,
-            color: ip.status ? '#10b981' : '#ef4444'
+            color: ip.stu ? '#10b981' : '#ef4444'
           }}>
-            {ip.status ? "Completed" : "Pending"}
+            {ip.stu ? "Completed" : "Pending"}
+          </span>
+        </div>
+        
+        <div style={infoItemStyle}>
+          <span style={labelStyle}>
+            <FontAwesomeIcon icon={faCalendarAlt} style={iconStyle} />
+            Type
+          </span>
+          <span style={valueStyle}>
+            {ip.isDaily ? "Daily Task" : "One-time Task"}
           </span>
         </div>
       </div>

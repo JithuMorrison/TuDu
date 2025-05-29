@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Button from './Button/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt, faClock } from '@fortawesome/free-solid-svg-icons';
@@ -6,6 +6,7 @@ import { faCalendarAlt, faClock } from '@fortawesome/free-solid-svg-icons';
 function Card3(ip) {
   const nameref = useRef(null);
   const input = useRef(null);
+  const [isDailyTask, setIsDailyTask] = useState(ip.task[ip.index]?.isDaily || false);
 
   const cardStyle = {
     display: 'flex',
@@ -75,13 +76,15 @@ function Card3(ip) {
       if (i == ip.index) {
         let names = task.name;
         let dedlin = task.deadline;
-        if (input.current.value !== "") {
+        let isDaily = task.isDaily;
+        
+        if (!isDaily && input.current.value !== "") {
           dedlin = input.current.value;
         }
         if (nameref.current.value !== "") {
           names = nameref.current.value;
         }
-        return { ...task, name: names, deadline: dedlin };
+        return { ...task, name: names, deadline: dedlin, isDaily: isDailyTask };
       }
       return task;   
     });
@@ -107,17 +110,33 @@ function Card3(ip) {
         placeholder="Enter task name" 
         style={inputStyle} 
         ref={nameref}
+        defaultValue={ip.task[ip.index]?.name}
       />
       
-      <label style={labelStyle}>
-        <FontAwesomeIcon icon={faClock} />
-        Due Date & Time
-      </label>
-      <input 
-        type="datetime-local" 
-        style={inputStyle} 
-        ref={input}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+        <input
+          type="checkbox"
+          id="editDailyTask"
+          checked={isDailyTask}
+          onChange={(e) => setIsDailyTask(e.target.checked)}
+        />
+        <label htmlFor="editDailyTask">Daily Task (no deadline)</label>
+      </div>
+      
+      {!isDailyTask && (
+        <>
+          <label style={labelStyle}>
+            <FontAwesomeIcon icon={faClock} />
+            Due Date & Time
+          </label>
+          <input 
+            type="datetime-local" 
+            style={inputStyle} 
+            ref={input}
+            defaultValue={ip.task[ip.index]?.deadline || ''}
+          />
+        </>
+      )}
       
       <button
         style={buttonStyle}

@@ -15,6 +15,7 @@ function ToDo() {
   const [cato, setCato] = useState([]);
   const [fetcho, setFetcho] = useState('Todo');
   const [matcho, setMatcho] = useState('');
+  const [isDailyTask, setIsDailyTask] = useState(false);
   const input = useRef(null);
 
   useEffect(() => {
@@ -53,6 +54,29 @@ function ToDo() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const checkForNewDay = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      
+      // Check if it's midnight (or a specific time you prefer)
+      if (hours === 0 && minutes === 0) {
+        const updatedTasks = task.map(t => {
+          if (t.isDaily) {
+            return { ...t, status: false };
+          }
+          return t;
+        });
+        setTask(updatedTasks);
+        localStorage.setItem(fetcho, JSON.stringify(updatedTasks));
+      }
+    };
+    
+    const interval = setInterval(checkForNewDay, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [task, fetcho]);
+
   const addItem = (newItem) => {
     const updatedData = [...task, newItem];
     setTask(updatedData);
@@ -77,14 +101,17 @@ function ToDo() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newtask.trim() !== "") {
+      const deadlineValue = input.current ? input.current.value : null;
       addItem({
         name: newtask,
         para: time.toDateString(),
         time: time.toLocaleTimeString(),
-        deadline: input.current.value,
+        deadline: deadlineValue,
         status: false,
+        isDaily: isDailyTask, // Add this line
       });
       setNewtask("");
+      setIsDailyTask(false); // Reset the daily task checkbox
     }
   };
 
@@ -273,12 +300,23 @@ function ToDo() {
                 onChange={(e) => setNewtask(e.target.value)}
                 required
               />
-              <input
-                style={inputStyle}
-                type="datetime-local"
-                ref={input}
-                required
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="checkbox"
+                  id="dailyTask"
+                  checked={isDailyTask}
+                  onChange={(e) => setIsDailyTask(e.target.checked)}
+                />
+                <label htmlFor="dailyTask">Daily Task (no deadline)</label>
+              </div>
+              {!isDailyTask && (
+                <input
+                  style={inputStyle}
+                  type="datetime-local"
+                  ref={input}
+                  required={!isDailyTask}
+                />
+              )}
               <button
                 style={buttonStyle}
                 type="submit"
