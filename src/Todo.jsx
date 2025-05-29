@@ -3,6 +3,7 @@ import Card from './Card';
 import Card3 from './Card3';
 import Card2 from './Card2';
 import Button from './Button/button';
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock } from "@fortawesome/free-solid-svg-icons";
 
 function ToDo() {
   const [task, setTask] = useState([]);
@@ -99,6 +100,22 @@ function ToDo() {
       localStorage.setItem('data', JSON.stringify(updatedCat));
       localStorage.setItem(matcho,JSON.stringify([]));
       setTask([]);
+    }
+  };
+
+  const handleDeleteCategory = (category) => {
+    if (category === 'Todo') {
+      alert("Cannot delete default category");
+      return;
+    }
+    const updatedCat = cato.filter(cat => cat !== category);
+    setCato(updatedCat);
+    localStorage.setItem('data', JSON.stringify(updatedCat));
+    localStorage.removeItem(category);
+    if (fetcho === category) {
+      setFetcho('Todo');
+      const todoData = localStorage.getItem('Todo');
+      setTask(todoData ? JSON.parse(todoData) : []);
     }
   };
 
@@ -276,19 +293,28 @@ function ToDo() {
               fontWeight: '600'
             }}>Manage Categories</h2>
             <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-              <select
-                style={selectStyle}
-                value={fetcho}
-                onChange={(e) => {
-                  setFetcho(e.target.value);
-                  updateTask(e.target.value);
-                }}
-              >
-                <option value="" disabled>Select a category</option>
-                {cato.map((category, index) => (
-                  <option key={index} value={category}>{category}</option>
-                ))}
-              </select>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <select
+                  style={{ ...selectStyle, flex: 1 }}
+                  value={fetcho}
+                  onChange={(e) => {
+                    setFetcho(e.target.value);
+                    updateTask(e.target.value);
+                  }}
+                >
+                  <option value="" disabled>Select a category</option>
+                  {cato.map((category, index) => (
+                    <option key={index} value={category}>{category}</option>
+                  ))}
+                </select>
+                <Button
+                  icon={faTrash}
+                  onClick={() => handleDeleteCategory(fetcho)}
+                  color="#ef4444"
+                  width="36px"
+                  tooltip="Delete category"
+                />
+              </div>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <input
                   style={inputStyle}
