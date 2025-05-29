@@ -3,7 +3,7 @@ import Card from './Card';
 import Card3 from './Card3';
 import Card2 from './Card2';
 import Button from './Button/button';
-import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 function ToDo() {
   const [task, setTask] = useState([]);
@@ -16,6 +16,7 @@ function ToDo() {
   const [fetcho, setFetcho] = useState('Todo');
   const [matcho, setMatcho] = useState('');
   const [isDailyTask, setIsDailyTask] = useState(false);
+  const [categoryAddVisible, setCategoryAddVisible] = useState(false);
   const input = useRef(null);
 
   useEffect(() => {
@@ -131,6 +132,7 @@ function ToDo() {
       localStorage.setItem('data', JSON.stringify(updatedCat));
       localStorage.setItem(matcho,JSON.stringify([]));
       setTask([]);
+      setCategoryAddVisible(false);
     }
   };
 
@@ -356,28 +358,37 @@ function ToDo() {
                   width="36px"
                   tooltip="Delete category"
                 />
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <input
-                  style={inputStyle}
-                  type="text"
-                  value={matcho}
-                  placeholder="Enter new category"
-                  onChange={(e) => setMatcho(e.target.value)}
+                <Button
+                  icon={faPlus}
+                  onClick={() => setCategoryAddVisible(!categoryAddVisible)}
+                  color="#4f46e5"
+                  width="36px"
+                  tooltip="Add Category"
                 />
-                <button
-                  style={{
-                    ...buttonStyle,
-                    backgroundColor: '#10b981',
-                    '&:hover': {
-                      backgroundColor: '#0d9f6e'
-                    }
-                  }}
-                  onClick={handleClick}
-                >
-                  Add
-                </button>
               </div>
+              {categoryAddVisible && (
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <input
+                    style={inputStyle}
+                    type="text"
+                    value={matcho}
+                    placeholder="Enter new category"
+                    onChange={(e) => setMatcho(e.target.value)}
+                  />
+                  <button
+                    style={{
+                      ...buttonStyle,
+                      backgroundColor: '#10b981',
+                      '&:hover': {
+                        backgroundColor: '#0d9f6e'
+                      }
+                    }}
+                    onClick={handleClick}
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
