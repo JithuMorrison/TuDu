@@ -347,7 +347,7 @@ function ToDo() {
           {!isMobileView && (
             <div style={detailPaneStyle}>
               {show === 1 ? (
-                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} />
+                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} />
               ) : show === 0 ? (
                 <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
               ) : (
