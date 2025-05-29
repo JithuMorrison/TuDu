@@ -384,6 +384,22 @@ function ToDo() {
           {/* Task Details Section */}
           {!isMobileView && (
             <div style={detailPaneStyle}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <button
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#4f46e5',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    width: '30%',
+                  }}
+                  onClick={() => setShow(-1)}
+                >
+                  Close
+                </button>
+              </div>
               {show === 1 ? (
                 <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} />
               ) : show === 0 ? (

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Button from './Button/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt, faClock } from '@fortawesome/free-solid-svg-icons';
@@ -70,6 +70,17 @@ function Card3(ip) {
     alignItems: 'center',
     gap: '8px'
   };
+
+  useEffect(() => {
+    if (nameref.current && ip.task[ip.index]) {
+      nameref.current.value = ip.task[ip.index].name || '';
+      setIsDailyTask(ip.task[ip.index].isDaily || false);
+  
+      if (input.current && !ip.task[ip.index].isDaily) {
+        input.current.value = ip.task[ip.index].deadline || '';
+      }
+    }
+  }, [ip.task, ip.index]);
 
   function changetask() {
     const updatetask = ip.task.map((task, i) => {
