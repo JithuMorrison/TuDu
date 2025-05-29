@@ -59,7 +59,7 @@ function Card(ip) {
   }
 
   function handleChecked() {
-    if (daysDifference < 0) {
+    if (daysDifference < 0 || ip.tasks[ip.index].isDaily===true) {
       const updatetask = [...ip.tasks];
       updatetask[ip.index].status = !updatetask[ip.index].status;
       ip.settask(updatetask);
@@ -148,7 +148,7 @@ function Card(ip) {
   return (
     <div style={cardStyle}>
       <FontAwesomeIcon 
-        icon={ip.status ? faCheckCircle : currentDate > ipDate ? faWarning : faClock} 
+        icon={ip.tasks[ip.index].isDaily ? faCheckCircle : (ip.status ? faCheckCircle : currentDate > ipDate ? faWarning : faClock)} 
         style={iconStyle}
         onClick={handleChecked}
       />
