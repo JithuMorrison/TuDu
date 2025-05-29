@@ -401,7 +401,7 @@ function ToDo() {
                 </button>
               </div>
               {show === 1 ? (
-                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} />
+                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
               ) : show === 0 ? (
                 <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
               ) : (
@@ -507,7 +507,7 @@ function ToDo() {
               overflowY: 'auto'
             }}>
               {show === 1 ? (
-                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} />
+                <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
               ) : show === 0 ? (
                 <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
               ) : (
