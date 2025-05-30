@@ -58,25 +58,31 @@ function ToDo() {
   useEffect(() => {
     const checkForNewDay = () => {
       const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      
-      // Check if it's midnight (or a specific time you prefer)
-      if (hours === 0 && minutes === 0) {
-        const updatedTasks = task.map(t => {
-          if (t.isDaily) {
-            return { ...t, status: false };
-          }
-          return t;
+      const today = now.toDateString();
+      const lastReset = localStorage.getItem('lastReset');
+  
+      if (!lastReset || lastReset !== today) {
+        const allCategories = JSON.parse(localStorage.getItem('data')) || [];
+  
+        allCategories.forEach(categoryKey => {
+          const tasks = JSON.parse(localStorage.getItem(categoryKey)) || [];
+  
+          const updatedTasks = tasks.map(task => {
+            if (task.isDaily) {
+              return { ...task, status: false };
+            }
+            return task;
+          });
+  
+          localStorage.setItem(categoryKey, JSON.stringify(updatedTasks));
         });
-        setTask(updatedTasks);
-        localStorage.setItem(fetcho, JSON.stringify(updatedTasks));
+  
+        localStorage.setItem('lastReset', today);
       }
     };
-    
-    const interval = setInterval(checkForNewDay, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [task, fetcho]);
+  
+    checkForNewDay(); // Run once on mount only
+  }, []);   
 
   const addItem = (newItem) => {
     const updatedData = [...task, newItem];
