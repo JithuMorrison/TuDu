@@ -84,26 +84,29 @@ function Card3(ip) {
 
   function changetask() {
     const updatetask = ip.task.map((task, i) => {
-      if (i == ip.index) {
+      if (i === ip.index) {
         let names = task.name;
         let dedlin = task.deadline;
         let isDaily = task.isDaily;
-        
-        if (!isDaily && input.current.value !== "") {
+  
+        if (!isDaily && input.current && input.current.value !== "") {
           dedlin = input.current.value;
         }
-        if (nameref.current.value !== "") {
+        if (nameref.current && nameref.current.value !== "") {
           names = nameref.current.value;
         }
+  
         return { ...task, name: names, deadline: dedlin, isDaily: isDailyTask };
       }
-      return task;   
+      return task;
     });
-    nameref.current.value = '';
-    input.current.value = '';
+  
+    if (nameref.current) nameref.current.value = '';
+    if (input.current) input.current.value = ''; // Only clear if it exists
+  
     ip.settask(updatetask);
     localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
-  }
+  }  
 
   return (
     <div style={cardStyle}>

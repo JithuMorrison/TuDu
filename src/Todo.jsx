@@ -414,7 +414,7 @@ function ToDo() {
               {show === 1 ? (
                 <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
               ) : show === 0 ? (
-                <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
+                <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} fetcho={fetcho} />
               ) : (
                 <div style={{ 
                   color: '#64748b', 
@@ -520,7 +520,7 @@ function ToDo() {
               {show === 1 ? (
                 <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
               ) : show === 0 ? (
-                <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} />
+                <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} fetcho={fetcho} />
               ) : (
                 <div>No Task Selected</div>
               )}
