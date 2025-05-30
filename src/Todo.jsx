@@ -167,7 +167,8 @@ function ToDo() {
     margin: '0 auto',
     padding: isMobileView ? '16px' : '24px',
     backgroundColor: '#f5f7fa',
-    minHeight: 'calc(100vh - 80px)'
+    minHeight: 'calc(100vh - 80px)',
+    marginLeft: isMobileView? '-3px' : '52px',
   };
 
   const inputContainerStyle = {
@@ -188,7 +189,8 @@ function ToDo() {
     width: isMobileView ? '89%' : '100%',
     maxHeight: isMobileView ? 'auto' : 'calc(100vh - 180px)',
     overflowY: 'auto',
-    marginLeft: isMobileView? '0px' : '50px'
+    marginLeft: isMobileView? '0px' : '50px',
+    marginTop: isMobileView? '-30px' : '0px'
   };
 
   const detailPaneStyle = {
@@ -335,7 +337,7 @@ function ToDo() {
           </div>
 
           {/* Category Section */}
-          <div style={inputContainerStyle}>
+          <div style={{ ...inputContainerStyle, marginTop: '-30px' }}>
             <h2 style={{ 
               marginBottom: '16px', 
               fontSize: '1.25rem', 
@@ -400,7 +402,7 @@ function ToDo() {
 
           {/* Task Details Section */}
           {!isMobileView && (
-            <div style={detailPaneStyle}>
+            <div style={{...detailPaneStyle, marginTop: '-30px' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                 <button
                   style={{
