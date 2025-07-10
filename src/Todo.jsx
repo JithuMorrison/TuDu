@@ -491,23 +491,61 @@ function ToDo() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {task.map((item, index) => (
-                <Card
-                  key={index}
-                  name={item.name}
-                  para={item.para}
-                  time={item.time}
-                  index={index}
-                  settask={setTask}
-                  tasks={task}
-                  ded={item.deadline}
-                  setInd={setInd}
-                  setShow={setShow}
-                  status={item.status}
-                  isMobileView={isMobileView}
-                  fetcho={fetcho}
-                />
-              ))}
+              {task
+                .sort((a, b) => {
+                  const now = new Date();
+                  
+                  // Check if tasks are overdue
+                  const aDeadline = a.deadline ? new Date(a.deadline) : null;
+                  const bDeadline = b.deadline ? new Date(b.deadline) : null;
+                  const aIsOverdue = aDeadline && aDeadline < now && !a.status;
+                  const bIsOverdue = bDeadline && bDeadline < now && !b.status;
+                  
+                  // Both overdue - sort by how overdue they are (most overdue first)
+                  if (aIsOverdue && bIsOverdue) {
+                    return aDeadline - bDeadline;
+                  }
+                  
+                  // One overdue, one not - overdue comes first
+                  if (aIsOverdue && !bIsOverdue) return -1;
+                  if (!aIsOverdue && bIsOverdue) return 1;
+                  
+                  // Both not completed and not overdue
+                  if (!a.status && !b.status) {
+                    // Sort by deadline (soonest first)
+                    if (aDeadline && bDeadline) {
+                      return aDeadline - bDeadline;
+                    }
+                    // Tasks with deadlines come first
+                    if (aDeadline && !bDeadline) return -1;
+                    if (!aDeadline && bDeadline) return 1;
+                    return 0;
+                  }
+                  
+                  // One completed, one not - not completed comes first
+                  if (!a.status && b.status) return -1;
+                  if (a.status && !b.status) return 1;
+                  
+                  // Both completed - sort by completion time (newest first)
+                  return new Date(b.completionTime || 0) - new Date(a.completionTime || 0);
+                })
+                .map((item, index) => (
+                  <Card
+                    key={index}
+                    name={item.name}
+                    para={item.para}
+                    time={item.time}
+                    index={index}
+                    settask={setTask}
+                    tasks={task}
+                    ded={item.deadline}
+                    setInd={setInd}
+                    setShow={setShow}
+                    status={item.status}
+                    isMobileView={isMobileView}
+                    fetcho={fetcho}
+                  />
+                ))}
             </div>
           )}
         </div>
