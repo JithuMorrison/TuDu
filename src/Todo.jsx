@@ -3,7 +3,9 @@ import Card from './Card';
 import Card3 from './Card3';
 import Card2 from './Card2';
 import Button from './Button/button';
-import { faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import Confetti from 'react-confetti';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faPlus, faFire, faStar } from "@fortawesome/free-solid-svg-icons";
 
 function ToDo() {
   const [task, setTask] = useState([]);
@@ -18,6 +20,18 @@ function ToDo() {
   const [isDailyTask, setIsDailyTask] = useState(false);
   const [categoryAddVisible, setCategoryAddVisible] = useState(false);
   const input = useRef(null);
+
+  // Gamification state
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [streak, setStreak] = useState(0);
+  const [lastCompletedDate, setLastCompletedDate] = useState('');
+  const [achievements, setAchievements] = useState([]);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showReward, setShowReward] = useState(null);
+  const [todaysGoal, setTodaysGoal] = useState(3);
+  const [completedToday, setCompletedToday] = useState(0);
+  const [showLevelUp, setShowLevelUp] = useState(false);
 
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
@@ -82,8 +96,9 @@ function ToDo() {
     };
   
     checkForNewDay(); // Run once on mount only
-  }, []);   
+  }, []);
 
+  // Modified addItem with XP rewards
   const addItem = (newItem) => {
     const updatedData = [...task, newItem];
     setTask(updatedData);
@@ -93,7 +108,58 @@ function ToDo() {
       const updatedCat = [...cato, fetcho];
       setCato(updatedCat);
       localStorage.setItem('data', JSON.stringify(updatedCat));
+      addXp(50);
+      showTemporaryReward('New Category! +50 XP', 'star');
     }
+  };
+
+  // Modified handleChecked function for Card component
+  const handleChecked = (index, isChecked) => {
+    const updatetask = [...task];
+    const taskItem = updatetask[index];
+    
+    taskItem.status = isChecked;
+    
+    if (isChecked) {
+      taskItem.completionTime = new Date().toISOString();
+      let xpEarned = 50;
+      
+      if (taskItem.deadline) {
+        const deadline = new Date(taskItem.deadline);
+        const now = new Date();
+        
+        if (now < deadline) {
+          const earlyFactor = (deadline - now) / (1000 * 60 * 60);
+          xpEarned += Math.min(100, Math.floor(earlyFactor * 5));
+        }
+      }
+      
+      if (taskItem.isDaily) {
+        xpEarned += 25;
+      }
+      
+      if (streak > 0) {
+        xpEarned = Math.floor(xpEarned * (1 + streak * 0.1));
+      }
+      
+      addXp(xpEarned);
+      showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
+      
+      const today = new Date().toDateString();
+      setLastCompletedDate(today);
+      saveUserData({ lastCompletedDate: today });
+      
+      if (Math.random() < 0.1) {
+        const surpriseXp = Math.floor(Math.random() * 50) + 25;
+        addXp(surpriseXp);
+        showTemporaryReward(`Surprise Reward! +${surpriseXp} XP`, 'gem');
+      }
+    } else {
+      addXp(-10);
+    }
+    
+    setTask(updatetask);
+    localStorage.setItem(fetcho, JSON.stringify(updatetask));
   };
 
   const updateTask = () => {
@@ -156,6 +222,211 @@ function ToDo() {
       const todoData = localStorage.getItem('Todo');
       setTask(todoData ? JSON.parse(todoData) : []);
     }
+  };
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData')) || {
+      xp: 0,
+      level: 1,
+      streak: 0,
+      lastCompletedDate: '',
+      achievements: [],
+      todaysGoal: 3,
+      completedToday: 0
+    };
+    
+    setXp(userData.xp);
+    setLevel(userData.level);
+    setStreak(userData.streak);
+    setLastCompletedDate(userData.lastCompletedDate);
+    setAchievements(userData.achievements || []);
+    setTodaysGoal(userData.todaysGoal);
+    setCompletedToday(userData.completedToday);
+
+    checkStreak();
+  }, []);
+
+  // Check and update streak
+  const checkStreak = () => {
+    const today = new Date().toDateString();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (lastCompletedDate === today) return;
+    
+    if (lastCompletedDate === yesterday.toDateString()) {
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      checkStreakAchievements(newStreak);
+      saveUserData({ streak: newStreak, lastCompletedDate: today });
+      
+      if (newStreak % 3 === 0) {
+        const reward = Math.floor(newStreak / 3) * 50;
+        addXp(reward);
+        showTemporaryReward(`Streak Bonus! +${reward} XP`, 'fire');
+      }
+    } else if (lastCompletedDate !== today && streak > 0) {
+      setStreak(0);
+      saveUserData({ streak: 0 });
+      showTemporaryReward('Streak Broken!', 'sad');
+    }
+  };
+
+  // Check for achievements based on streak
+  const checkStreakAchievements = (currentStreak) => {
+    const newAchievements = [];
+    const unlockedAchievements = [];
+    
+    if (currentStreak >= 3 && !achievements.includes('3-day Streak')) {
+      newAchievements.push('3-day Streak');
+      unlockedAchievements.push('3-day Streak');
+    }
+    if (currentStreak >= 7 && !achievements.includes('7-day Streak')) {
+      newAchievements.push('7-day Streak');
+      unlockedAchievements.push('7-day Streak');
+    }
+    if (currentStreak >= 30 && !achievements.includes('Monthly Streak')) {
+      newAchievements.push('Monthly Streak');
+      unlockedAchievements.push('Monthly Streak');
+    }
+    
+    if (newAchievements.length > 0) {
+      const updatedAchievements = [...achievements, ...newAchievements];
+      setAchievements(updatedAchievements);
+      saveUserData({ achievements: updatedAchievements });
+      
+      unlockedAchievements.forEach(ach => {
+        showTemporaryReward(`Achievement: ${ach}`, 'trophy');
+        addXp(100 * (ach === 'Monthly Streak' ? 5 : ach === '7-day Streak' ? 3 : 1));
+      });
+    }
+  };
+
+  // Add XP with level up check
+  const addXp = (amount) => {
+    const newXp = xp + amount;
+    const xpNeeded = level * 1000;
+    
+    setXp(newXp);
+    
+    if (newXp >= xpNeeded) {
+      const newLevel = level + 1;
+      setLevel(newLevel);
+      setXp(newXp - xpNeeded);
+      setShowLevelUp(true);
+      setTimeout(() => setShowLevelUp(false), 3000);
+      checkLevelAchievements(newLevel);
+      saveUserData({ 
+        xp: newXp - xpNeeded, 
+        level: newLevel 
+      });
+      showTemporaryReward(`Level Up! ${newLevel}`, 'medal');
+    } else {
+      saveUserData({ xp: newXp });
+    }
+    
+    const todayCompleted = completedToday + 1;
+    setCompletedToday(todayCompleted);
+    
+    if (todayCompleted >= todaysGoal) {
+      const bonus = Math.floor(todayCompleted / todaysGoal) * 100;
+      addXp(bonus);
+      showTemporaryReward(`Daily Goal Bonus! +${bonus} XP`, 'star');
+      
+      if (todayCompleted > todaysGoal * 1.5) {
+        const newGoal = todaysGoal + 1;
+        setTodaysGoal(newGoal);
+        saveUserData({ todaysGoal: newGoal });
+      }
+    }
+    
+    saveUserData({ completedToday: todayCompleted });
+  };
+
+  // Check for level-based achievements
+  const checkLevelAchievements = (currentLevel) => {
+    const newAchievements = [];
+    const unlockedAchievements = [];
+    
+    if (currentLevel >= 5 && !achievements.includes('Level 5')) {
+      newAchievements.push('Level 5');
+      unlockedAchievements.push('Level 5');
+    }
+    if (currentLevel >= 10 && !achievements.includes('Level 10')) {
+      newAchievements.push('Level 10');
+      unlockedAchievements.push('Level 10');
+    }
+    if (currentLevel >= 20 && !achievements.includes('Level 20')) {
+      newAchievements.push('Level 20');
+      unlockedAchievements.push('Level 20');
+    }
+    
+    if (newAchievements.length > 0) {
+      const updatedAchievements = [...achievements, ...newAchievements];
+      setAchievements(updatedAchievements);
+      saveUserData({ achievements: updatedAchievements });
+      
+      unlockedAchievements.forEach(ach => {
+        showTemporaryReward(`Achievement: ${ach}`, 'trophy');
+      });
+    }
+  };
+
+  // Show temporary reward message
+  const showTemporaryReward = (message, icon) => {
+    setShowReward({ message, icon });
+    setShowConfetti(true);
+    
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
+    
+    setTimeout(() => {
+      setShowReward(null);
+    }, 5000);
+  };
+
+  // Save user data to localStorage
+  const saveUserData = (updates) => {
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    const updatedData = { ...userData, ...updates };
+    localStorage.setItem('userData', JSON.stringify(updatedData));
+  };
+
+  // Progress bar style
+  const progressBarStyle = {
+    height: '10px',
+    borderRadius: '5px',
+    backgroundColor: '#e0e0e0',
+    margin: '10px 0',
+    overflow: 'hidden'
+  };
+
+  const progressFillStyle = {
+    height: '100%',
+    borderRadius: '5px',
+    backgroundColor: '#4f46e5',
+    width: `${(xp / (level * 1000)) * 100}%`,
+    transition: 'width 0.3s ease'
+  };
+
+  const userProgressStyle = {
+    position: 'absolute',
+    bottom: '10px',
+    left: '24px',
+    right: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    color: 'white',
+    fontSize: '14px'
+  };
+
+  const streakStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    color: streak > 0 ? '#fbbf24' : 'white'
   };
 
   const containerStyle = {
@@ -229,6 +500,12 @@ function ToDo() {
     alignItems: 'center'
   };
 
+  const enhancedHeaderStyle = {
+    ...headerStyle,
+    position: 'relative',
+    paddingBottom: '40px'
+  };
+
   const timeStyle = {
     fontSize: '14px',
     fontWeight: 'normal',
@@ -275,11 +552,104 @@ function ToDo() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={500}
+        />
+      )}
+      
+      {/* Level Up Modal */}
+      {showLevelUp && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          color: 'white',
+          fontSize: '2rem',
+          fontWeight: 'bold',
+          textAlign: 'center'
+        }}>
+          <div>
+            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🎉</div>
+            <div>LEVEL UP!</div>
+            <div style={{ fontSize: '3rem' }}>{level}</div>
+          </div>
+        </div>
+      )}
+      
+      {/* Reward Notification */}
+      {showReward && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#4f46e5',
+          color: 'white',
+          padding: '15px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 100,
+          animation: 'slideIn 0.5s ease-out'
+        }}>
+          <FontAwesomeIcon 
+            icon={
+              showReward.icon === 'trophy' ? faTrophy :
+              showReward.icon === 'fire' ? faFire :
+              showReward.icon === 'star' ? faStar :
+              showReward.icon === 'medal' ? faMedal :
+              showReward.icon === 'gem' ? faGem : faStar
+            } 
+            style={{ fontSize: '20px' }}
+          />
+          <span>{showReward.message}</span>
+        </div>
+      )}
       {/* Header */}
-      <div style={headerStyle}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
+      <div style={enhancedHeaderStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
+          <span style={{ 
+            backgroundColor: '#4338ca',
+            padding: '2px 8px',
+            borderRadius: '10px',
+            fontSize: '0.8rem'
+          }}>
+            Lvl {level}
+          </span>
+        </div>
         <div style={timeStyle}>
           {time.toLocaleDateString()} | {time.toLocaleTimeString()}
+        </div>
+        
+        {/* User Progress Bar */}
+        <div style={userProgressStyle}>
+          <span>Progress</span>
+          
+          <div style={{ flex: 1, margin: '0 10px' }}>
+            <div style={progressBarStyle}>
+              <div style={progressFillStyle}></div>
+            </div>
+          </div>
+          
+          <span>{xp}/{level * 1000} XP</span>
+          
+          <div style={streakStyle}>
+            <FontAwesomeIcon icon={faFire} />
+            <span>{streak}</span>
+          </div>
         </div>
       </div>
 
@@ -440,6 +810,51 @@ function ToDo() {
                   <p style={{ margin: 0 }}>Select a task to view details</p>
                 </div>
               )}
+              <div style={{ marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}>
+                <h3 style={{ marginBottom: '10px' }}>Your Achievements</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {achievements.map((ach, i) => (
+                    <div key={i} style={{
+                      backgroundColor: '#e0e7ff',
+                      color: '#4f46e5',
+                      padding: '5px 10px',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}>
+                      <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
+                      {ach}
+                    </div>
+                  ))}
+                  {achievements.length === 0 && (
+                    <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                      Complete tasks to unlock achievements!
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{ marginTop: '20px' }}>
+                  <h3 style={{ marginBottom: '10px' }}>Today's Progress</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ flex: 1, backgroundColor: '#e5e7eb', borderRadius: '10px', height: '10px' }}>
+                      <div style={{ 
+                        width: `${(completedToday / todaysGoal) * 100}%`, 
+                        backgroundColor: completedToday >= todaysGoal ? '#10b981' : '#4f46e5',
+                        height: '100%',
+                        borderRadius: '10px'
+                      }}></div>
+                    </div>
+                    <span>{completedToday}/{todaysGoal} tasks</span>
+                  </div>
+                  {completedToday >= todaysGoal && (
+                    <div style={{ color: '#10b981', marginTop: '5px', fontSize: '0.9rem' }}>
+                      Daily goal completed! 🎉
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -544,6 +959,8 @@ function ToDo() {
                     status={item.status}
                     isMobileView={isMobileView}
                     fetcho={fetcho}
+                    onCheck={handleChecked}
+                    streak={streak}
                   />
                 ))}
             </div>

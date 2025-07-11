@@ -75,6 +75,24 @@ function Card(ip) {
     }
   }
 
+  const streakEffect = ip.streak > 0 ? {
+    boxShadow: `0 0 10px ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
+    border: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`
+  } : {};
+
+  // Enhanced handleChecked with streak consideration
+  function handleChecked() {
+    const newStatus = !ip.status;
+    ip.onCheck(ip.index, newStatus);
+    
+    if (newStatus && ip.streak > 0) {
+      // Show streak bonus potential
+      const potentialBonus = Math.floor(50 * (1 + ip.streak * 0.1));
+      setShowTooltip(`Complete for +${potentialBonus} XP!`);
+      setTimeout(() => setShowTooltip(false), 2000);
+    }
+  }
+
   const getStatusIcon = () => {
     if (ip.status) return faCheckCircle;
     if (isOverdue) return faExclamationTriangle;
@@ -105,6 +123,12 @@ function Card(ip) {
       transform: 'translateY(-2px)',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
     }
+  };
+
+  const enhancedCardStyle = {
+    ...cardStyle,
+    ...streakEffect,
+    position: 'relative'
   };
 
   const profileImageStyle = {
@@ -170,8 +194,62 @@ function Card(ip) {
     fontWeight: isOverdue || isDueSoon ? '600' : '400'
   };
 
+  const streakIndicator = ip.streak > 0 ? (
+    <div style={{
+      position: 'absolute',
+      top: '-8px',
+      right: '-8px',
+      backgroundColor: ip.streak > 3 ? '#f59e0b' : '#a5b4fc',
+      color: 'white',
+      borderRadius: '50%',
+      width: '24px',
+      height: '24px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: '0.7rem',
+      fontWeight: 'bold',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    }}>
+      {ip.streak}
+    </div>
+  ) : null;
+
+  // Add XP potential tooltip
+  const xpTooltip = showTooltip && typeof showTooltip === 'string' ? (
+    <div style={{
+      position: 'absolute',
+      bottom: '100%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: '#4f46e5',
+      color: 'white',
+      padding: '5px 10px',
+      borderRadius: '6px',
+      fontSize: '0.8rem',
+      whiteSpace: 'nowrap',
+      zIndex: 10,
+      marginBottom: '5px'
+    }}>
+      {showTooltip}
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 0,
+        height: 0,
+        borderLeft: '5px solid transparent',
+        borderRight: '5px solid transparent',
+        borderTop: '5px solid #4f46e5'
+      }}></div>
+    </div>
+  ) : null;
+
   return (
-    <div style={cardStyle}>
+    <div style={enhancedCardStyle}>
+      {streakIndicator}
+      {xpTooltip}
       <FontAwesomeIcon 
         icon={getStatusIcon()} 
         style={iconStyle}
@@ -279,7 +357,7 @@ function Card(ip) {
           onClick={displayinfo} 
           color="#3b82f6" 
           width="36px"
-          tooltip="View details"
+          tooltip="View details (+10 XP possible)"
         />
         <Button 
           icon={faEdit} 
