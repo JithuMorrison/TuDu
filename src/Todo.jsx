@@ -86,7 +86,10 @@ function ToDo() {
         // Check if we should increment streak
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        if (userData.lastCompletedDate === yesterday.toDateString()) {
+        
+        // If tasks were completed yesterday but not today, increment streak
+        if (userData.lastCompletedDate === yesterday.toDateString() && 
+            userData.lastCompletedDate !== today) {
           const newStreak = (userData.streak || 0) + 1;
           resetData.streak = newStreak;
           
@@ -97,7 +100,7 @@ function ToDo() {
             showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
           }
         } else if (userData.lastCompletedDate !== today) {
-          // Reset streak if broken
+          // Reset streak if broken (missed a day)
           resetData.streak = 0;
         }
 
@@ -131,9 +134,14 @@ function ToDo() {
     taskItem.status = isChecked;
     
     if (isChecked && !wasCompleted) {
+      const today = new Date().toDateString();
+      let newCompleted = completedToday + 1;
+      
+      // Always mark as complete and set completion time
+      taskItem.completionTime = new Date().toISOString();
+      
       // Only reward XP if we haven't reached today's goal
-      if (completedToday < todaysGoal) {
-        taskItem.completionTime = new Date().toISOString();
+      if (newCompleted <= todaysGoal) {
         let xpEarned = 50;
         
         if (taskItem.deadline) {
@@ -154,46 +162,66 @@ function ToDo() {
           xpEarned = Math.floor(xpEarned * (1 + streak * 0.1));
         }
         
-        // Update today's completed count
-        const todayCompleted = completedToday + 1;
-        setCompletedToday(todayCompleted);
-        
-        // Mark today as last completed date
-        const today = new Date().toDateString();
-        setLastCompletedDate(today);
-        
-        // Add XP and save
         addXp(xpEarned);
         showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
-        saveUserData({ 
-          lastCompletedDate: today,
-          completedToday: todayCompleted
-        });
-
-        // Check for random bonus
-        if (Math.random() < 0.1) {
-          const surpriseXp = Math.floor(Math.random() * 50) + 25;
-          addXp(surpriseXp);
-          showTemporaryReward(`Surprise Reward! +${surpriseXp} XP`, 'gem');
-        }
       } else {
-        // Still mark as complete but no XP
-        taskItem.completionTime = new Date().toISOString();
         showTemporaryReward('Daily goal reached!', 'info');
+      }
+      
+      // Update completed count and check streak
+      setCompletedToday(newCompleted);
+      
+      // Check if we reached daily goal for the first time today
+      if (newCompleted >= todaysGoal && lastCompletedDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const newStreak = lastCompletedDate === yesterday.toDateString() 
+          ? streak + 1 
+          : 1; // Reset to 1 if streak was broken
+
+        alert(streak+" "+newStreak+" "+lastCompletedDate+ " "+yesterday.toDateString());
+        
+        setStreak(newStreak);
+        setLastCompletedDate(today);
+        
+        saveUserData({
+          streak: newStreak,
+          lastCompletedDate: today,
+          completedToday: newCompleted
+        });
+        
+        // Award streak bonus every 3 days
+        if (newStreak % 3 === 0) {
+          const bonus = Math.floor(newStreak / 3) * 50;
+          addXp(bonus);
+          showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
+        }
+        
+        showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
+      } else {
+        saveUserData({ completedToday: newCompleted });
+      }
+      
+      // Check for random bonus
+      if (Math.random() < 0.1) {
+        const surpriseXp = Math.floor(Math.random() * 50) + 25;
+        addXp(surpriseXp);
+        showTemporaryReward(`Surprise Reward! +${surpriseXp} XP`, 'gem');
       }
     } else if (!isChecked && wasCompleted) {
       // Deduct double XP when unchecking
-      const xpDeduction = 20; // Double the normal 10 XP deduction
+      const xpDeduction = 20;
       setXp(prev => Math.max(0, prev - xpDeduction));
       showTemporaryReward(`Task Unchecked! -${xpDeduction} XP`, 'warning');
       
-      // Decrement completed today if it was counted
+      // Decrement completed today if it was counted and we haven't exceeded goal
       if (taskItem.completionTime) {
         const completionDate = new Date(taskItem.completionTime).toDateString();
         const today = new Date().toDateString();
         
         if (completionDate === today && completedToday > 0) {
-          const newCompleted = completedToday - 1;
+          const newCompleted = Math.min(completedToday - 1, todaysGoal);
           setCompletedToday(newCompleted);
           saveUserData({ completedToday: newCompleted });
         }
