@@ -5,7 +5,7 @@ import Card2 from './Card2';
 import Button from './Button/button';
 import Confetti from 'react-confetti';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faFire, faStar, faMedal } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem } from "@fortawesome/free-solid-svg-icons";
 
 function ToDo() {
   const [task, setTask] = useState([]);
@@ -74,28 +74,38 @@ function ToDo() {
       const now = new Date();
       const today = now.toDateString();
       const lastReset = localStorage.getItem('lastReset');
-  
+      const userData = JSON.parse(localStorage.getItem('userData')) || {};
+
       if (!lastReset || lastReset !== today) {
-        const allCategories = JSON.parse(localStorage.getItem('data')) || [];
-  
-        allCategories.forEach(categoryKey => {
-          const tasks = JSON.parse(localStorage.getItem(categoryKey)) || [];
-  
-          const updatedTasks = tasks.map(task => {
-            if (task.isDaily) {
-              return { ...task, status: false };
-            }
-            return task;
-          });
-  
-          localStorage.setItem(categoryKey, JSON.stringify(updatedTasks));
-        });
-  
-        localStorage.setItem('lastReset', today);
+        // Reset daily progress if it's a new day
+        const resetData = {
+          completedToday: 0,
+          lastReset: today
+        };
+
+        // Check if we should increment streak
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (userData.lastCompletedDate === yesterday.toDateString()) {
+          const newStreak = (userData.streak || 0) + 1;
+          resetData.streak = newStreak;
+          
+          // Award streak bonus every 3 days
+          if (newStreak % 3 === 0) {
+            const bonus = Math.floor(newStreak / 3) * 50;
+            resetData.xp = (userData.xp || 0) + bonus;
+            showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
+          }
+        } else if (userData.lastCompletedDate !== today) {
+          // Reset streak if broken
+          resetData.streak = 0;
+        }
+
+        saveUserData(resetData);
       }
     };
-  
-    checkForNewDay(); // Run once on mount only
+
+    checkForNewDay();
   }, []);
 
   // Modified addItem with XP rewards
@@ -117,48 +127,79 @@ function ToDo() {
   const handleChecked = (index, isChecked) => {
     const updatetask = [...task];
     const taskItem = updatetask[index];
-    
+    const wasCompleted = taskItem.status;
     taskItem.status = isChecked;
     
-    if (isChecked) {
-      taskItem.completionTime = new Date().toISOString();
-      let xpEarned = 50;
-      
-      if (taskItem.deadline) {
-        const deadline = new Date(taskItem.deadline);
-        const now = new Date();
+    if (isChecked && !wasCompleted) {
+      // Only reward XP if we haven't reached today's goal
+      if (completedToday < todaysGoal) {
+        taskItem.completionTime = new Date().toISOString();
+        let xpEarned = 50;
         
-        if (now < deadline) {
-          const earlyFactor = (deadline - now) / (1000 * 60 * 60);
-          xpEarned += Math.min(100, Math.floor(earlyFactor * 5));
+        if (taskItem.deadline) {
+          const deadline = new Date(taskItem.deadline);
+          const now = new Date();
+          
+          if (now < deadline) {
+            const earlyFactor = (deadline - now) / (1000 * 60 * 60);
+            xpEarned += Math.min(100, Math.floor(earlyFactor * 5));
+          }
+        }
+        
+        if (taskItem.isDaily) {
+          xpEarned += 25;
+        }
+        
+        if (streak > 0) {
+          xpEarned = Math.floor(xpEarned * (1 + streak * 0.1));
+        }
+        
+        // Update today's completed count
+        const todayCompleted = completedToday + 1;
+        setCompletedToday(todayCompleted);
+        
+        // Mark today as last completed date
+        const today = new Date().toDateString();
+        setLastCompletedDate(today);
+        
+        // Add XP and save
+        addXp(xpEarned);
+        showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
+        saveUserData({ 
+          lastCompletedDate: today,
+          completedToday: todayCompleted
+        });
+
+        // Check for random bonus
+        if (Math.random() < 0.1) {
+          const surpriseXp = Math.floor(Math.random() * 50) + 25;
+          addXp(surpriseXp);
+          showTemporaryReward(`Surprise Reward! +${surpriseXp} XP`, 'gem');
+        }
+      } else {
+        // Still mark as complete but no XP
+        taskItem.completionTime = new Date().toISOString();
+        showTemporaryReward('Daily goal reached!', 'info');
+      }
+    } else if (!isChecked && wasCompleted) {
+      // Deduct double XP when unchecking
+      const xpDeduction = 20; // Double the normal 10 XP deduction
+      setXp(prev => Math.max(0, prev - xpDeduction));
+      showTemporaryReward(`Task Unchecked! -${xpDeduction} XP`, 'warning');
+      
+      // Decrement completed today if it was counted
+      if (taskItem.completionTime) {
+        const completionDate = new Date(taskItem.completionTime).toDateString();
+        const today = new Date().toDateString();
+        
+        if (completionDate === today && completedToday > 0) {
+          const newCompleted = completedToday - 1;
+          setCompletedToday(newCompleted);
+          saveUserData({ completedToday: newCompleted });
         }
       }
       
-      if (taskItem.isDaily) {
-        xpEarned += 25;
-      }
-      
-      if (streak > 0) {
-        xpEarned = Math.floor(xpEarned * (1 + streak * 0.1));
-      }
-      
-      // Add XP without potential recursion
-      addXp(xpEarned);
-      showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
-      
-      const today = new Date().toDateString();
-      setLastCompletedDate(today);
-      saveUserData({ lastCompletedDate: today });
-      
-      if (Math.random() < 0.1) {
-        const surpriseXp = Math.floor(Math.random() * 50) + 25;
-        // Add surprise XP without recursion
-        setXp(prev => prev + surpriseXp);
-        showTemporaryReward(`Surprise Reward! +${surpriseXp} XP`, 'gem');
-      }
-    } else {
-      // Deduct XP without recursion
-      setXp(prev => Math.max(0, prev - 10));
+      taskItem.completionTime = null;
     }
     
     setTask(updatetask);
@@ -305,57 +346,41 @@ function ToDo() {
     }
   };
 
-  // Modified addXp function to prevent recursion
   const addXp = (amount) => {
-    // Calculate new XP without setting state yet
-    let newXp = xp + amount;
-    let newLevel = level;
-    let xpNeeded = newLevel * 1000;
-    let leveledUp = false;
+    // Only allow XP gain if we haven't reached today's goal
+    // Or if it's a streak/achievement bonus (which we'll track separately)
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    const todayCompleted = userData.completedToday || 0;
+    const todaysGoal = userData.todaysGoal || 3;
+    
+    if (todayCompleted < todaysGoal || amount > 100) { // Large amounts are probably bonuses
+      let newXp = xp + amount;
+      let newLevel = level;
+      let xpNeeded = newLevel * 1000;
+      let leveledUp = false;
 
-    // Check for level up
-    if (newXp >= xpNeeded) {
-      newLevel += 1;
-      newXp -= xpNeeded;
-      leveledUp = true;
-    }
-
-    // Update state once with all changes
-    setXp(newXp);
-    setLevel(newLevel);
-
-    // Handle level up effects
-    if (leveledUp) {
-      setShowLevelUp(true);
-      setTimeout(() => setShowLevelUp(false), 3000);
-      checkLevelAchievements(newLevel);
-      showTemporaryReward(`Level Up! ${newLevel}`, 'medal');
-    }
-
-    // Update today's completed count
-    const todayCompleted = completedToday + 1;
-    setCompletedToday(todayCompleted);
-
-    // Check daily goal
-    if (todayCompleted >= todaysGoal) {
-      const bonus = Math.floor(todayCompleted / todaysGoal) * 100;
-      // Directly add bonus XP without recursion
-      setXp(prevXp => prevXp + bonus);
-      showTemporaryReward(`Daily Goal Bonus! +${bonus} XP`, 'star');
-      
-      if (todayCompleted > todaysGoal * 1.5) {
-        const newGoal = todaysGoal + 1;
-        setTodaysGoal(newGoal);
+      if (newXp >= xpNeeded) {
+        newLevel += 1;
+        newXp -= xpNeeded;
+        leveledUp = true;
       }
-    }
 
-    // Save all changes to localStorage
-    saveUserData({ 
-      xp: newXp,
-      level: newLevel,
-      completedToday: todayCompleted,
-      ...(leveledUp && { level: newLevel })
-    });
+      setXp(newXp);
+      setLevel(newLevel);
+
+      if (leveledUp) {
+        setShowLevelUp(true);
+        setTimeout(() => setShowLevelUp(false), 3000);
+        checkLevelAchievements(newLevel);
+        showTemporaryReward(`Level Up! ${newLevel}`, 'medal');
+      }
+
+      saveUserData({ 
+        xp: newXp,
+        level: newLevel,
+        ...(leveledUp && { level: newLevel })
+      });
+    }
   };
 
   // Check for level-based achievements
