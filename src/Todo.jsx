@@ -86,8 +86,7 @@ function ToDo() {
         
         if (userData.lastCompletedDate === yesterday.toDateString() && 
             userData.lastCompletedDate !== today) {
-          const newStreak = (userData.streak || 0) + 1;
-          resetData.streak = newStreak;
+          const newStreak = (userData.streak || 0);
           
           if (newStreak % 3 === 0) {
             const bonus = Math.floor(newStreak / 3) * 50;
@@ -133,10 +132,9 @@ function ToDo() {
       
       // Always mark as complete and set completion time
       taskItem.completionTime = new Date().toISOString();
-      
-      // Only reward XP if we haven't reached today's goal
-      alert(newCompleted+" "+todaysGoal);
-      if (newCompleted < todaysGoal) {
+
+      if (newCompleted == todaysGoal && lastCompletedDate !== today) {
+        if (newCompleted <= todaysGoal) {
         let xpEarned = 50;
         
         if (taskItem.deadline) {
@@ -158,28 +156,23 @@ function ToDo() {
         }
         
         addXp(xpEarned);
-        showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
-      } else {
-        showTemporaryReward('Daily goal reached!', 'info');
+        if (newCompleted < todaysGoal) {
+          showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
+        }
+        else {
+          showTemporaryReward('Daily goal reached!', 'info');
+        }
       }
-      
-      // Update completed count and check streak
-      setCompletedToday(newCompleted);
-      
-      // Check if we reached daily goal for the first time today
-      if (newCompleted >= todaysGoal && lastCompletedDate !== today) {
+        setCompletedToday(newCompleted);
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         
         const newStreak = lastCompletedDate === yesterday.toDateString() 
           ? streak + 1 
-          : 1; // Reset to 1 if streak was broken
-
-        alert(streak+" "+newStreak+" "+lastCompletedDate+ " "+yesterday.toDateString());
+          : 1;
         
         setStreak(newStreak);
         setLastCompletedDate(today);
-        
         saveUserData({
           streak: newStreak,
           lastCompletedDate: today,
@@ -194,7 +187,7 @@ function ToDo() {
         }
         
         showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
-      } else {
+      } else if( newCompleted < todaysGoal && lastCompletedDate !== today) {
         saveUserData({ completedToday: newCompleted });
       }
       
@@ -206,7 +199,7 @@ function ToDo() {
       }
     } else if (!isChecked && wasCompleted) {
       // Deduct double XP when unchecking
-      const xpDeduction = 20;
+      const xpDeduction = 100;
       setXp(prev => Math.max(0, prev - xpDeduction));
       showTemporaryReward(`Task Unchecked! -${xpDeduction} XP`, 'warning');
       
@@ -215,7 +208,7 @@ function ToDo() {
         const completionDate = new Date(taskItem.completionTime).toDateString();
         const today = new Date().toDateString();
         
-        if (completionDate === today && completedToday > 0) {
+        if (completionDate === today && completedToday > 0 && completedToday <= todaysGoal) {
           const newCompleted = Math.min(completedToday - 1, todaysGoal);
           setCompletedToday(newCompleted);
           saveUserData({ completedToday: newCompleted });
