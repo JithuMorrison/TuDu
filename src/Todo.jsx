@@ -73,34 +73,28 @@ function ToDo() {
     const checkForNewDay = () => {
       const now = new Date();
       const today = now.toDateString();
-      const lastReset = localStorage.getItem('lastReset');
       const userData = JSON.parse(localStorage.getItem('userData')) || {};
 
-      if (!lastReset || lastReset !== today) {
-        // Reset daily progress if it's a new day
+      if (!userData.lastReset || userData.lastReset !== today) {
         const resetData = {
           completedToday: 0,
           lastReset: today
         };
 
-        // Check if we should increment streak
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         
-        // If tasks were completed yesterday but not today, increment streak
         if (userData.lastCompletedDate === yesterday.toDateString() && 
             userData.lastCompletedDate !== today) {
           const newStreak = (userData.streak || 0) + 1;
           resetData.streak = newStreak;
           
-          // Award streak bonus every 3 days
           if (newStreak % 3 === 0) {
             const bonus = Math.floor(newStreak / 3) * 50;
             resetData.xp = (userData.xp || 0) + bonus;
             showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
           }
         } else if (userData.lastCompletedDate !== today) {
-          // Reset streak if broken (missed a day)
           resetData.streak = 0;
         }
 
@@ -141,7 +135,8 @@ function ToDo() {
       taskItem.completionTime = new Date().toISOString();
       
       // Only reward XP if we haven't reached today's goal
-      if (newCompleted <= todaysGoal) {
+      alert(newCompleted+" "+todaysGoal);
+      if (newCompleted < todaysGoal) {
         let xpEarned = 50;
         
         if (taskItem.deadline) {
