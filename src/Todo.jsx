@@ -211,7 +211,14 @@ function ToDo() {
         if (completionDate === today && completedToday > 0 && completedToday <= todaysGoal) {
           const newCompleted = Math.min(completedToday - 1, todaysGoal);
           setCompletedToday(newCompleted);
-          saveUserData({ completedToday: newCompleted });
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          if (completedToday < todaysGoal) {
+            saveUserData({ completedToday: newCompleted });
+          }
+          else {
+            saveUserData({ completedToday: newCompleted, lastCompletedDate: yesterday.toDateString(), streak: streak - 1 });
+          }
         }
       }
       
