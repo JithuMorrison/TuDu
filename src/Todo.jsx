@@ -133,8 +133,7 @@ function ToDo() {
       // Always mark as complete and set completion time
       taskItem.completionTime = new Date().toISOString();
 
-      if (newCompleted == todaysGoal && lastCompletedDate !== today) {
-        if (newCompleted <= todaysGoal) {
+      if (newCompleted <= todaysGoal && lastCompletedDate !== today) {
         let xpEarned = 50;
         
         if (taskItem.deadline) {
@@ -162,7 +161,7 @@ function ToDo() {
         else {
           showTemporaryReward('Daily goal reached!', 'info');
         }
-      }
+      if (newCompleted == todaysGoal) {
         setCompletedToday(newCompleted);
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -187,8 +186,11 @@ function ToDo() {
         }
         
         showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
-      } else if( newCompleted < todaysGoal && lastCompletedDate !== today) {
+      }
+      else{
+        setCompletedToday(newCompleted);
         saveUserData({ completedToday: newCompleted });
+      }
       }
       
       // Check for random bonus
