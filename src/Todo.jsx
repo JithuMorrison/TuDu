@@ -1054,6 +1054,54 @@ function ToDo() {
           )}
         </div>
 
+        {isMobileView && (
+          <div style={{ borderTop: '1px solid #e5e7eb' }}>
+              <h3 style={{ marginBottom: '10px' }}>Your Achievements</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {achievements.map((ach, i) => (
+                  <div key={i} style={{
+                    backgroundColor: '#e0e7ff',
+                    color: '#4f46e5',
+                    padding: '5px 10px',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
+                    {ach}
+                  </div>
+                ))}
+                {achievements.length === 0 && (
+                  <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                    Complete tasks to unlock achievements!
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginTop: '20px' }}>
+                <h3 style={{ marginBottom: '10px' }}>Today's Progress</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ flex: 1, backgroundColor: '#e5e7eb', borderRadius: '10px', height: '10px' }}>
+                    <div style={{ 
+                      width: `${(completedToday / todaysGoal) * 100}%`, 
+                      backgroundColor: completedToday >= todaysGoal ? '#10b981' : '#4f46e5',
+                      height: '100%',
+                      borderRadius: '10px'
+                    }}></div>
+                  </div>
+                  <span>{completedToday}/{todaysGoal} tasks</span>
+                </div>
+                {completedToday >= todaysGoal && (
+                  <div style={{ color: '#10b981', marginTop: '5px', fontSize: '0.9rem' }}>
+                    Daily goal completed! 🎉
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         {/* Mobile Dialog */}
         {isMobileView && show !== -1 && (
           <div style={dialogStyle}>
