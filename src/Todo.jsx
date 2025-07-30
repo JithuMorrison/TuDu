@@ -220,6 +220,8 @@ function ToDo() {
           }
           else {
             saveUserData({ completedToday: newCompleted, lastCompletedDate: yesterday.toDateString(), streak: streak - 1 });
+            setStreak(prev => Math.max(0, prev - 1));
+            setLastCompletedDate(yesterday.toDateString());
           }
         }
       }
