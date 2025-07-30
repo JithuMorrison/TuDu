@@ -74,6 +74,26 @@ function ToDo() {
       const now = new Date();
       const today = now.toDateString();
       const userData = JSON.parse(localStorage.getItem('userData')) || {};
+      const lastReset = localStorage.getItem('lastReset');
+
+      if (!lastReset || lastReset !== today) {
+        const allCategories = JSON.parse(localStorage.getItem('data')) || [];
+  
+        allCategories.forEach(categoryKey => {
+          const tasks = JSON.parse(localStorage.getItem(categoryKey)) || [];
+  
+          const updatedTasks = tasks.map(task => {
+            if (task.isDaily) {
+              return { ...task, status: false };
+            }
+            return task;
+          });
+  
+          localStorage.setItem(categoryKey, JSON.stringify(updatedTasks));
+        });
+
+        localStorage.setItem('lastReset', today);
+        }
 
       if (!userData.lastReset || userData.lastReset !== today) {
         const resetData = {
