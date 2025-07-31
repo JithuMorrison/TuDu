@@ -77,7 +77,9 @@ function Card(ip) {
 
   const streakEffect = ip.streak > 0 ? {
     boxShadow: `0 0 10px ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
-    border: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`
+    borderTop: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
+    borderRight: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
+    borderBottom: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
   } : {};
 
   // Enhanced handleChecked with streak consideration
