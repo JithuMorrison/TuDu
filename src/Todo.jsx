@@ -543,12 +543,15 @@ function ToDo() {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
     padding: '24px',
+    paddingTop: '0px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
     width: isMobileView ? '89%' : '100%',
     maxHeight: isMobileView ? 'auto' : 'calc(100vh - 180px)',
     overflowY: 'auto',
     marginLeft: isMobileView? '0px' : '50px',
-    marginTop: isMobileView? '-30px' : '0px'
+    marginTop: isMobileView? '-30px' : '0px',
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none' // IE 10+
   };
 
   const detailPaneStyle = {
@@ -957,17 +960,22 @@ function ToDo() {
             top: 0,
             backgroundColor: 'white',
             paddingBottom: '16px',
+            marginLeft: '-24px',
+            marginRight: '-24px',
+            paddingTop: '16px',
             zIndex: 10
           }}>
             <h2 style={{ 
               margin: 0, 
               fontSize: '1.25rem', 
               color: '#2d3748',
-              fontWeight: '600'
+              fontWeight: '600',
+              paddingLeft: '24px'
             }}>{fetcho} Tasks</h2>
             <div style={{ 
               color: '#64748b',
-              fontSize: '14px'
+              fontSize: '14px',
+              paddingRight: '24px'
             }}>
               {task.length} {task.length === 1 ? 'task' : 'tasks'}
             </div>
