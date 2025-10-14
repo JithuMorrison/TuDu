@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFire, faTrophy, faStar, faMedal, faGem } from '@fortawesome/free-solid-svg-icons';
+import { faFire, faTrophy, faStar, faMedal, faGem, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 const LevelingSystem = ({ userData }) => {
   const containerStyle = {
