@@ -1,11 +1,141 @@
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGripVertical, faCheckCircle, faCircle } from '@fortawesome/free-solid-svg-icons';
 
+// Sortable Task Component
+const SortableTask = ({ task, onToggle, isTimeline = false, dayId = null }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const taskItemStyle = {
+    padding: '0.75rem',
+    margin: '0.5rem 0',
+    background: isDragging ? '#f0f9ff' : 'white',
+    border: `2px solid ${isDragging ? '#4f46e5' : '#e2e8f0'}`,
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    cursor: isDragging ? 'grabbing' : 'grab',
+    transition: 'all 0.2s ease',
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  const completedTaskStyle = {
+    opacity: 0.7,
+    textDecoration: 'line-through',
+    background: '#f0f9ff'
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...taskItemStyle,
+        ...(task.completed && completedTaskStyle),
+        ...style
+      }}
+      {...attributes}
+      {...listeners}
+    >
+      <div>
+        <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: '500' }}>{task.content}</div>
+        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{task.time}</div>
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(task.id, dayId);
+        }}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: task.completed ? '#10b981' : '#9ca3af'
+        }}
+      >
+        <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
+      </button>
+    </div>
+  );
+};
+
+// Task component for DragOverlay (non-sortable version)
+const Task = ({ task }) => {
+  const taskItemStyle = {
+    padding: '0.75rem',
+    margin: '0.5rem 0',
+    background: '#f0f9ff',
+    border: '2px solid #4f46e5',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    cursor: 'grabbing',
+  };
+
+  const completedTaskStyle = {
+    opacity: 0.7,
+    textDecoration: 'line-through',
+    background: '#f0f9ff'
+  };
+
+  return (
+    <div style={{ ...taskItemStyle, ...(task.completed && completedTaskStyle) }}>
+      <div>
+        <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: '500' }}>{task.content}</div>
+        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{task.time}</div>
+      </div>
+      <button
+        style={{
+          background: 'none',
+          border: 'none',
+          color: task.completed ? '#10b981' : '#9ca3af'
+        }}
+      >
+        <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
+      </button>
+    </div>
+  );
+};
+
 const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
   const [dailyTasks, setDailyTasks] = useState(() => {
-    // Initialize with some sample daily tasks or use existing tasks
     const saved = localStorage.getItem('dailyTasks');
     return saved ? JSON.parse(saved) : [
       { id: '1', content: 'Morning routine', completed: false, time: '08:00' },
@@ -30,6 +160,16 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     const saved = localStorage.getItem('dayTasks');
     return saved ? JSON.parse(saved) : {};
   });
+
+  const [activeTask, setActiveTask] = useState(null);
+  const [activeContainer, setActiveContainer] = useState(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const containerStyle = {
     padding: '2rem',
@@ -89,47 +229,22 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     fontWeight: 'bold'
   };
 
-  const taskItemStyle = (isDragging) => ({
-    padding: '0.75rem',
-    margin: '0.5rem 0',
-    background: isDragging ? '#f0f9ff' : 'white',
-    border: `2px solid ${isDragging ? '#4f46e5' : '#e2e8f0'}`,
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    cursor: 'grab',
-    transition: 'all 0.2s ease'
-  });
-
-  const completedTaskStyle = {
-    opacity: 0.7,
-    textDecoration: 'line-through',
-    background: '#f0f9ff'
-  };
-
-  const timeSlotStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0.75rem',
-    margin: '0.5rem 0',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    background: 'white'
-  };
-
-  const timeLabelStyle = {
-    fontWeight: 'bold',
-    color: '#4f46e5',
-    minWidth: '60px'
-  };
-
   const statsStyle = {
     background: 'white',
     borderRadius: '12px',
     padding: '1.5rem',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
     marginBottom: '1rem'
+  };
+
+  const dropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: '0.5',
+        },
+      },
+    }),
   };
 
   // Save to localStorage whenever tasks change
@@ -141,52 +256,118 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     localStorage.setItem('dayTasks', JSON.stringify(dayTasks));
   }, [dayTasks]);
 
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
+  const findTask = (id) => {
+    // Check timeline tasks
+    const timelineTask = dailyTasks.find(task => task.id === id);
+    if (timelineTask) return { task: timelineTask, container: 'timeline' };
 
-    const { source, destination } = result;
+    // Check day tasks
+    for (const dayId in dayTasks) {
+      const task = dayTasks[dayId].find(task => task.id === id);
+      if (task) return { task, container: `day-${dayId}` };
+    }
 
-    // Moving within the same list (timeline)
-    if (source.droppableId === 'timeline' && destination.droppableId === 'timeline') {
-      const items = Array.from(dailyTasks);
-      const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
-      setDailyTasks(items);
+    return null;
+  };
+
+  const handleDragStart = (event) => {
+    const { active } = event;
+    const taskInfo = findTask(active.id);
+    
+    if (taskInfo) {
+      setActiveTask(taskInfo.task);
+      setActiveContainer(taskInfo.container);
+    }
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    setActiveTask(null);
+    setActiveContainer(null);
+
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    // Find the containers
+    const activeTaskInfo = findTask(activeId);
+    const overTaskInfo = findTask(overId);
+
+    if (!activeTaskInfo || !overTaskInfo) return;
+
+    const activeContainer = activeTaskInfo.container;
+    const overContainer = overTaskInfo.container;
+
+    // Moving within the same container (timeline)
+    if (activeContainer === 'timeline' && overContainer === 'timeline') {
+      const oldIndex = dailyTasks.findIndex(task => task.id === activeId);
+      const newIndex = dailyTasks.findIndex(task => task.id === overId);
+
+      if (oldIndex !== newIndex) {
+        setDailyTasks(items => arrayMove(items, oldIndex, newIndex));
+      }
     }
     // Moving from timeline to a day
-    else if (source.droppableId === 'timeline' && destination.droppableId.startsWith('day-')) {
-      const dayId = destination.droppableId.replace('day-', '');
-      const timelineItems = Array.from(dailyTasks);
-      const [movedItem] = timelineItems.splice(source.index, 1);
+    else if (activeContainer === 'timeline' && overContainer.startsWith('day-')) {
+      const dayId = overContainer.replace('day-', '');
+      const taskToMove = activeTaskInfo.task;
+
+      // Remove from timeline
+      setDailyTasks(items => items.filter(task => task.id !== activeId));
       
-      const dayItems = Array.from(dayTasks[dayId] || []);
-      dayItems.splice(destination.index, 0, {
-        ...movedItem,
-        completed: false
+      // Add to day
+      setDayTasks(prev => {
+        const dayItems = prev[dayId] || [];
+        const newTask = { ...taskToMove, id: `${activeId}-${Date.now()}`, completed: false };
+        
+        // Find position to insert
+        const overIndex = dayItems.findIndex(task => task.id === overId);
+        const newItems = [...dayItems];
+        newItems.splice(overIndex, 0, newTask);
+
+        return { ...prev, [dayId]: newItems };
       });
-
-      setDailyTasks(timelineItems);
-      setDayTasks(prev => ({
-        ...prev,
-        [dayId]: dayItems
-      }));
     }
-    // Moving between days
-    else if (source.droppableId.startsWith('day-') && destination.droppableId.startsWith('day-')) {
-      const sourceDayId = source.droppableId.replace('day-', '');
-      const destDayId = destination.droppableId.replace('day-', '');
+    // Moving within the same day
+    else if (activeContainer.startsWith('day-') && overContainer === activeContainer) {
+      const dayId = activeContainer.replace('day-', '');
+      const dayItems = dayTasks[dayId] || [];
+      
+      const oldIndex = dayItems.findIndex(task => task.id === activeId);
+      const newIndex = dayItems.findIndex(task => task.id === overId);
 
-      const sourceItems = Array.from(dayTasks[sourceDayId] || []);
-      const [movedItem] = sourceItems.splice(source.index, 1);
+      if (oldIndex !== newIndex) {
+        setDayTasks(prev => ({
+          ...prev,
+          [dayId]: arrayMove(dayItems, oldIndex, newIndex)
+        }));
+      }
+    }
+    // Moving between different days
+    else if (activeContainer.startsWith('day-') && overContainer.startsWith('day-') && activeContainer !== overContainer) {
+      const sourceDayId = activeContainer.replace('day-', '');
+      const destDayId = overContainer.replace('day-', '');
+      const taskToMove = activeTaskInfo.task;
 
-      const destItems = Array.from(dayTasks[destDayId] || []);
-      destItems.splice(destination.index, 0, movedItem);
+      // Remove from source day
+      setDayTasks(prev => {
+        const sourceItems = prev[sourceDayId] || [];
+        const updatedSource = sourceItems.filter(task => task.id !== activeId);
+        
+        // Add to destination day
+        const destItems = prev[destDayId] || [];
+        const overIndex = destItems.findIndex(task => task.id === overId);
+        const newDestItems = [...destItems];
+        newDestItems.splice(overIndex, 0, { ...taskToMove, id: `${activeId}-${Date.now()}` });
 
-      setDayTasks(prev => ({
-        ...prev,
-        [sourceDayId]: sourceItems,
-        [destDayId]: destItems
-      }));
+        return {
+          ...prev,
+          [sourceDayId]: updatedSource,
+          [destDayId]: newDestItems
+        };
+      });
     }
   };
 
@@ -199,10 +380,8 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
           item.id === taskId ? { ...item, completed: !item.completed } : item
         );
         
-        // Award XP for completion
         const task = dayItems.find(item => item.id === taskId);
         if (task && !task.completed) {
-          // This would integrate with your XP system
           console.log('Task completed! Would award XP here');
         }
 
@@ -230,6 +409,13 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     return timelineTotal + daysTotal;
   };
 
+  // Get all task IDs for SortableContext
+  const getAllTaskIds = () => {
+    const timelineIds = dailyTasks.map(task => task.id);
+    const dayIds = Object.values(dayTasks).flat().map(task => task.id);
+    return [...timelineIds, ...dayIds];
+  };
+
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
@@ -255,7 +441,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
             borderRadius: '20px',
             fontWeight: 'bold'
           }}>
-            Level {userData.level}
+            Level {userData?.level || 1}
           </div>
         </div>
         <div style={{ 
@@ -274,120 +460,76 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
         </div>
       </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div style={layoutStyle}>
-          {/* Timeline Section */}
-          <div style={timelineStyle}>
-            <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Daily Timeline</h3>
-            <Droppable droppableId="timeline">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {dailyTasks.map((task, index) => (
-                    <Draggable key={task.id} draggableId={task.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          style={{
-                            ...taskItemStyle(snapshot.isDragging),
-                            ...(task.completed && completedTaskStyle),
-                            ...provided.draggableProps.style
-                          }}
-                        >
-                          <div {...provided.dragHandleProps}>
-                            <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: '500' }}>{task.content}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{task.time}</div>
-                          </div>
-                          <button
-                            onClick={() => toggleTaskCompletion(task.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              color: task.completed ? '#10b981' : '#9ca3af'
-                            }}
-                          >
-                            <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
-                          </button>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </div>
-
-          {/* Days Grid */}
-          <div style={daysGridStyle}>
-            {days.map(day => (
-              <div key={day.id} style={dayColumnStyle}>
-                <div style={dayHeaderStyle}>{day.name}</div>
-                <Droppable droppableId={`day-${day.id}`}>
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      style={{ minHeight: '300px' }}
-                    >
-                      {(dayTasks[day.id] || []).map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={{
-                                ...taskItemStyle(snapshot.isDragging),
-                                ...(task.completed && completedTaskStyle),
-                                ...provided.draggableProps.style
-                              }}
-                            >
-                              <div {...provided.dragHandleProps}>
-                                <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '500' }}>{task.content}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{task.time}</div>
-                              </div>
-                              <button
-                                onClick={() => toggleTaskCompletion(task.id, day.id)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: task.completed ? '#10b981' : '#9ca3af'
-                                }}
-                              >
-                                <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
-                              </button>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                      {(dayTasks[day.id] || []).length === 0 && (
-                        <div style={{ 
-                          textAlign: 'center', 
-                          color: '#9ca3af', 
-                          padding: '2rem',
-                          border: '2px dashed #e2e8f0',
-                          borderRadius: '8px'
-                        }}>
-                          Drop tasks here
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={getAllTaskIds()} strategy={verticalListSortingStrategy}>
+          <div style={layoutStyle}>
+            {/* Timeline Section */}
+            <div style={timelineStyle}>
+              <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Daily Timeline</h3>
+              <div style={{ minHeight: '200px' }}>
+                {dailyTasks.map((task) => (
+                  <SortableTask
+                    key={task.id}
+                    task={task}
+                    onToggle={toggleTaskCompletion}
+                    isTimeline={true}
+                  />
+                ))}
+                {dailyTasks.length === 0 && (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    color: '#9ca3af', 
+                    padding: '2rem',
+                    border: '2px dashed #e2e8f0',
+                    borderRadius: '8px'
+                  }}>
+                    No tasks in timeline
+                  </div>
+                )}
               </div>
-            ))}
+            </div>
+
+            {/* Days Grid */}
+            <div style={daysGridStyle}>
+              {days.map(day => (
+                <div key={day.id} style={dayColumnStyle}>
+                  <div style={dayHeaderStyle}>{day.name}</div>
+                  <div style={{ minHeight: '300px' }}>
+                    {(dayTasks[day.id] || []).map((task) => (
+                      <SortableTask
+                        key={task.id}
+                        task={task}
+                        onToggle={toggleTaskCompletion}
+                        dayId={day.id}
+                      />
+                    ))}
+                    {(dayTasks[day.id] || []).length === 0 && (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        color: '#9ca3af', 
+                        padding: '2rem',
+                        border: '2px dashed #e2e8f0',
+                        borderRadius: '8px'
+                      }}>
+                        Drop tasks here
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </DragDropContext>
+        </SortableContext>
+
+        <DragOverlay dropAnimation={dropAnimation}>
+          {activeTask ? <Task task={activeTask} /> : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 };
