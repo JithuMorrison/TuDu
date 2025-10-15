@@ -501,7 +501,6 @@ function ToDo() {
 
   const navButtonStyle = (isActive) => ({
     padding: '0.75rem 1.5rem',
-    border: 'none',
     borderRadius: '8px',
     background: isActive ? '#4f46e5' : '#f8fafc',
     color: isActive ? 'white' : '#64748b',
