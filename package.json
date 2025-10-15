@@ -20,10 +20,8 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "gh-pages": "^6.2.0",
     "react": "^18.3.1",
-    "react-beautiful-dnd": "^13.1.1",
     "react-confetti": "^6.4.0",
-    "react-dom": "^18.3.1",
-    "uuid": "^13.0.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
