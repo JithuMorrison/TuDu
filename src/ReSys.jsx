@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-  defaultDropAnimationSideEffects,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -24,11 +24,13 @@ import {
   faCircle, 
   faPlus,
   faTrash,
-  faEdit
+  faEdit,
+  faChevronLeft,
+  faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 
-// Sortable Task Component
-const SortableTask = ({ task, onToggle, onEdit, onDelete, dayId = null }) => {
+// Sortable Task Component for My Tasks
+const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
   const {
     attributes,
     listeners,
@@ -49,9 +51,6 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, dayId = null }) => {
     background: isDragging ? '#f0f9ff' : 'white',
     border: `2px solid ${isDragging ? '#4f46e5' : '#e2e8f0'}`,
     borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
     cursor: isDragging ? 'grabbing' : 'grab',
     transition: 'all 0.2s ease',
     opacity: isDragging ? 0.8 : 1,
@@ -72,33 +71,156 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, dayId = null }) => {
         ...style
       }}
     >
-      <div {...attributes} {...listeners}>
-        <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>{task.content}</div>
-        <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
-          <span>⏰ {task.time}</span>
-          {task.duration && <span>⏳ {task.duration}</span>}
-          {task.priority && <span>🎯 {task.priority}</span>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+        <div {...attributes} {...listeners}>
+          <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>{task.content}</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
+            {task.duration && <span>⏳ {task.duration}</span>}
+            {task.priority && <span>🎯 {task.priority}</span>}
+          </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onEdit(task, dayId);
+            onEdit(task, null);
           }}
           style={{
-            background: 'none',
+            background: '#f3f4f6',
             border: 'none',
             cursor: 'pointer',
             color: '#6b7280',
-            fontSize: '0.8rem'
+            fontSize: '0.75rem',
+            padding: '0.35rem 0.6rem',
+            borderRadius: '4px',
+            fontWeight: '500'
           }}
           title="Edit task"
         >
-          <FontAwesomeIcon icon={faEdit} />
+          <FontAwesomeIcon icon={faEdit} style={{ marginRight: '0.25rem' }} />
+          Edit
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id, null);
+          }}
+          style={{
+            background: '#fee2e2',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#ef4444',
+            fontSize: '0.75rem',
+            padding: '0.35rem 0.6rem',
+            borderRadius: '4px',
+            fontWeight: '500'
+          }}
+          title="Delete task"
+        >
+          <FontAwesomeIcon icon={faTrash} style={{ marginRight: '0.25rem' }} />
+          Delete
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(task.id, null);
+          }}
+          style={{
+            background: task.completed ? '#d1fae5' : '#f3f4f6',
+            border: 'none',
+            cursor: 'pointer',
+            color: task.completed ? '#10b981' : '#6b7280',
+            fontSize: '0.75rem',
+            padding: '0.35rem 0.6rem',
+            borderRadius: '4px',
+            fontWeight: '500'
+          }}
+          title={task.completed ? 'Mark incomplete' : 'Mark complete'}
+        >
+          <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} style={{ marginRight: '0.25rem' }} />
+          {task.completed ? 'Done' : 'Mark'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Timeline Task Component
+const TimelineTask = ({ task, onToggle, onEdit, onDelete, dayId }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const taskItemStyle = {
+    padding: '0.5rem',
+    margin: '0.25rem 0',
+    background: isDragging ? '#f0f9ff' : task.completed ? '#f0fdf4' : 'white',
+    border: `2px solid ${isDragging ? '#4f46e5' : task.completed ? '#86efac' : '#e2e8f0'}`,
+    borderRadius: '6px',
+    cursor: isDragging ? 'grabbing' : 'grab',
+    transition: 'all 0.2s ease',
+    opacity: isDragging ? 0.8 : task.completed ? 0.7 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...taskItemStyle,
+        ...style
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+        <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '0.25rem' }}>
+          <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af', fontSize: '0.7rem' }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ 
+            fontWeight: '500', 
+            fontSize: '0.85rem',
+            textDecoration: task.completed ? 'line-through' : 'none',
+            wordBreak: 'break-word'
+          }}>
+            {task.content}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem' }}>
+            {task.duration && <span>⏳ {task.duration}</span>}
+            {task.priority && <span> • 🎯 {task.priority}</span>}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(task.id, dayId);
+          }}
+          style={{
+            background: task.completed ? '#10b981' : '#e5e7eb',
+            border: 'none',
+            cursor: 'pointer',
+            color: task.completed ? 'white' : '#6b7280',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: '500'
+          }}
+        >
+          {task.completed ? '✓ Done' : 'Mark Done'}
         </button>
         <button
           onClick={(e) => {
@@ -110,28 +232,64 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, dayId = null }) => {
             border: 'none',
             cursor: 'pointer',
             color: '#ef4444',
-            fontSize: '0.8rem'
+            fontSize: '0.75rem',
+            padding: '0.25rem'
           }}
           title="Delete task"
         >
           <FontAwesomeIcon icon={faTrash} />
         </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(task.id, dayId);
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: task.completed ? '#10b981' : '#9ca3af'
-          }}
-          title={task.completed ? 'Mark incomplete' : 'Mark complete'}
-        >
-          <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
-        </button>
       </div>
+    </div>
+  );
+};
+
+// Drop Zone Component for Timeline Slots
+const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete }) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `timeline-${dayId}-${time}`,
+  });
+
+  const slotStyle = {
+    minHeight: '60px',
+    padding: '0.5rem',
+    background: isOver ? '#f0f9ff' : 'transparent',
+    border: isOver ? '2px dashed #4f46e5' : '2px dashed transparent',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+  };
+
+  return (
+    <div ref={setNodeRef} style={slotStyle}>
+      {tasks.map(task => (
+        <TimelineTask
+          key={task.id}
+          task={task}
+          onToggle={onToggle}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          dayId={dayId}
+        />
+      ))}
+    </div>
+  );
+};
+
+// My Tasks Drop Zone
+const MyTasksDropZone = ({ isOver }) => {
+  return (
+    <div style={{
+      padding: '0.75rem',
+      border: isOver ? '3px dashed #4f46e5' : '2px dashed #e2e8f0',
+      borderRadius: '8px',
+      background: isOver ? '#f0f9ff' : '#fafafa',
+      textAlign: 'center',
+      color: isOver ? '#4f46e5' : '#9ca3af',
+      fontSize: '0.85rem',
+      transition: 'all 0.2s ease',
+      fontWeight: isOver ? '600' : '400'
+    }}>
+      {isOver ? '📥 Drop here!' : '👆 Drag timeline tasks here'}
     </div>
   );
 };
@@ -140,7 +298,6 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, dayId = null }) => {
 const Task = ({ task }) => {
   const taskItemStyle = {
     padding: '0.75rem',
-    margin: '0.5rem 0',
     background: '#f0f9ff',
     border: '2px solid #4f46e5',
     borderRadius: '8px',
@@ -148,27 +305,17 @@ const Task = ({ task }) => {
     alignItems: 'center',
     gap: '0.75rem',
     cursor: 'grabbing',
-    transform: 'rotate(5deg)',
+    transform: 'rotate(3deg)',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
   };
 
   return (
     <div style={taskItemStyle}>
-      <div>
-        <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
-      </div>
+      <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>{task.content}</div>
-        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>⏰ {task.time}</div>
+        {task.time && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>⏰ {task.time}</div>}
       </div>
-      <button
-        style={{
-          background: 'none',
-          border: 'none',
-          color: task.completed ? '#10b981' : '#9ca3af'
-        }}
-      >
-        <FontAwesomeIcon icon={task.completed ? faCheckCircle : faCircle} />
-      </button>
     </div>
   );
 };
@@ -177,7 +324,6 @@ const Task = ({ task }) => {
 const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
   const [formData, setFormData] = useState({
     content: task?.content || '',
-    time: task?.time || '09:00',
     duration: task?.duration || '30m',
     priority: task?.priority || 'Medium',
     description: task?.description || ''
@@ -191,7 +337,6 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
       onSave(formData, dayId);
       setFormData({
         content: '',
-        time: '09:00',
         duration: '30m',
         priority: 'Medium',
         description: ''
@@ -248,23 +393,6 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Time
-              </label>
-              <input
-                type="time"
-                value={formData.time}
-                onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-            </div>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                 Duration
               </label>
               <select
@@ -286,27 +414,27 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
                 <option value="3h">3+ hours</option>
               </select>
             </div>
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Priority
-            </label>
-            <select
-              value={formData.priority}
-              onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px'
-              }}
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
-            </select>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Priority
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px'
+                }}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+            </div>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
@@ -364,7 +492,7 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
   );
 };
 
-const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
+const RearrangePage = ({ userData }) => {
   const [dailyTasks, setDailyTasks] = useState(() => {
     const saved = localStorage.getItem('dailyTasks');
     return saved ? JSON.parse(saved) : [];
@@ -389,6 +517,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editingDayId, setEditingDayId] = useState(null);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -396,6 +525,12 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Time slots for the timeline (24 hours)
+  const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, '0');
+    return `${hour}:00`;
+  });
 
   // Generate unique ID
   const generateId = () => `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -437,6 +572,61 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     const activeId = active.id;
     const overId = over.id;
 
+    // Check if dropping on a timeline slot
+    if (overId.startsWith('timeline-')) {
+      const parts = overId.split('-');
+      const dayId = parts[1];
+      const timeSlot = parts.slice(2).join('-');
+      
+      const activeTaskInfo = findTask(activeId);
+      
+      if (!activeTaskInfo) return;
+
+      const taskToMove = { ...activeTaskInfo.task, time: timeSlot };
+
+      // Remove from source
+      if (activeTaskInfo.container === 'timeline') {
+        setDailyTasks(items => items.filter(task => task.id !== activeId));
+      } else if (activeTaskInfo.container.startsWith('day-')) {
+        const sourceDayId = activeTaskInfo.container.replace('day-', '');
+        setDayTasks(prev => ({
+          ...prev,
+          [sourceDayId]: (prev[sourceDayId] || []).filter(task => task.id !== activeId)
+        }));
+      }
+
+      // Add to target day
+      setDayTasks(prev => ({
+        ...prev,
+        [dayId]: [...(prev[dayId] || []), { ...taskToMove, id: generateId() }].sort((a, b) => 
+          a.time.localeCompare(b.time)
+        )
+      }));
+      return;
+    }
+
+    // Check if dropping back to My Tasks
+    if (overId === 'my-tasks-drop-zone') {
+      const activeTaskInfo = findTask(activeId);
+      if (!activeTaskInfo) return;
+
+      const taskToMove = { ...activeTaskInfo.task };
+      delete taskToMove.time; // Remove time when moving back
+
+      // Remove from source day if it's from a day
+      if (activeTaskInfo.container.startsWith('day-')) {
+        const sourceDayId = activeTaskInfo.container.replace('day-', '');
+        setDayTasks(prev => ({
+          ...prev,
+          [sourceDayId]: (prev[sourceDayId] || []).filter(task => task.id !== activeId)
+        }));
+        
+        // Add to My Tasks
+        setDailyTasks(prev => [...prev, { ...taskToMove, id: generateId() }]);
+      }
+      return;
+    }
+
     const activeTaskInfo = findTask(activeId);
     const overTaskInfo = findTask(overId);
 
@@ -445,7 +635,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     const activeContainer = activeTaskInfo.container;
     const overContainer = overTaskInfo.container;
 
-    // Moving within timeline
+    // Moving within timeline (My Tasks)
     if (activeContainer === 'timeline' && overContainer === 'timeline') {
       const oldIndex = dailyTasks.findIndex(task => task.id === activeId);
       const newIndex = dailyTasks.findIndex(task => task.id === overId);
@@ -453,67 +643,12 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
         setDailyTasks(items => arrayMove(items, oldIndex, newIndex));
       }
     }
-    // Moving from timeline to day
-    else if (activeContainer === 'timeline' && overContainer.startsWith('day-')) {
-      const dayId = overContainer.replace('day-', '');
-      const taskToMove = activeTaskInfo.task;
-
-      setDailyTasks(items => items.filter(task => task.id !== activeId));
-      setDayTasks(prev => {
-        const dayItems = prev[dayId] || [];
-        const overIndex = dayItems.findIndex(task => task.id === overId);
-        const newItems = [...dayItems];
-        newItems.splice(overIndex >= 0 ? overIndex : dayItems.length, 0, {
-          ...taskToMove,
-          id: generateId()
-        });
-        return { ...prev, [dayId]: newItems };
-      });
-    }
-    // Moving within same day
-    else if (activeContainer.startsWith('day-') && overContainer === activeContainer) {
-      const dayId = activeContainer.replace('day-', '');
-      const dayItems = dayTasks[dayId] || [];
-      const oldIndex = dayItems.findIndex(task => task.id === activeId);
-      const newIndex = dayItems.findIndex(task => task.id === overId);
-      if (oldIndex !== newIndex) {
-        setDayTasks(prev => ({
-          ...prev,
-          [dayId]: arrayMove(dayItems, oldIndex, newIndex)
-        }));
-      }
-    }
-    // Moving between different days
-    else if (activeContainer.startsWith('day-') && overContainer.startsWith('day-')) {
-      const sourceDayId = activeContainer.replace('day-', '');
-      const destDayId = overContainer.replace('day-', '');
-      const taskToMove = activeTaskInfo.task;
-
-      setDayTasks(prev => {
-        const sourceItems = prev[sourceDayId] || [];
-        const destItems = prev[destDayId] || [];
-        const overIndex = destItems.findIndex(task => task.id === overId);
-
-        const newDestItems = [...destItems];
-        newDestItems.splice(overIndex >= 0 ? overIndex : destItems.length, 0, {
-          ...taskToMove,
-          id: generateId()
-        });
-
-        return {
-          ...prev,
-          [sourceDayId]: sourceItems.filter(task => task.id !== activeId),
-          [destDayId]: newDestItems
-        };
-      });
-    }
   };
 
   const createTask = (taskData, dayId = null) => {
     const newTask = {
       id: generateId(),
       content: taskData.content,
-      time: taskData.time,
       duration: taskData.duration,
       priority: taskData.priority,
       description: taskData.description,
@@ -522,6 +657,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     };
 
     if (dayId) {
+      // For day tasks, we don't set a time until they're dragged to timeline
       setDayTasks(prev => ({
         ...prev,
         [dayId]: [...(prev[dayId] || []), newTask]
@@ -530,6 +666,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
       setDailyTasks(prev => [...prev, newTask]);
     }
     setShowTaskForm(false);
+    setEditingDayId(null);
   };
 
   const updateTask = (taskData, dayId = null) => {
@@ -605,11 +742,34 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     return [...timelineIds, ...dayIds];
   };
 
+  const getTasksForTimeSlot = (dayId, time) => {
+    return (dayTasks[dayId] || []).filter(task => task.time === time);
+  };
+
+  const nextDays = () => {
+    if (currentDayIndex < days.length - 2) {
+      setCurrentDayIndex(prev => prev + 2);
+    }
+  };
+
+  const prevDays = () => {
+    if (currentDayIndex > 0) {
+      setCurrentDayIndex(prev => prev - 2);
+    }
+  };
+
+  const visibleDays = days.slice(currentDayIndex, currentDayIndex + 2);
+
+  const { setNodeRef: setMyTasksRef, isOver: isOverMyTasks } = useDroppable({
+    id: 'my-tasks-drop-zone',
+  });
+
   const containerStyle = {
     padding: '2rem',
-    maxWidth: '1400px',
+    maxWidth: '1600px',
     margin: '0 auto',
-    minHeight: '100vh'
+    minHeight: '100vh',
+    background: '#f8fafc'
   };
 
   const headerStyle = {
@@ -626,46 +786,28 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
 
   const layoutStyle = {
     display: 'grid',
-    gridTemplateColumns: '350px 1fr',
+    gridTemplateColumns: '320px 1fr',
     gap: '2rem',
     minHeight: '600px'
   };
 
-  const timelineStyle = {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '1.5rem',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
-    display: 'flex',
-    flexDirection: 'column'
-  };
-
-  const daysGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '1.5rem',
-    alignContent: 'start'
-  };
-
-  const dayColumnStyle = {
+  const myTasksStyle = {
     background: 'white',
     borderRadius: '12px',
     padding: '1.5rem',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
     display: 'flex',
     flexDirection: 'column',
-    minHeight: '500px'
+    maxHeight: 'calc(100vh - 250px)',
+    position: 'sticky',
+    top: '20px'
   };
 
-  const dayHeaderStyle = {
-    textAlign: 'center',
-    padding: '0.75rem',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    borderRadius: '8px',
-    marginBottom: '1rem',
-    fontWeight: 'bold',
-    fontSize: '1.1rem'
+  const daysContainerStyle = {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '1.5rem',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)'
   };
 
   const statsStyle = {
@@ -687,8 +829,67 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    margin: '1rem 0',
+    fontSize: '0.9rem',
+    width: '100%',
+    justifyContent: 'center'
+  };
+
+  const navButtonStyle = {
+    background: '#4f46e5',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     fontSize: '0.9rem'
+  };
+
+  const timelineStyle = {
+    display: 'flex',
+    gap: '1rem',
+    marginTop: '1rem'
+  };
+
+  const dayColumnStyle = {
+    flex: 1,
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    overflow: 'hidden'
+  };
+
+  const dayHeaderStyle = {
+    textAlign: 'center',
+    padding: '1rem',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: '1.1rem'
+  };
+
+  const timelineContentStyle = {
+    maxHeight: 'calc(100vh - 400px)',
+    overflowY: 'auto'
+  };
+
+  const timeSlotStyle = {
+    display: 'flex',
+    borderBottom: '1px solid #e2e8f0'
+  };
+
+  const timeColumnStyle = {
+    width: '80px',
+    padding: '0.75rem',
+    background: '#f8fafc',
+    borderRight: '1px solid #e2e8f0',
+    fontWeight: '600',
+    fontSize: '0.85rem',
+    color: '#64748b',
+    textAlign: 'center',
+    flexShrink: 0
   };
 
   return (
@@ -696,7 +897,7 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
       <div style={headerStyle}>
         <h1 style={titleStyle}>Weekly Task Planner</h1>
         <p style={{ color: '#64748b', fontSize: '1.1rem' }}>
-          Drag and drop tasks between days. Create, edit, and organize your weekly schedule!
+          Drag tasks from "My Tasks" to the timeline, or move them back
         </p>
       </div>
 
@@ -710,23 +911,14 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
               ({Math.round((getCompletedCount() / Math.max(getTotalTasks(), 1)) * 100)}%)
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <button
-              onClick={() => setShowTaskForm(true)}
-              style={addButtonStyle}
-            >
-              <FontAwesomeIcon icon={faPlus} />
-              Add New Task
-            </button>
-            <div style={{ 
-              background: '#4f46e5', 
-              color: 'white', 
-              padding: '0.5rem 1rem', 
-              borderRadius: '20px',
-              fontWeight: 'bold'
-            }}>
-              Level {userData?.level || 1}
-            </div>
+          <div style={{ 
+            background: '#4f46e5', 
+            color: 'white', 
+            padding: '0.5rem 1rem', 
+            borderRadius: '20px',
+            fontWeight: 'bold'
+          }}>
+            Level {userData?.level || 1}
           </div>
         </div>
         <div style={{ 
@@ -753,10 +945,10 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
       >
         <SortableContext items={getAllTaskIds()} strategy={verticalListSortingStrategy}>
           <div style={layoutStyle}>
-            {/* Timeline Section */}
-            <div style={timelineStyle}>
+            {/* My Tasks Section */}
+            <div style={myTasksStyle}>
               <h3 style={{ marginBottom: '1rem', color: '#2d3748', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📅 My Tasks
+                📋 My Tasks
                 <span style={{ 
                   background: '#4f46e5', 
                   color: 'white', 
@@ -772,97 +964,113 @@ const RearrangePage = ({ userData, tasks, onTaskUpdate }) => {
                 onClick={() => setShowTaskForm(true)}
                 style={{
                   ...addButtonStyle,
-                  margin: '0 0 1rem 0',
-                  justifyContent: 'center'
+                  marginBottom: '1rem'
                 }}
               >
                 <FontAwesomeIcon icon={faPlus} />
-                Add to My Tasks
+                Add New Task
               </button>
 
-              <div style={{ flex: 1, minHeight: '200px' }}>
-                {dailyTasks.map((task) => (
-                  <SortableTask
-                    key={task.id}
-                    task={task}
-                    onToggle={toggleTaskCompletion}
-                    onEdit={editTask}
-                    onDelete={deleteTask}
-                  />
-                ))}
-                {dailyTasks.length === 0 && (
-                  <div style={{ 
-                    textAlign: 'center', 
-                    color: '#9ca3af', 
-                    padding: '3rem 2rem',
-                    border: '2px dashed #e2e8f0',
-                    borderRadius: '8px',
-                    background: '#fafafa'
-                  }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#6b7280' }}>No tasks yet</h4>
-                    <p style={{ margin: 0, fontSize: '0.9rem' }}>Create a task or drag tasks here from other days</p>
-                  </div>
-                )}
+              <div ref={setMyTasksRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <MyTasksDropZone isOver={isOverMyTasks} />
+                
+                <div style={{ flex: 1, overflowY: 'auto', marginTop: '0.5rem' }}>
+                  {dailyTasks.map((task) => (
+                    <SortableTask
+                      key={task.id}
+                      task={task}
+                      onToggle={toggleTaskCompletion}
+                      onEdit={editTask}
+                      onDelete={deleteTask}
+                    />
+                  ))}
+                  {dailyTasks.length === 0 && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      color: '#9ca3af', 
+                      padding: '2rem 1rem',
+                      border: '2px dashed #e2e8f0',
+                      borderRadius: '8px',
+                      background: '#fafafa'
+                    }}>
+                      <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📝</div>
+                      <h4 style={{ margin: '0 0 0.5rem 0', color: '#6b7280' }}>No tasks yet</h4>
+                      <p style={{ margin: 0, fontSize: '0.85rem' }}>Create tasks or drag them back here</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Days Grid */}
-            <div style={daysGridStyle}>
-              {days.map(day => (
-                <div key={day.id} style={dayColumnStyle}>
-                  <div style={dayHeaderStyle}>
-                    {day.name}
-                    <div style={{ fontSize: '0.8rem', opacity: 0.9, marginTop: '0.25rem' }}>
-                      {(dayTasks[day.id] || []).length} tasks
+            {/* Days Timeline Section */}
+            <div style={daysContainerStyle}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <button
+                  onClick={prevDays}
+                  disabled={currentDayIndex === 0}
+                  style={{
+                    ...navButtonStyle,
+                    opacity: currentDayIndex === 0 ? 0.5 : 1,
+                    cursor: currentDayIndex === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                  Previous
+                </button>
+                
+                <h3 style={{ color: '#2d3748', margin: 0 }}>
+                  {visibleDays.map(d => d.name).join(' & ')}
+                </h3>
+                
+                <button
+                  onClick={nextDays}
+                  disabled={currentDayIndex >= days.length - 2}
+                  style={{
+                    ...navButtonStyle,
+                    opacity: currentDayIndex >= days.length - 2 ? 0.5 : 1,
+                    cursor: currentDayIndex >= days.length - 2 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Next
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+              </div>
+
+              <div style={timelineStyle}>
+                {visibleDays.map(day => (
+                  <div key={day.id} style={dayColumnStyle}>
+                    <div style={dayHeaderStyle}>
+                      {day.name}
+                      <div style={{ fontSize: '0.8rem', opacity: 0.9, marginTop: '0.25rem' }}>
+                        {(dayTasks[day.id] || []).length} tasks
+                      </div>
+                    </div>
+                    
+                    <div style={timelineContentStyle}>
+                      {timeSlots.map(time => {
+                        const tasksAtTime = getTasksForTimeSlot(day.id, time);
+                        return (
+                          <div key={time} style={timeSlotStyle}>
+                            <div style={timeColumnStyle}>
+                              {time}
+                            </div>
+                            <div style={{ flex: 1, padding: '0.5rem' }}>
+                              <TimelineSlot
+                                dayId={day.id}
+                                time={time}
+                                tasks={tasksAtTime}
+                                onToggle={toggleTaskCompletion}
+                                onEdit={editTask}
+                                onDelete={deleteTask}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                  
-                  <button
-                    onClick={() => {
-                      setEditingDayId(day.id);
-                      setShowTaskForm(true);
-                    }}
-                    style={{
-                      ...addButtonStyle,
-                      margin: '0 0 1rem 0',
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      fontSize: '0.8rem',
-                      padding: '0.5rem 1rem',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                    Add to {day.name}
-                  </button>
-
-                  <div style={{ flex: 1, minHeight: '300px' }}>
-                    {(dayTasks[day.id] || []).map((task) => (
-                      <SortableTask
-                        key={task.id}
-                        task={task}
-                        onToggle={toggleTaskCompletion}
-                        onEdit={editTask}
-                        onDelete={deleteTask}
-                        dayId={day.id}
-                      />
-                    ))}
-                    {(dayTasks[day.id] || []).length === 0 && (
-                      <div style={{ 
-                        textAlign: 'center', 
-                        color: '#9ca3af', 
-                        padding: '2rem 1rem',
-                        border: '2px dashed #e2e8f0',
-                        borderRadius: '8px',
-                        background: '#fafafa',
-                        fontSize: '0.9rem'
-                      }}>
-                        Drag tasks here or click "Add to {day.name}"
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </SortableContext>
