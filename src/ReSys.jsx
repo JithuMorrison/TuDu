@@ -150,7 +150,7 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
 };
 
 // Timeline Task Component
-const TimelineTask = ({ task, onToggle, onEdit, onDelete, dayId }) => {
+const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }) => {
   const {
     attributes,
     listeners,
@@ -203,7 +203,26 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, dayId }) => {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveToTasks(task.id, dayId);
+          }}
+          style={{
+            background: '#e0f2fe',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#0369a1',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: '500'
+          }}
+          title="Move back to My Tasks"
+        >
+          📋 Move to Tasks
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -245,7 +264,7 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, dayId }) => {
 };
 
 // Drop Zone Component for Timeline Slots
-const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete }) => {
+const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete, onMoveToTasks }) => {
   const { isOver, setNodeRef } = useDroppable({
     id: `timeline-${dayId}-${time}`,
   });
@@ -268,6 +287,7 @@ const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete }) => {
           onToggle={onToggle}
           onEdit={onEdit}
           onDelete={onDelete}
+          onMoveToTasks={onMoveToTasks}
           dayId={dayId}
         />
       ))}
@@ -555,6 +575,30 @@ const RearrangePage = ({ userData }) => {
     return null;
   };
 
+  // Add this function to handle moving tasks from days back to My Tasks
+  const moveTaskToMyTasks = (taskId, dayId) => {
+    if (!dayId) return;
+
+    // Find the task in the day tasks
+    const taskToMove = dayTasks[dayId]?.find(task => task.id === taskId);
+    if (!taskToMove) return;
+
+    // Create a copy without the time property
+    const { time, ...taskWithoutTime } = taskToMove;
+
+    // Remove from day tasks
+    setDayTasks(prev => ({
+      ...prev,
+      [dayId]: (prev[dayId] || []).filter(task => task.id !== taskId)
+    }));
+
+    // Add to My Tasks with a new ID
+    setDailyTasks(prev => [...prev, { 
+      ...taskWithoutTime, 
+      id: generateId() 
+    }]);
+  };
+
   const handleDragStart = (event) => {
     const { active } = event;
     const taskInfo = findTask(active.id);
@@ -572,22 +616,23 @@ const RearrangePage = ({ userData }) => {
     const activeId = active.id;
     const overId = over.id;
 
-    // Check if dropping on a timeline slot
+    // Check if dropping on a timeline slot (from My Tasks to Days OR from one Day to another Day)
     if (overId.startsWith('timeline-')) {
       const parts = overId.split('-');
-      const dayId = parts[1];
+      const targetDayId = parts[1];
       const timeSlot = parts.slice(2).join('-');
       
       const activeTaskInfo = findTask(activeId);
-      
       if (!activeTaskInfo) return;
 
       const taskToMove = { ...activeTaskInfo.task, time: timeSlot };
 
       // Remove from source
       if (activeTaskInfo.container === 'timeline') {
+        // Moving from My Tasks to a Day
         setDailyTasks(items => items.filter(task => task.id !== activeId));
       } else if (activeTaskInfo.container.startsWith('day-')) {
+        // Moving from one Day to another Day
         const sourceDayId = activeTaskInfo.container.replace('day-', '');
         setDayTasks(prev => ({
           ...prev,
@@ -598,35 +643,34 @@ const RearrangePage = ({ userData }) => {
       // Add to target day
       setDayTasks(prev => ({
         ...prev,
-        [dayId]: [...(prev[dayId] || []), { ...taskToMove, id: generateId() }].sort((a, b) => 
+        [targetDayId]: [...(prev[targetDayId] || []), { ...taskToMove, id: generateId() }].sort((a, b) => 
           a.time.localeCompare(b.time)
         )
       }));
       return;
     }
 
-    // Check if dropping back to My Tasks
+    // Check if dropping back to My Tasks drop zone (from Days to My Tasks)
     if (overId === 'my-tasks-drop-zone') {
       const activeTaskInfo = findTask(activeId);
-      if (!activeTaskInfo) return;
+      if (!activeTaskInfo || !activeTaskInfo.container.startsWith('day-')) return;
 
+      const sourceDayId = activeTaskInfo.container.replace('day-', '');
       const taskToMove = { ...activeTaskInfo.task };
-      delete taskToMove.time; // Remove time when moving back
+      delete taskToMove.time;
 
-      // Remove from source day if it's from a day
-      if (activeTaskInfo.container.startsWith('day-')) {
-        const sourceDayId = activeTaskInfo.container.replace('day-', '');
-        setDayTasks(prev => ({
-          ...prev,
-          [sourceDayId]: (prev[sourceDayId] || []).filter(task => task.id !== activeId)
-        }));
-        
-        // Add to My Tasks
-        setDailyTasks(prev => [...prev, { ...taskToMove, id: generateId() }]);
-      }
+      // Remove from source day
+      setDayTasks(prev => ({
+        ...prev,
+        [sourceDayId]: (prev[sourceDayId] || []).filter(task => task.id !== activeId)
+      }));
+      
+      // Add to My Tasks
+      setDailyTasks(prev => [...prev, { ...taskToMove, id: generateId() }]);
       return;
     }
 
+    // Handle reordering within My Tasks
     const activeTaskInfo = findTask(activeId);
     const overTaskInfo = findTask(overId);
 
@@ -635,12 +679,26 @@ const RearrangePage = ({ userData }) => {
     const activeContainer = activeTaskInfo.container;
     const overContainer = overTaskInfo.container;
 
-    // Moving within timeline (My Tasks)
     if (activeContainer === 'timeline' && overContainer === 'timeline') {
       const oldIndex = dailyTasks.findIndex(task => task.id === activeId);
       const newIndex = dailyTasks.findIndex(task => task.id === overId);
       if (oldIndex !== newIndex) {
         setDailyTasks(items => arrayMove(items, oldIndex, newIndex));
+      }
+    }
+    // Handle reordering within the same day
+    else if (activeContainer.startsWith('day-') && overContainer.startsWith('day-') && 
+             activeContainer === overContainer) {
+      const dayId = activeContainer.replace('day-', '');
+      const dayTaskList = dayTasks[dayId] || [];
+      const oldIndex = dayTaskList.findIndex(task => task.id === activeId);
+      const newIndex = dayTaskList.findIndex(task => task.id === overId);
+      
+      if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
+        setDayTasks(prev => ({
+          ...prev,
+          [dayId]: arrayMove(dayTaskList, oldIndex, newIndex)
+        }));
       }
     }
   };
@@ -1062,6 +1120,7 @@ const RearrangePage = ({ userData }) => {
                                 onToggle={toggleTaskCompletion}
                                 onEdit={editTask}
                                 onDelete={deleteTask}
+                                onMoveToTasks={moveTaskToMyTasks}
                               />
                             </div>
                           </div>
