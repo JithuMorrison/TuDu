@@ -1,11 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFire, faTrophy, faStar, faMedal, faGem, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faFire, faTrophy, faStar, faMedal, faGem, faCheckCircle,
+  faFistRaised, faShieldAlt, faRunning, faBrain, faHeart, faMagic,
+  faPlus, faTrash, faEdit, faList, faBullseye, faFlagCheckered
+} from '@fortawesome/free-solid-svg-icons';
 
-const LevelingSystem = ({ userData }) => {
+const LevelingSystem = ({ userData, onUpdateUserData }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [quests, setQuests] = useState([]);
+  const [missions, setMissions] = useState([]);
+  const [showQuestForm, setShowQuestForm] = useState(false);
+  const [showMissionForm, setShowMissionForm] = useState(false);
+  const [editingQuest, setEditingQuest] = useState(null);
+  const [editingMission, setEditingMission] = useState(null);
+  const [availableSkills, setAvailableSkills] = useState([
+    { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
+    { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
+    { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
+    { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+  ]);
+  const [newQuest, setNewQuest] = useState({
+    title: '',
+    description: '',
+    subtasks: [],
+    reward: { xp: 0, stats: {}, skills: [] },
+    deadline: '',
+    difficulty: 'medium'
+  });
+  const [newMission, setNewMission] = useState({
+    title: '',
+    description: '',
+    reward: { xp: 0, stats: {}, skills: [] },
+    deadline: '',
+    type: 'daily'
+  });
+  const [newSubtask, setNewSubtask] = useState('');
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedQuests = localStorage.getItem('userQuests');
+    const savedMissions = localStorage.getItem('userMissions');
+    const savedSkills = localStorage.getItem('userSkills');
+    
+    if (savedQuests) setQuests(JSON.parse(savedQuests));
+    if (savedMissions) setMissions(JSON.parse(savedMissions));
+    if (savedSkills) setAvailableSkills(JSON.parse(savedSkills));
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('userQuests', JSON.stringify(quests));
+  }, [quests]);
+
+  useEffect(() => {
+    localStorage.setItem('userMissions', JSON.stringify(missions));
+  }, [missions]);
+
+  useEffect(() => {
+    localStorage.setItem('userSkills', JSON.stringify(availableSkills));
+  }, [availableSkills]);
+
   const containerStyle = {
     padding: '2rem',
-    maxWidth: '1000px',
+    maxWidth: '1200px',
     margin: '0 auto'
   };
 
@@ -21,6 +79,33 @@ const LevelingSystem = ({ userData }) => {
     marginBottom: '1rem'
   };
 
+  const tabContainerStyle = {
+    display: 'flex',
+    gap: '1rem',
+    marginBottom: '2rem',
+    borderBottom: '2px solid #e2e8f0',
+    paddingBottom: '1rem'
+  };
+
+  const tabStyle = (isActive) => ({
+    padding: '0.75rem 1.5rem',
+    background: isActive ? '#4f46e5' : 'transparent',
+    color: isActive ? 'white' : '#64748b',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease'
+  });
+
+  const cardStyle = {
+    background: 'white',
+    padding: '1.5rem',
+    borderRadius: '12px',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+    border: '1px solid #e2e8f0',
+    marginBottom: '1.5rem'
+  };
+
   const levelCardStyle = {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
@@ -29,12 +114,6 @@ const LevelingSystem = ({ userData }) => {
     textAlign: 'center',
     marginBottom: '2rem',
     boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
-  };
-
-  const levelNumberStyle = {
-    fontSize: '4rem',
-    fontWeight: 'bold',
-    marginBottom: '0.5rem'
   };
 
   const progressBarStyle = {
@@ -68,75 +147,178 @@ const LevelingSystem = ({ userData }) => {
     border: '1px solid #e2e8f0'
   };
 
-  const achievementsSectionStyle = {
+  const formStyle = {
     background: 'white',
     padding: '2rem',
     borderRadius: '12px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
     marginBottom: '2rem'
   };
 
-  const achievementGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '1rem',
-    marginTop: '1rem'
-  };
-
-  const achievementCardStyle = {
-    padding: '1rem',
-    background: '#f8fafc',
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem',
+    border: '1px solid #d1d5db',
     borderRadius: '8px',
-    border: '1px solid #e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem'
+    fontSize: '1rem',
+    marginBottom: '1rem'
   };
 
-  const achievementIconStyle = {
-    fontSize: '1.5rem',
-    color: '#f59e0b'
+  const buttonStyle = {
+    padding: '0.75rem 1.5rem',
+    background: '#4f46e5',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '500',
+    marginRight: '0.5rem'
   };
 
-  const xpInfoStyle = {
-    background: 'white',
-    padding: '1.5rem',
-    borderRadius: '12px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)'
+  const secondaryButtonStyle = {
+    ...buttonStyle,
+    background: '#6b7280'
   };
 
-  const xpItemStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.5rem 0',
-    borderBottom: '1px solid #e2e8f0'
+  const dangerButtonStyle = {
+    ...buttonStyle,
+    background: '#ef4444'
   };
 
-  const commonAchievements = [
-    { name: '3-day Streak', description: 'Maintain a 3-day task completion streak' },
-    { name: '7-day Streak', description: 'Maintain a 7-day task completion streak' },
-    { name: 'Monthly Streak', description: 'Maintain a 30-day task completion streak' },
-    { name: 'Level 5', description: 'Reach level 5' },
-    { name: 'Level 10', description: 'Reach level 10' },
-    { name: 'Level 20', description: 'Reach level 20' },
-    { name: 'Early Bird', description: 'Complete a task well before its deadline' },
-    { name: 'Task Master', description: 'Complete 50 tasks' }
-  ];
+  // Stats and Attributes Configuration
+  const statsConfig = {
+    strength: { icon: faFistRaised, color: '#dc2626', description: 'Physical power and capability' },
+    agility: { icon: faRunning, color: '#16a34a', description: 'Speed and flexibility' },
+    endurance: { icon: faShieldAlt, color: '#ca8a04', description: 'Stamina and resilience' },
+    intelligence: { icon: faBrain, color: '#2563eb', description: 'Mental capacity and learning' },
+    hp: { icon: faHeart, color: '#dc2626', description: 'Health Points' },
+    mp: { icon: faMagic, color: '#7c3aed', description: 'Mana Points' }
+  };
 
-  return (
-    <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Leveling System</h1>
-        <p style={{ color: '#64748b' }}>
-          Track your progress, achievements, and level up your productivity!
-        </p>
-      </div>
+  const handleAddQuest = () => {
+    if (newQuest.title.trim() === '') return;
 
+    const quest = {
+      id: Date.now(),
+      ...newQuest,
+      completed: false,
+      progress: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    setQuests([...quests, quest]);
+    setNewQuest({
+      title: '',
+      description: '',
+      subtasks: [],
+      reward: { xp: 0, stats: {}, skills: [] },
+      deadline: '',
+      difficulty: 'medium'
+    });
+    setShowQuestForm(false);
+  };
+
+  const handleAddMission = () => {
+    if (newMission.title.trim() === '') return;
+
+    const mission = {
+      id: Date.now(),
+      ...newMission,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+
+    setMissions([...missions, mission]);
+    setNewMission({
+      title: '',
+      description: '',
+      reward: { xp: 0, stats: {}, skills: [] },
+      deadline: '',
+      type: 'daily'
+    });
+    setShowMissionForm(false);
+  };
+
+  const handleAddSubtask = () => {
+    if (newSubtask.trim() === '') return;
+    setNewQuest({
+      ...newQuest,
+      subtasks: [...newQuest.subtasks, { text: newSubtask, completed: false }]
+    });
+    setNewSubtask('');
+  };
+
+  const handleCompleteQuest = (questId) => {
+    const quest = quests.find(q => q.id === questId);
+    if (quest && onUpdateUserData) {
+      // Award XP
+      onUpdateUserData({
+        xp: userData.xp + quest.reward.xp,
+        stats: { ...userData.stats, ...quest.reward.stats }
+      });
+
+      // Award skill improvements
+      if (quest.reward.skills && quest.reward.skills.length > 0) {
+        const updatedSkills = availableSkills.map(skill => {
+          const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
+          if (improvement) {
+            return { ...skill, xp: skill.xp + improvement.xp };
+          }
+          return skill;
+        });
+        setAvailableSkills(updatedSkills);
+      }
+
+      // Mark quest as completed
+      setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
+    }
+  };
+
+  const handleCompleteMission = (missionId) => {
+    const mission = missions.find(m => m.id === missionId);
+    if (mission && onUpdateUserData) {
+      // Award XP
+      onUpdateUserData({
+        xp: userData.xp + mission.reward.xp,
+        stats: { ...userData.stats, ...mission.reward.stats }
+      });
+
+      // Mark mission as completed
+      setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : q));
+    }
+  };
+
+  const handleUpdateSubtask = (questId, subtaskIndex, completed) => {
+    setQuests(quests.map(quest => {
+      if (quest.id === questId) {
+        const updatedSubtasks = quest.subtasks.map((subtask, index) =>
+          index === subtaskIndex ? { ...subtask, completed } : subtask
+        );
+        
+        const progress = (updatedSubtasks.filter(st => st.completed).length / updatedSubtasks.length) * 100;
+        
+        return { ...quest, subtasks: updatedSubtasks, progress };
+      }
+      return quest;
+    }));
+  };
+
+  const handleDeleteQuest = (questId) => {
+    setQuests(quests.filter(q => q.id !== questId));
+  };
+
+  const handleDeleteMission = (missionId) => {
+    setMissions(missions.filter(m => m.id !== missionId));
+  };
+
+  const renderOverview = () => (
+    <div>
       {/* Level Card */}
       <div style={levelCardStyle}>
-        <div style={levelNumberStyle}>Level {userData.level}</div>
+        <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+          Level {userData.level}
+        </div>
         <div style={{ fontSize: '1.2rem', opacity: 0.9 }}>
           {userData.xp} / {userData.level * 1000} XP
         </div>
@@ -167,96 +349,562 @@ const LevelingSystem = ({ userData }) => {
         </div>
 
         <div style={statItemStyle}>
-          <FontAwesomeIcon icon={faStar} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
+          <FontAwesomeIcon icon={faBullseye} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748' }}>
-            {userData.xp}
+            {quests.filter(q => !q.completed).length}
           </div>
-          <div style={{ color: '#64748b' }}>Total XP</div>
+          <div style={{ color: '#64748b' }}>Active Quests</div>
         </div>
 
         <div style={statItemStyle}>
-          <FontAwesomeIcon icon={faCheckCircle} style={{ fontSize: '2rem', color: '#10b981', marginBottom: '0.5rem' }} />
+          <FontAwesomeIcon icon={faFlagCheckered} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748' }}>
-            {userData.completedToday || 0}/{userData.todaysGoal || 3}
+            {missions.filter(m => !m.completed).length}
           </div>
-          <div style={{ color: '#64748b' }}>Today's Goal</div>
+          <div style={{ color: '#64748b' }}>Active Missions</div>
         </div>
       </div>
 
+      {/* Quick Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* Achievements Section */}
-        <div style={achievementsSectionStyle}>
-          <h2 style={{ marginBottom: '1rem', color: '#2d3748' }}>Your Achievements</h2>
-          <div style={achievementGridStyle}>
-            {commonAchievements.map((achievement, index) => {
-              const isUnlocked = userData.achievements?.includes(achievement.name);
-              return (
-                <div 
-                  key={index} 
-                  style={{
-                    ...achievementCardStyle,
-                    background: isUnlocked ? '#f0f9ff' : '#f8fafc',
-                    borderColor: isUnlocked ? '#4f46e5' : '#e2e8f0'
-                  }}
+        {/* Attributes */}
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Attributes</h3>
+          {Object.entries(userData.stats || {}).map(([stat, value]) => (
+            <div key={stat} style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '0.5rem 0',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FontAwesomeIcon 
+                  icon={statsConfig[stat]?.icon || faStar} 
+                  style={{ color: statsConfig[stat]?.color || '#6b7280' }} 
+                />
+                <span style={{ textTransform: 'capitalize' }}>{stat}</span>
+              </div>
+              <span style={{ fontWeight: 'bold' }}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Skills */}
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills</h3>
+          {availableSkills.map(skill => (
+            <div key={skill.id} style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              padding: '0.5rem 0',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div>
+                <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Level {skill.level}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{skill.xp} XP</div>
+                <div style={{ 
+                  width: '60px', 
+                  height: '4px', 
+                  background: '#e2e8f0',
+                  borderRadius: '2px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ 
+                    width: `${(skill.xp % 100)}%`, 
+                    height: '100%', 
+                    background: '#4f46e5' 
+                  }}></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderQuests = () => (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h2 style={{ color: '#2d3748' }}>Your Quests</h2>
+        <button 
+          style={buttonStyle}
+          onClick={() => setShowQuestForm(true)}
+        >
+          <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+          New Quest
+        </button>
+      </div>
+
+      {showQuestForm && (
+        <div style={formStyle}>
+          <h3 style={{ marginBottom: '1rem' }}>Create New Quest</h3>
+          <input
+            style={inputStyle}
+            type="text"
+            placeholder="Quest Title"
+            value={newQuest.title}
+            onChange={(e) => setNewQuest({ ...newQuest, title: e.target.value })}
+          />
+          <textarea
+            style={{ ...inputStyle, minHeight: '80px' }}
+            placeholder="Quest Description"
+            value={newQuest.description}
+            onChange={(e) => setNewQuest({ ...newQuest, description: e.target.value })}
+          />
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Subtasks
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                style={{ ...inputStyle, marginBottom: 0, flex: 1 }}
+                type="text"
+                placeholder="Add subtask"
+                value={newSubtask}
+                onChange={(e) => setNewSubtask(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddSubtask()}
+              />
+              <button style={secondaryButtonStyle} onClick={handleAddSubtask}>
+                Add
+              </button>
+            </div>
+            {newQuest.subtasks.map((subtask, index) => (
+              <div key={index} style={{ 
+                padding: '0.5rem', 
+                background: '#f8fafc', 
+                borderRadius: '4px',
+                marginBottom: '0.25rem'
+              }}>
+                {subtask.text}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                XP Reward
+              </label>
+              <input
+                style={inputStyle}
+                type="number"
+                value={newQuest.reward.xp}
+                onChange={(e) => setNewQuest({ 
+                  ...newQuest, 
+                  reward: { ...newQuest.reward, xp: parseInt(e.target.value) || 0 }
+                })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Deadline
+              </label>
+              <input
+                style={inputStyle}
+                type="datetime-local"
+                value={newQuest.deadline}
+                onChange={(e) => setNewQuest({ ...newQuest, deadline: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button style={secondaryButtonStyle} onClick={() => setShowQuestForm(false)}>
+              Cancel
+            </button>
+            <button style={buttonStyle} onClick={handleAddQuest}>
+              Create Quest
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {quests.filter(q => !q.completed).map(quest => (
+          <div key={quest.id} style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div>
+                <h4 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>{quest.title}</h4>
+                <p style={{ margin: 0, color: '#64748b' }}>{quest.description}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  style={{ ...buttonStyle, padding: '0.5rem 1rem' }}
+                  onClick={() => handleCompleteQuest(quest.id)}
                 >
-                  <FontAwesomeIcon 
-                    icon={isUnlocked ? faTrophy : faMedal} 
-                    style={{...achievementIconStyle, color: isUnlocked ? '#f59e0b' : '#9ca3af'}} 
-                  />
-                  <div>
-                    <div style={{ 
-                      fontWeight: 'bold', 
-                      color: isUnlocked ? '#2d3748' : '#9ca3af',
+                  Complete
+                </button>
+                <button 
+                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem' }}
+                  onClick={() => handleDeleteQuest(quest.id)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            </div>
+
+            {quest.subtasks.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ 
+                  height: '6px', 
+                  background: '#e2e8f0', 
+                  borderRadius: '3px',
+                  marginBottom: '0.5rem',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ 
+                    height: '100%', 
+                    background: '#4f46e5', 
+                    width: `${quest.progress}%` 
+                  }}></div>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  Progress: {Math.round(quest.progress)}%
+                </div>
+                
+                <div style={{ marginTop: '0.5rem' }}>
+                  {quest.subtasks.map((subtask, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
                       marginBottom: '0.25rem'
                     }}>
-                      {achievement.name}
+                      <input
+                        type="checkbox"
+                        checked={subtask.completed}
+                        onChange={(e) => handleUpdateSubtask(quest.id, index, e.target.checked)}
+                      />
+                      <span style={{ 
+                        textDecoration: subtask.completed ? 'line-through' : 'none',
+                        color: subtask.completed ? '#64748b' : '#2d3748'
+                      }}>
+                        {subtask.text}
+                      </span>
                     </div>
-                    <div style={{ 
-                      fontSize: '0.8rem', 
-                      color: isUnlocked ? '#64748b' : '#cbd5e1'
-                    }}>
-                      {achievement.description}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              fontSize: '0.8rem',
+              color: '#64748b'
+            }}>
+              <span>Reward: {quest.reward.xp} XP</span>
+              {quest.deadline && (
+                <span>Due: {new Date(quest.deadline).toLocaleDateString()}</span>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {quests.filter(q => !q.completed).length === 0 && (
+          <div style={{ ...cardStyle, textAlign: 'center', color: '#64748b' }}>
+            <FontAwesomeIcon icon={faBullseye} style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
+            <h3>No Active Quests</h3>
+            <p>Create your first quest to get started!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderMissions = () => (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h2 style={{ color: '#2d3748' }}>Your Missions</h2>
+        <button 
+          style={buttonStyle}
+          onClick={() => setShowMissionForm(true)}
+        >
+          <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+          New Mission
+        </button>
+      </div>
+
+      {showMissionForm && (
+        <div style={formStyle}>
+          <h3 style={{ marginBottom: '1rem' }}>Create New Mission</h3>
+          <input
+            style={inputStyle}
+            type="text"
+            placeholder="Mission Title"
+            value={newMission.title}
+            onChange={(e) => setNewMission({ ...newMission, title: e.target.value })}
+          />
+          <textarea
+            style={{ ...inputStyle, minHeight: '80px' }}
+            placeholder="Mission Description"
+            value={newMission.description}
+            onChange={(e) => setNewMission({ ...newMission, description: e.target.value })}
+          />
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                XP Reward
+              </label>
+              <input
+                style={inputStyle}
+                type="number"
+                value={newMission.reward.xp}
+                onChange={(e) => setNewMission({ 
+                  ...newMission, 
+                  reward: { ...newMission.reward, xp: parseInt(e.target.value) || 0 }
+                })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Mission Type
+              </label>
+              <select
+                style={inputStyle}
+                value={newMission.type}
+                onChange={(e) => setNewMission({ ...newMission, type: e.target.value })}
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="special">Special</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button style={secondaryButtonStyle} onClick={() => setShowMissionForm(false)}>
+              Cancel
+            </button>
+            <button style={buttonStyle} onClick={handleAddMission}>
+              Create Mission
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {missions.filter(m => !m.completed).map(mission => (
+          <div key={mission.id} style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <h4 style={{ margin: 0, color: '#2d3748' }}>{mission.title}</h4>
+                  <span style={{ 
+                    padding: '0.25rem 0.5rem', 
+                    background: '#e0e7ff', 
+                    color: '#4f46e5',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase'
+                  }}>
+                    {mission.type}
+                  </span>
+                </div>
+                <p style={{ margin: 0, color: '#64748b' }}>{mission.description}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  style={{ ...buttonStyle, padding: '0.5rem 1rem' }}
+                  onClick={() => handleCompleteMission(mission.id)}
+                >
+                  Complete
+                </button>
+                <button 
+                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem' }}
+                  onClick={() => handleDeleteMission(mission.id)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            </div>
+
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              fontSize: '0.8rem',
+              color: '#64748b'
+            }}>
+              <span>Reward: {mission.reward.xp} XP</span>
+              {mission.deadline && (
+                <span>Due: {new Date(mission.deadline).toLocaleDateString()}</span>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {missions.filter(m => !m.completed).length === 0 && (
+          <div style={{ ...cardStyle, textAlign: 'center', color: '#64748b' }}>
+            <FontAwesomeIcon icon={faFlagCheckered} style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
+            <h3>No Active Missions</h3>
+            <p>Create your first mission to get started!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderStats = () => (
+    <div>
+      <h2 style={{ marginBottom: '2rem', color: '#2d3748' }}>Character Stats & Attributes</h2>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        {/* Core Stats */}
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Core Stats</h3>
+          {Object.entries(statsConfig).map(([stat, config]) => (
+            <div key={stat} style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '1rem',
+              padding: '1rem 0',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                background: config.color,
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}>
+                <FontAwesomeIcon icon={config.icon} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+                    {stat}
+                  </span>
+                  <span style={{ 
+                    fontSize: '1.2rem', 
+                    fontWeight: 'bold',
+                    color: config.color
+                  }}>
+                    {userData.stats?.[stat] || 0}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  {config.description}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Skills Progress */}
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills Progress</h3>
+          {availableSkills.map(skill => {
+            const xpForNextLevel = skill.level * 100;
+            const progress = (skill.xp % xpForNextLevel) / xpForNextLevel * 100;
+            
+            return (
+              <div key={skill.id} style={{ 
+                padding: '1rem 0',
+                borderBottom: '1px solid #e2e8f0'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.5rem'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                      {skill.description}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 'bold' }}>Level {skill.level}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                      {skill.xp % xpForNextLevel}/{xpForNextLevel} XP
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* XP Information */}
-        <div style={xpInfoStyle}>
-          <h2 style={{ marginBottom: '1rem', color: '#2d3748' }}>How to Earn XP</h2>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>Complete a task</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+50 XP</span>
-          </div>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>Complete daily task</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+25 XP</span>
-          </div>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>Early completion</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+5-100 XP</span>
-          </div>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>Streak bonus (every 3 days)</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+50 XP</span>
-          </div>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>New category</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+50 XP</span>
-          </div>
-          <div style={xpItemStyle}>
-            <span style={{ color: '#64748b' }}>Achievement unlock</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+100-500 XP</span>
-          </div>
-          <div style={{ ...xpItemStyle, borderBottom: 'none' }}>
-            <span style={{ color: '#64748b' }}>Surprise reward</span>
-            <span style={{ fontWeight: 'bold', color: '#4f46e5' }}>+25-75 XP</span>
-          </div>
+                <div style={{ 
+                  height: '8px', 
+                  background: '#e2e8f0',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ 
+                    height: '100%', 
+                    background: '#4f46e5',
+                    width: `${progress}%`,
+                    transition: 'width 0.3s ease'
+                  }}></div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div style={containerStyle}>
+      {/* Header */}
+      <div style={headerStyle}>
+        <h1 style={titleStyle}>Adventure System</h1>
+        <p style={{ color: '#64748b' }}>
+          Embark on quests, complete missions, and grow your character!
+        </p>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div style={tabContainerStyle}>
+        <button 
+          style={tabStyle(activeTab === 'overview')}
+          onClick={() => setActiveTab('overview')}
+        >
+          Overview
+        </button>
+        <button 
+          style={tabStyle(activeTab === 'quests')}
+          onClick={() => setActiveTab('quests')}
+        >
+          Quests
+        </button>
+        <button 
+          style={tabStyle(activeTab === 'missions')}
+          onClick={() => setActiveTab('missions')}
+        >
+          Missions
+        </button>
+        <button 
+          style={tabStyle(activeTab === 'stats')}
+          onClick={() => setActiveTab('stats')}
+        >
+          Stats & Skills
+        </button>
+      </div>
+
+      {/* Content */}
+      {activeTab === 'overview' && renderOverview()}
+      {activeTab === 'quests' && renderQuests()}
+      {activeTab === 'missions' && renderMissions()}
+      {activeTab === 'stats' && renderStats()}
     </div>
   );
 };

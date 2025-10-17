@@ -41,6 +41,15 @@ function ToDo() {
   const [completedToday, setCompletedToday] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
 
+  const [userStats, setUserStats] = useState({
+    strength: 10,
+    agility: 10,
+    endurance: 10,
+    intelligence: 10,
+    hp: 100,
+    mp: 50
+  });
+
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
     const storedCategories = localStorage.getItem('data');
@@ -160,6 +169,31 @@ function ToDo() {
       
       // Always mark as complete and set completion time
       taskItem.completionTime = new Date().toISOString();
+
+      if (Math.random() < 0.3) {
+        const stats = ['strength', 'agility', 'endurance', 'intelligence'];
+        const randomStat = stats[Math.floor(Math.random() * stats.length)];
+        const statIncrease = Math.floor(Math.random() * 2) + 1;
+        
+        setUserStats(prev => ({
+          ...prev,
+          [randomStat]: prev[randomStat] + statIncrease
+        }));
+        
+        showTemporaryReward(`${randomStat.toUpperCase()} +${statIncrease}`, 'star');
+      }
+
+      if (Math.random() < 0.1) {
+        const boostType = Math.random() > 0.5 ? 'hp' : 'mp';
+        const boostAmount = Math.floor(Math.random() * 10) + 5;
+        
+        setUserStats(prev => ({
+          ...prev,
+          [boostType]: prev[boostType] + boostAmount
+        }));
+        
+        showTemporaryReward(`${boostType.toUpperCase()} +${boostAmount}`, 'heart');
+      }
 
       if (newCompleted <= todaysGoal && lastCompletedDate !== today) {
         let xpEarned = 50;
@@ -520,7 +554,7 @@ function ToDo() {
       case 'ToDo':
         return renderToDoSection();
       case 'LevelingSystem':
-        return <LevelingSystem userData={{ xp, level, streak, achievements, completedToday, todaysGoal }} />;
+        return <LevelingSystem userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); }} />;
       case 'RearrangePage':
         return <RearrangePage userData={{ xp, level }} tasks={task} onTaskUpdate={setTask} />;
       default:
