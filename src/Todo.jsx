@@ -40,6 +40,12 @@ function ToDo() {
   const [todaysGoal, setTodaysGoal] = useState(3);
   const [completedToday, setCompletedToday] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [availableSkills, setAvailableSkills] = useState([
+      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
+      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
+      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
+      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+    ]);
 
   const [userStats, setUserStats] = useState({
     strength: 10,
@@ -170,31 +176,6 @@ function ToDo() {
       // Always mark as complete and set completion time
       taskItem.completionTime = new Date().toISOString();
 
-      if (Math.random() < 0.3) {
-        const stats = ['strength', 'agility', 'endurance', 'intelligence'];
-        const randomStat = stats[Math.floor(Math.random() * stats.length)];
-        const statIncrease = Math.floor(Math.random() * 2) + 1;
-        
-        setUserStats(prev => ({
-          ...prev,
-          [randomStat]: prev[randomStat] + statIncrease
-        }));
-        
-        showTemporaryReward(`${randomStat.toUpperCase()} +${statIncrease}`, 'star');
-      }
-
-      if (Math.random() < 0.1) {
-        const boostType = Math.random() > 0.5 ? 'hp' : 'mp';
-        const boostAmount = Math.floor(Math.random() * 10) + 5;
-        
-        setUserStats(prev => ({
-          ...prev,
-          [boostType]: prev[boostType] + boostAmount
-        }));
-        
-        showTemporaryReward(`${boostType.toUpperCase()} +${boostAmount}`, 'heart');
-      }
-
       if (newCompleted <= todaysGoal && lastCompletedDate !== today) {
         let xpEarned = 50;
         
@@ -217,42 +198,75 @@ function ToDo() {
         }
         
         addXp(xpEarned);
+        
+        // Random chance to get stat improvements from regular tasks
+        if (Math.random() < 0.3) {
+          const stats = ['strength', 'agility', 'endurance', 'intelligence'];
+          const randomStat = stats[Math.floor(Math.random() * stats.length)];
+          const statIncrease = Math.floor(Math.random() * 2) + 1;
+          
+          setUserStats(prev => ({
+            ...prev,
+            [randomStat]: prev[randomStat] + statIncrease
+          }));
+          
+          showTemporaryReward(`${randomStat.toUpperCase()} +${statIncrease}`, 'star');
+        }
+
+        // Random chance to get HP/MP boost
+        if (Math.random() < 0.15) {
+          const boostType = Math.random() > 0.5 ? 'hp' : 'mp';
+          const boostAmount = Math.floor(Math.random() * 10) + 5;
+          
+          setUserStats(prev => ({
+            ...prev,
+            [boostType]: prev[boostType] + boostAmount
+          }));
+          
+          showTemporaryReward(`${boostType.toUpperCase()} +${boostAmount}`, 'heart');
+        }
+
+        // Skill XP from task completion
+        const skillXpEarned = Math.floor(xpEarned * 0.1); // 10% of task XP goes to skills
+        improveRandomSkill(skillXpEarned);
+
         if (newCompleted < todaysGoal) {
           showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
         }
         else {
           showTemporaryReward('Daily goal reached!', 'info');
         }
-      if (newCompleted == todaysGoal) {
-        setCompletedToday(newCompleted);
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
         
-        const newStreak = lastCompletedDate === yesterday.toDateString() 
-          ? streak + 1 
-          : 1;
-        
-        setStreak(newStreak);
-        setLastCompletedDate(today);
-        saveUserData({
-          streak: newStreak,
-          lastCompletedDate: today,
-          completedToday: newCompleted
-        });
-        
-        // Award streak bonus every 3 days
-        if (newStreak % 3 === 0) {
-          const bonus = Math.floor(newStreak / 3) * 50;
-          addXp(bonus);
-          showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
+        if (newCompleted == todaysGoal) {
+          setCompletedToday(newCompleted);
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          const newStreak = lastCompletedDate === yesterday.toDateString() 
+            ? streak + 1 
+            : 1;
+          
+          setStreak(newStreak);
+          setLastCompletedDate(today);
+          saveUserData({
+            streak: newStreak,
+            lastCompletedDate: today,
+            completedToday: newCompleted
+          });
+          
+          // Award streak bonus every 3 days
+          if (newStreak % 3 === 0) {
+            const bonus = Math.floor(newStreak / 3) * 50;
+            addXp(bonus);
+            showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
+          }
+          
+          showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
         }
-        
-        showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
-      }
-      else{
-        setCompletedToday(newCompleted);
-        saveUserData({ completedToday: newCompleted });
-      }
+        else{
+          setCompletedToday(newCompleted);
+          saveUserData({ completedToday: newCompleted });
+        }
       }
       
       // Check for random bonus
@@ -293,6 +307,32 @@ function ToDo() {
     
     setTask(updatetask);
     localStorage.setItem(fetcho, JSON.stringify(updatetask));
+  };
+
+  // Add this function to improve random skills
+  const improveRandomSkill = (xpAmount) => {
+    setAvailableSkills(prevSkills => {
+      const randomSkillIndex = Math.floor(Math.random() * prevSkills.length);
+      const updatedSkills = [...prevSkills];
+      updatedSkills[randomSkillIndex] = {
+        ...updatedSkills[randomSkillIndex],
+        xp: updatedSkills[randomSkillIndex].xp + xpAmount
+      };
+      
+      // Check for level up
+      const skill = updatedSkills[randomSkillIndex];
+      const xpForNextLevel = skill.level * 100;
+      if (skill.xp >= xpForNextLevel) {
+        updatedSkills[randomSkillIndex] = {
+          ...skill,
+          level: skill.level + 1,
+          xp: skill.xp - xpForNextLevel
+        };
+        showTemporaryReward(`${skill.name} Level ${skill.level + 1}!`, 'trophy');
+      }
+      
+      return updatedSkills;
+    });
   };
 
   const updateTask = () => {
@@ -365,7 +405,21 @@ function ToDo() {
       lastCompletedDate: '',
       achievements: [],
       todaysGoal: 3,
-      completedToday: 0
+      completedToday: 0,
+      stats: {
+        strength: 10,
+        agility: 10,
+        endurance: 10,
+        intelligence: 10,
+        hp: 100,
+        mp: 50
+      },
+      skills: [
+        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
+        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
+        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
+        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+      ]
     };
     
     setXp(userData.xp);
@@ -375,6 +429,20 @@ function ToDo() {
     setAchievements(userData.achievements || []);
     setTodaysGoal(userData.todaysGoal || 2);
     setCompletedToday(userData.completedToday);
+    setUserStats(userData.stats || {
+      strength: 10,
+      agility: 10,
+      endurance: 10,
+      intelligence: 10,
+      hp: 100,
+      mp: 50
+    });
+    setAvailableSkills(userData.skills || [
+      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
+      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
+      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
+      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+    ]);
 
     checkStreak();
   }, []);
@@ -516,7 +584,12 @@ function ToDo() {
   // Save user data to localStorage
   const saveUserData = (updates) => {
     const userData = JSON.parse(localStorage.getItem('userData')) || {};
-    const updatedData = { ...userData, ...updates };
+    const updatedData = { 
+      ...userData, 
+      ...updates,
+      stats: userStats,
+      skills: availableSkills
+    };
     localStorage.setItem('userData', JSON.stringify(updatedData));
   };
 
@@ -554,9 +627,9 @@ function ToDo() {
       case 'ToDo':
         return renderToDoSection();
       case 'LevelingSystem':
-        return <LevelingSystem userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); }} />;
+        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
       case 'RearrangePage':
-        return <RearrangePage userData={{ xp, level }} tasks={task} onTaskUpdate={setTask} />;
+        return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
       default:
         return <Home userData={{ xp, level, streak, achievements, completedToday, todaysGoal }} />;
     }

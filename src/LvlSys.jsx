@@ -6,7 +6,7 @@ import {
   faPlus, faTrash, faEdit, faList, faBullseye, faFlagCheckered
 } from '@fortawesome/free-solid-svg-icons';
 
-const LevelingSystem = ({ userData, onUpdateUserData }) => {
+const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvailableSkills }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [quests, setQuests] = useState([]);
   const [missions, setMissions] = useState([]);
@@ -14,12 +14,6 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingQuest, setEditingQuest] = useState(null);
   const [editingMission, setEditingMission] = useState(null);
-  const [availableSkills, setAvailableSkills] = useState([
-    { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
-    { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
-    { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
-    { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
-  ]);
   const [newQuest, setNewQuest] = useState({
     title: '',
     description: '',
@@ -31,7 +25,12 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
   const [newMission, setNewMission] = useState({
     title: '',
     description: '',
-    reward: { xp: 0, stats: {}, skills: [] },
+    reward: { xp: 0, stats: {}, skills: [
+      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 10 },
+      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 20 },
+      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 10 },
+      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 5 }
+    ] },
     deadline: '',
     type: 'daily'
   });
@@ -253,9 +252,20 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
     const quest = quests.find(q => q.id === questId);
     if (quest && onUpdateUserData) {
       // Award XP
+      const newXp = userData.xp + quest.reward.xp;
+      
+      // Award stat improvements
+      const newStats = { ...userData.stats };
+      if (quest.reward.stats) {
+        Object.keys(quest.reward.stats).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + quest.reward.stats[stat];
+        });
+      }
+
+      // Update user data
       onUpdateUserData({
-        xp: userData.xp + quest.reward.xp,
-        stats: { ...userData.stats, ...quest.reward.stats }
+        xp: newXp,
+        stats: newStats
       });
 
       // Award skill improvements
@@ -263,12 +273,38 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
         const updatedSkills = availableSkills.map(skill => {
           const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
           if (improvement) {
-            return { ...skill, xp: skill.xp + improvement.xp };
+            const newXp = skill.xp + improvement.xp;
+            const xpForNextLevel = skill.level * 100;
+            let newLevel = skill.level;
+            let remainingXp = newXp;
+            
+            // Handle level ups
+            while (remainingXp >= xpForNextLevel) {
+              newLevel += 1;
+              remainingXp -= xpForNextLevel;
+            }
+            
+            return { 
+              ...skill, 
+              xp: remainingXp, 
+              level: newLevel 
+            };
           }
           return skill;
         });
         setAvailableSkills(updatedSkills);
+        
+        // Show skill improvement notifications
+        quest.reward.skills.forEach(improvement => {
+          const skill = availableSkills.find(s => s.id === improvement.skillId);
+          if (skill) {
+            showTemporaryReward(`${skill.name} +${improvement.xp} XP`, 'star');
+          }
+        });
       }
+
+      // Show completion reward
+      showTemporaryReward(`Quest Complete! +${quest.reward.xp} XP`, 'trophy');
 
       // Mark quest as completed
       setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
@@ -279,14 +315,61 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
     const mission = missions.find(m => m.id === missionId);
     if (mission && onUpdateUserData) {
       // Award XP
+      const newXp = userData.xp + mission.reward.xp;
+      
+      // Award stat improvements
+      const newStats = { ...userData.stats };
+      if (mission.reward.stats) {
+        Object.keys(mission.reward.stats).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + mission.reward.stats[stat];
+        });
+      }
+
+      // Update user data
       onUpdateUserData({
-        xp: userData.xp + mission.reward.xp,
-        stats: { ...userData.stats, ...mission.reward.stats }
+        xp: newXp,
+        stats: newStats
       });
 
+      // Award skill improvements
+      if (mission.reward.skills && mission.reward.skills.length > 0) {
+        const updatedSkills = availableSkills.map(skill => {
+          const improvement = mission.reward.skills.find(s => s.skillId === skill.id);
+          if (improvement) {
+            const newXp = skill.xp + improvement.xp;
+            const xpForNextLevel = skill.level * 100;
+            let newLevel = skill.level;
+            let remainingXp = newXp;
+            
+            // Handle level ups
+            while (remainingXp >= xpForNextLevel) {
+              newLevel += 1;
+              remainingXp -= xpForNextLevel;
+            }
+            
+            return { 
+              ...skill, 
+              xp: remainingXp, 
+              level: newLevel 
+            };
+          }
+          return skill;
+        });
+        setAvailableSkills(updatedSkills);
+        console.log('Updated Skills:', updatedSkills);
+      }
+
+      // Show completion reward
+      showTemporaryReward(`Mission Complete! +${mission.reward.xp} XP`, 'medal');
+
       // Mark mission as completed
-      setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : q));
+      setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
     }
+  };
+
+  const showTemporaryReward = (message, type) => {
+    // Use your existing reward notification system from ToDo component
+    console.log(`Reward: ${message}`); // Replace with your actual notification system
   };
 
   const handleUpdateSubtask = (questId, subtaskIndex, completed) => {
@@ -393,36 +476,42 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
         {/* Skills */}
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills</h3>
-          {availableSkills.map(skill => (
-            <div key={skill.id} style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              padding: '0.5rem 0',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div>
-                <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Level {skill.level}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{skill.xp} XP</div>
-                <div style={{ 
-                  width: '60px', 
-                  height: '4px', 
-                  background: '#e2e8f0',
-                  borderRadius: '2px',
-                  overflow: 'hidden'
-                }}>
+          {availableSkills.map(skill => {
+            const xpForNextLevel = skill.level * 100;
+            const currentLevelXp = skill.xp % xpForNextLevel;
+            const progress = (currentLevelXp / xpForNextLevel) * 100;
+            
+            return (
+              <div key={skill.id} style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                padding: '0.5rem 0',
+                borderBottom: '1px solid #e2e8f0'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Level {skill.level}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{currentLevelXp}/{xpForNextLevel} XP</div>
                   <div style={{ 
-                    width: `${(skill.xp % 100)}%`, 
-                    height: '100%', 
-                    background: '#4f46e5' 
-                  }}></div>
+                    width: '60px', 
+                    height: '4px', 
+                    background: '#e2e8f0',
+                    borderRadius: '2px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{ 
+                      width: `${progress}%`, 
+                      height: '100%', 
+                      background: '#4f46e5' 
+                    }}></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -616,6 +705,36 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
             <p>Create your first quest to get started!</p>
           </div>
         )}
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          Stat Rewards
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+          {Object.keys(statsConfig).map(stat => (
+            <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.8rem', textTransform: 'capitalize', width: '80px' }}>
+                {stat}:
+              </span>
+              <input
+                style={{ ...inputStyle, marginBottom: 0, padding: '0.25rem', fontSize: '0.8rem' }}
+                type="number"
+                min="0"
+                value={newQuest.reward.stats[stat] || 0}
+                onChange={(e) => setNewQuest({
+                  ...newQuest,
+                  reward: {
+                    ...newQuest.reward,
+                    stats: {
+                      ...newQuest.reward.stats,
+                      [stat]: parseInt(e.target.value) || 0
+                    }
+                  }
+                })}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -815,7 +934,8 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills Progress</h3>
           {availableSkills.map(skill => {
             const xpForNextLevel = skill.level * 100;
-            const progress = (skill.xp % xpForNextLevel) / xpForNextLevel * 100;
+            const currentLevelXp = skill.xp % xpForNextLevel;
+            const progress = (currentLevelXp / xpForNextLevel) * 100;
             
             return (
               <div key={skill.id} style={{ 
@@ -837,7 +957,7 @@ const LevelingSystem = ({ userData, onUpdateUserData }) => {
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 'bold' }}>Level {skill.level}</div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                      {skill.xp % xpForNextLevel}/{xpForNextLevel} XP
+                      {currentLevelXp}/{xpForNextLevel} XP
                     </div>
                   </div>
                 </div>

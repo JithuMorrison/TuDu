@@ -512,7 +512,7 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
   );
 };
 
-const RearrangePage = ({ userData }) => {
+const RearrangePage = ({ userData, setXp, saveUserData }) => {
   const [dailyTasks, setDailyTasks] = useState(() => {
     const saved = localStorage.getItem('dailyTasks');
     return saved ? JSON.parse(saved) : [];
@@ -768,12 +768,16 @@ const RearrangePage = ({ userData }) => {
           item.id === taskId ? { ...item, completed: !item.completed } : item
         )
       }));
+      setXp(userData.xp+10);
+      saveUserData({ ...userData, xp: userData.xp + 10 });
     } else {
       setDailyTasks(prev => 
         prev.map(item => 
           item.id === taskId ? { ...item, completed: !item.completed } : item
         )
       );
+      setXp(userData.xp+10);
+      saveUserData({ ...userData, xp: userData.xp + 10 });
     }
   };
 
