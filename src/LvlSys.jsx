@@ -8,8 +8,8 @@ import {
 
 const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvailableSkills }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [quests, setQuests] = useState([]);
-  const [missions, setMissions] = useState([]);
+  const [quests, setQuests] = useState(localStorage.getItem('userQuests') ? JSON.parse(localStorage.getItem('userQuests')) : []);
+  const [missions, setMissions] = useState(localStorage.getItem('userMissions') ? JSON.parse(localStorage.getItem('userMissions')) : []);
   const [showQuestForm, setShowQuestForm] = useState(false);
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingQuest, setEditingQuest] = useState(null);
@@ -25,40 +25,21 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const [newMission, setNewMission] = useState({
     title: '',
     description: '',
-    reward: { xp: 0, stats: {}, skills: [
-      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 10 },
-      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 20 },
-      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 10 },
-      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 5 }
-    ] },
+    reward: { xp: 0, stats: {}, skills: [] },
     deadline: '',
     type: 'daily'
   });
   const [newSubtask, setNewSubtask] = useState('');
 
-  // Load data from localStorage on component mount
-  useEffect(() => {
-    const savedQuests = localStorage.getItem('userQuests');
-    const savedMissions = localStorage.getItem('userMissions');
-    const savedSkills = localStorage.getItem('userSkills');
-    
-    if (savedQuests) setQuests(JSON.parse(savedQuests));
-    if (savedMissions) setMissions(JSON.parse(savedMissions));
-    if (savedSkills) setAvailableSkills(JSON.parse(savedSkills));
-  }, []);
-
-  // Save data to localStorage whenever it changes
+  // Persist quests to localStorage
   useEffect(() => {
     localStorage.setItem('userQuests', JSON.stringify(quests));
   }, [quests]);
 
+  // Persist missions to localStorage
   useEffect(() => {
     localStorage.setItem('userMissions', JSON.stringify(missions));
   }, [missions]);
-
-  useEffect(() => {
-    localStorage.setItem('userSkills', JSON.stringify(availableSkills));
-  }, [availableSkills]);
 
   const containerStyle = {
     padding: '2rem',
@@ -83,7 +64,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     gap: '1rem',
     marginBottom: '2rem',
     borderBottom: '2px solid #e2e8f0',
-    paddingBottom: '1rem'
+    paddingBottom: '1rem',
+    overflowX: 'auto'
   };
 
   const tabStyle = (isActive) => ({
@@ -93,7 +75,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: '500',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap'
   });
 
   const cardStyle = {
@@ -160,7 +143,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     border: '1px solid #d1d5db',
     borderRadius: '8px',
     fontSize: '1rem',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    boxSizing: 'border-box'
   };
 
   const buttonStyle = {
@@ -185,7 +169,6 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     background: '#ef4444'
   };
 
-  // Stats and Attributes Configuration
   const statsConfig = {
     strength: { icon: faFistRaised, color: '#dc2626', description: 'Physical power and capability' },
     agility: { icon: faRunning, color: '#16a34a', description: 'Speed and flexibility' },
@@ -251,10 +234,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const handleCompleteQuest = (questId) => {
     const quest = quests.find(q => q.id === questId);
     if (quest && onUpdateUserData) {
-      // Award XP
-      const newXp = userData.xp + quest.reward.xp;
-      
-      // Award stat improvements
+      let newXp = userData.xp + quest.reward.xp;
+      let newLevel = userData.level;
+      const xpNeeded = newLevel * 1000;
+
+      if (newXp >= xpNeeded) {
+        newLevel += 1;
+        newXp -= xpNeeded;
+      }
+
       const newStats = { ...userData.stats };
       if (quest.reward.stats) {
         Object.keys(quest.reward.stats).forEach(stat => {
@@ -262,51 +250,42 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         });
       }
 
-      // Update user data
-      onUpdateUserData({
-        xp: newXp,
-        stats: newStats
-      });
-
-      // Award skill improvements
+      let updatedSkills = [...availableSkills];
       if (quest.reward.skills && quest.reward.skills.length > 0) {
-        const updatedSkills = availableSkills.map(skill => {
+        updatedSkills = availableSkills.map(skill => {
           const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
           if (improvement) {
-            const newXp = skill.xp + improvement.xp;
+            const newSkillXp = skill.xp + improvement.xp;
             const xpForNextLevel = skill.level * 100;
-            let newLevel = skill.level;
-            let remainingXp = newXp;
-            
-            // Handle level ups
+            let newSkillLevel = skill.level;
+            let remainingXp = newSkillXp;
+
             while (remainingXp >= xpForNextLevel) {
-              newLevel += 1;
+              newSkillLevel += 1;
               remainingXp -= xpForNextLevel;
             }
-            
-            return { 
-              ...skill, 
-              xp: remainingXp, 
-              level: newLevel 
+
+            return {
+              ...skill,
+              xp: remainingXp,
+              level: newSkillLevel
             };
           }
           return skill;
         });
         setAvailableSkills(updatedSkills);
-        
-        // Show skill improvement notifications
-        quest.reward.skills.forEach(improvement => {
-          const skill = availableSkills.find(s => s.id === improvement.skillId);
-          if (skill) {
-            showTemporaryReward(`${skill.name} +${improvement.xp} XP`, 'star');
-          }
-        });
       }
 
-      // Show completion reward
-      showTemporaryReward(`Quest Complete! +${quest.reward.xp} XP`, 'trophy');
+      const updatedUserData = {
+        xp: newXp,
+        level: newLevel,
+        stats: newStats,
+        skills: updatedSkills
+      };
 
-      // Mark quest as completed
+      console.log('Updating user data after completing quest:', updatedUserData);
+
+      onUpdateUserData(updatedUserData);
       setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
     }
   };
@@ -314,10 +293,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const handleCompleteMission = (missionId) => {
     const mission = missions.find(m => m.id === missionId);
     if (mission && onUpdateUserData) {
-      // Award XP
-      const newXp = userData.xp + mission.reward.xp;
-      
-      // Award stat improvements
+      let newXp = userData.xp + mission.reward.xp;
+      let newLevel = userData.level;
+      const xpNeeded = newLevel * 1000;
+
+      if (newXp >= xpNeeded) {
+        newLevel += 1;
+        newXp -= xpNeeded;
+      }
+
       const newStats = { ...userData.stats };
       if (mission.reward.stats) {
         Object.keys(mission.reward.stats).forEach(stat => {
@@ -325,51 +309,44 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         });
       }
 
-      // Update user data
-      onUpdateUserData({
-        xp: newXp,
-        stats: newStats
-      });
-
-      // Award skill improvements
+      let updatedSkills = [...availableSkills];
       if (mission.reward.skills && mission.reward.skills.length > 0) {
-        const updatedSkills = availableSkills.map(skill => {
+        updatedSkills = availableSkills.map(skill => {
           const improvement = mission.reward.skills.find(s => s.skillId === skill.id);
           if (improvement) {
-            const newXp = skill.xp + improvement.xp;
+            const newSkillXp = skill.xp + improvement.xp;
             const xpForNextLevel = skill.level * 100;
-            let newLevel = skill.level;
-            let remainingXp = newXp;
-            
-            // Handle level ups
+            let newSkillLevel = skill.level;
+            let remainingXp = newSkillXp;
+
             while (remainingXp >= xpForNextLevel) {
-              newLevel += 1;
+              newSkillLevel += 1;
               remainingXp -= xpForNextLevel;
             }
-            
-            return { 
-              ...skill, 
-              xp: remainingXp, 
-              level: newLevel 
+
+            return {
+              ...skill,
+              xp: remainingXp,
+              level: newSkillLevel
             };
           }
           return skill;
         });
         setAvailableSkills(updatedSkills);
-        console.log('Updated Skills:', updatedSkills);
       }
 
-      // Show completion reward
-      showTemporaryReward(`Mission Complete! +${mission.reward.xp} XP`, 'medal');
+      const updatedUserData = {
+        xp: newXp,
+        level: newLevel,
+        stats: newStats,
+        skills: updatedSkills
+      };
 
-      // Mark mission as completed
+      console.log('Updating user data after completing mission:', updatedUserData);
+
+      onUpdateUserData(updatedUserData);
       setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
     }
-  };
-
-  const showTemporaryReward = (message, type) => {
-    // Use your existing reward notification system from ToDo component
-    console.log(`Reward: ${message}`); // Replace with your actual notification system
   };
 
   const handleUpdateSubtask = (questId, subtaskIndex, completed) => {
@@ -378,9 +355,11 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         const updatedSubtasks = quest.subtasks.map((subtask, index) =>
           index === subtaskIndex ? { ...subtask, completed } : subtask
         );
-        
-        const progress = (updatedSubtasks.filter(st => st.completed).length / updatedSubtasks.length) * 100;
-        
+
+        const progress = updatedSubtasks.length > 0 
+          ? (updatedSubtasks.filter(st => st.completed).length / updatedSubtasks.length) * 100
+          : 0;
+
         return { ...quest, subtasks: updatedSubtasks, progress };
       }
       return quest;
@@ -397,7 +376,6 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
   const renderOverview = () => (
     <div>
-      {/* Level Card */}
       <div style={levelCardStyle}>
         <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
           Level {userData.level}
@@ -409,16 +387,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           <div style={progressFillStyle}></div>
         </div>
         <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-          {userData.level * 1000 - userData.xp} XP to next level
+          {Math.max(0, userData.level * 1000 - userData.xp)} XP to next level
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div style={statsGridStyle}>
         <div style={statItemStyle}>
           <FontAwesomeIcon icon={faFire} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748' }}>
-            {userData.streak}
+            {userData.streak || 0}
           </div>
           <div style={{ color: '#64748b' }}>Day Streak</div>
         </div>
@@ -448,23 +425,21 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* Attributes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Attributes</h3>
           {Object.entries(userData.stats || {}).map(([stat, value]) => (
-            <div key={stat} style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div key={stat} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               padding: '0.5rem 0',
               borderBottom: '1px solid #e2e8f0'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FontAwesomeIcon 
-                  icon={statsConfig[stat]?.icon || faStar} 
-                  style={{ color: statsConfig[stat]?.color || '#6b7280' }} 
+                <FontAwesomeIcon
+                  icon={statsConfig[stat]?.icon || faStar}
+                  style={{ color: statsConfig[stat]?.color || '#6b7280' }}
                 />
                 <span style={{ textTransform: 'capitalize' }}>{stat}</span>
               </div>
@@ -473,39 +448,39 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           ))}
         </div>
 
-        {/* Skills */}
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills</h3>
-          {availableSkills.map(skill => {
+          {(availableSkills || []).map(skill => {
             const xpForNextLevel = skill.level * 100;
             const currentLevelXp = skill.xp % xpForNextLevel;
             const progress = (currentLevelXp / xpForNextLevel) * 100;
-            
+
             return (
-              <div key={skill.id} style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+              <div key={skill.id} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '0.5rem 0',
                 borderBottom: '1px solid #e2e8f0'
               }}>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Level {skill.level}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{currentLevelXp}/{xpForNextLevel} XP</div>
-                  <div style={{ 
-                    width: '60px', 
-                    height: '4px', 
+                  <div style={{
+                    width: '80px',
+                    height: '6px',
                     background: '#e2e8f0',
-                    borderRadius: '2px',
-                    overflow: 'hidden'
+                    borderRadius: '3px',
+                    overflow: 'hidden',
+                    marginTop: '2px'
                   }}>
-                    <div style={{ 
-                      width: `${progress}%`, 
-                      height: '100%', 
-                      background: '#4f46e5' 
+                    <div style={{
+                      width: `${progress}%`,
+                      height: '100%',
+                      background: '#4f46e5'
                     }}></div>
                   </div>
                 </div>
@@ -519,9 +494,9 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
   const renderQuests = () => (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ color: '#2d3748' }}>Your Quests</h2>
-        <button 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h2 style={{ color: '#2d3748', margin: 0 }}>Your Quests</h2>
+        <button
           style={buttonStyle}
           onClick={() => setShowQuestForm(true)}
         >
@@ -541,12 +516,12 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             onChange={(e) => setNewQuest({ ...newQuest, title: e.target.value })}
           />
           <textarea
-            style={{ ...inputStyle, minHeight: '80px' }}
+            style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
             placeholder="Quest Description"
             value={newQuest.description}
             onChange={(e) => setNewQuest({ ...newQuest, description: e.target.value })}
           />
-          
+
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
               Subtasks
@@ -560,14 +535,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 onChange={(e) => setNewSubtask(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddSubtask()}
               />
-              <button style={secondaryButtonStyle} onClick={handleAddSubtask}>
+              <button style={{ ...secondaryButtonStyle, marginRight: 0, marginBottom: 0 }} onClick={handleAddSubtask}>
                 Add
               </button>
             </div>
             {newQuest.subtasks.map((subtask, index) => (
-              <div key={index} style={{ 
-                padding: '0.5rem', 
-                background: '#f8fafc', 
+              <div key={index} style={{
+                padding: '0.5rem',
+                background: '#f8fafc',
                 borderRadius: '4px',
                 marginBottom: '0.25rem'
               }}>
@@ -576,7 +551,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                 XP Reward
@@ -585,8 +560,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 style={inputStyle}
                 type="number"
                 value={newQuest.reward.xp}
-                onChange={(e) => setNewQuest({ 
-                  ...newQuest, 
+                onChange={(e) => setNewQuest({
+                  ...newQuest,
                   reward: { ...newQuest.reward, xp: parseInt(e.target.value) || 0 }
                 })}
               />
@@ -604,7 +579,38 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Stat Rewards
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem' }}>
+              {Object.keys(statsConfig).map(stat => (
+                <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.75rem', textTransform: 'capitalize', width: '60px' }}>
+                    {stat}:
+                  </span>
+                  <input
+                    style={{ ...inputStyle, marginBottom: 0, padding: '0.5rem', fontSize: '0.9rem', flex: 1 }}
+                    type="number"
+                    min="0"
+                    value={newQuest.reward.stats[stat] || 0}
+                    onChange={(e) => setNewQuest({
+                      ...newQuest,
+                      reward: {
+                        ...newQuest.reward,
+                        stats: {
+                          ...newQuest.reward.stats,
+                          [stat]: parseInt(e.target.value) || 0
+                        }
+                      }
+                    })}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
             <button style={secondaryButtonStyle} onClick={() => setShowQuestForm(false)}>
               Cancel
             </button>
@@ -618,20 +624,20 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       <div style={{ display: 'grid', gap: '1rem' }}>
         {quests.filter(q => !q.completed).map(quest => (
           <div key={quest.id} style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-              <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>{quest.title}</h4>
                 <p style={{ margin: 0, color: '#64748b' }}>{quest.description}</p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  style={{ ...buttonStyle, padding: '0.5rem 1rem' }}
+                <button
+                  style={{ ...buttonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
                   onClick={() => handleCompleteQuest(quest.id)}
                 >
                   Complete
                 </button>
-                <button 
-                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem' }}
+                <button
+                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
                   onClick={() => handleDeleteQuest(quest.id)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
@@ -641,28 +647,28 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
             {quest.subtasks.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ 
-                  height: '6px', 
-                  background: '#e2e8f0', 
+                <div style={{
+                  height: '6px',
+                  background: '#e2e8f0',
                   borderRadius: '3px',
                   marginBottom: '0.5rem',
                   overflow: 'hidden'
                 }}>
-                  <div style={{ 
-                    height: '100%', 
-                    background: '#4f46e5', 
-                    width: `${quest.progress}%` 
+                  <div style={{
+                    height: '100%',
+                    background: '#4f46e5',
+                    width: `${quest.progress}%`
                   }}></div>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                   Progress: {Math.round(quest.progress)}%
                 </div>
-                
+
                 <div style={{ marginTop: '0.5rem' }}>
                   {quest.subtasks.map((subtask, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div key={index} style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: '0.5rem',
                       marginBottom: '0.25rem'
                     }}>
@@ -670,8 +676,9 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                         type="checkbox"
                         checked={subtask.completed}
                         onChange={(e) => handleUpdateSubtask(quest.id, index, e.target.checked)}
+                        style={{ cursor: 'pointer' }}
                       />
-                      <span style={{ 
+                      <span style={{
                         textDecoration: subtask.completed ? 'line-through' : 'none',
                         color: subtask.completed ? '#64748b' : '#2d3748'
                       }}>
@@ -683,12 +690,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
               </div>
             )}
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               fontSize: '0.8rem',
-              color: '#64748b'
+              color: '#64748b',
+              flexWrap: 'wrap',
+              gap: '0.5rem'
             }}>
               <span>Reward: {quest.reward.xp} XP</span>
               {quest.deadline && (
@@ -706,44 +715,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           </div>
         )}
       </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-          Stat Rewards
-        </label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-          {Object.keys(statsConfig).map(stat => (
-            <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', textTransform: 'capitalize', width: '80px' }}>
-                {stat}:
-              </span>
-              <input
-                style={{ ...inputStyle, marginBottom: 0, padding: '0.25rem', fontSize: '0.8rem' }}
-                type="number"
-                min="0"
-                value={newQuest.reward.stats[stat] || 0}
-                onChange={(e) => setNewQuest({
-                  ...newQuest,
-                  reward: {
-                    ...newQuest.reward,
-                    stats: {
-                      ...newQuest.reward.stats,
-                      [stat]: parseInt(e.target.value) || 0
-                    }
-                  }
-                })}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 
   const renderMissions = () => (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ color: '#2d3748' }}>Your Missions</h2>
-        <button 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h2 style={{ color: '#2d3748', margin: 0 }}>Your Missions</h2>
+        <button
           style={buttonStyle}
           onClick={() => setShowMissionForm(true)}
         >
@@ -763,13 +742,13 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             onChange={(e) => setNewMission({ ...newMission, title: e.target.value })}
           />
           <textarea
-            style={{ ...inputStyle, minHeight: '80px' }}
+            style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
             placeholder="Mission Description"
             value={newMission.description}
             onChange={(e) => setNewMission({ ...newMission, description: e.target.value })}
           />
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
                 XP Reward
@@ -778,8 +757,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 style={inputStyle}
                 type="number"
                 value={newMission.reward.xp}
-                onChange={(e) => setNewMission({ 
-                  ...newMission, 
+                onChange={(e) => setNewMission({
+                  ...newMission,
                   reward: { ...newMission.reward, xp: parseInt(e.target.value) || 0 }
                 })}
               />
@@ -801,7 +780,38 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Stat Rewards
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem' }}>
+              {Object.keys(statsConfig).map(stat => (
+                <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.75rem', textTransform: 'capitalize', width: '60px' }}>
+                    {stat}:
+                  </span>
+                  <input
+                    style={{ ...inputStyle, marginBottom: 0, padding: '0.5rem', fontSize: '0.9rem', flex: 1 }}
+                    type="number"
+                    min="0"
+                    value={newMission.reward.stats[stat] || 0}
+                    onChange={(e) => setNewMission({
+                      ...newMission,
+                      reward: {
+                        ...newMission.reward,
+                        stats: {
+                          ...newMission.reward.stats,
+                          [stat]: parseInt(e.target.value) || 0
+                        }
+                      }
+                    })}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
             <button style={secondaryButtonStyle} onClick={() => setShowMissionForm(false)}>
               Cancel
             </button>
@@ -815,13 +825,13 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       <div style={{ display: 'grid', gap: '1rem' }}>
         {missions.filter(m => !m.completed).map(mission => (
           <div key={mission.id} style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                   <h4 style={{ margin: 0, color: '#2d3748' }}>{mission.title}</h4>
-                  <span style={{ 
-                    padding: '0.25rem 0.5rem', 
-                    background: '#e0e7ff', 
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    background: '#e0e7ff',
                     color: '#4f46e5',
                     borderRadius: '12px',
                     fontSize: '0.7rem',
@@ -834,14 +844,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 <p style={{ margin: 0, color: '#64748b' }}>{mission.description}</p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  style={{ ...buttonStyle, padding: '0.5rem 1rem' }}
+                <button
+                  style={{ ...buttonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
                   onClick={() => handleCompleteMission(mission.id)}
                 >
                   Complete
                 </button>
-                <button 
-                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem' }}
+                <button
+                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
                   onClick={() => handleDeleteMission(mission.id)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
@@ -849,12 +859,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
               </div>
             </div>
 
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               fontSize: '0.8rem',
-              color: '#64748b'
+              color: '#64748b',
+              flexWrap: 'wrap',
+              gap: '0.5rem'
             }}>
               <span>Reward: {mission.reward.xp} XP</span>
               {mission.deadline && (
@@ -878,15 +890,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const renderStats = () => (
     <div>
       <h2 style={{ marginBottom: '2rem', color: '#2d3748' }}>Character Stats & Attributes</h2>
-      
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-        {/* Core Stats */}
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Core Stats</h3>
           {Object.entries(statsConfig).map(([stat, config]) => (
-            <div key={stat} style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div key={stat} style={{
+              display: 'flex',
+              alignItems: 'center',
               gap: '1rem',
               padding: '1rem 0',
               borderBottom: '1px solid #e2e8f0'
@@ -899,13 +910,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'white'
+                color: 'white',
+                flexShrink: 0
               }}>
                 <FontAwesomeIcon icon={config.icon} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: '0.25rem'
@@ -913,8 +925,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                   <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
                     {stat}
                   </span>
-                  <span style={{ 
-                    fontSize: '1.2rem', 
+                  <span style={{
+                    fontSize: '1.2rem',
                     fontWeight: 'bold',
                     color: config.color
                   }}>
@@ -929,21 +941,20 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           ))}
         </div>
 
-        {/* Skills Progress */}
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills Progress</h3>
-          {availableSkills.map(skill => {
+          {(availableSkills || []).map(skill => {
             const xpForNextLevel = skill.level * 100;
             const currentLevelXp = skill.xp % xpForNextLevel;
             const progress = (currentLevelXp / xpForNextLevel) * 100;
-            
+
             return (
-              <div key={skill.id} style={{ 
+              <div key={skill.id} style={{
                 padding: '1rem 0',
                 borderBottom: '1px solid #e2e8f0'
               }}>
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: '0.5rem'
@@ -961,14 +972,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                     </div>
                   </div>
                 </div>
-                <div style={{ 
-                  height: '8px', 
+                <div style={{
+                  height: '8px',
                   background: '#e2e8f0',
                   borderRadius: '4px',
                   overflow: 'hidden'
                 }}>
-                  <div style={{ 
-                    height: '100%', 
+                  <div style={{
+                    height: '100%',
                     background: '#4f46e5',
                     width: `${progress}%`,
                     transition: 'width 0.3s ease'
@@ -984,7 +995,6 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
   return (
     <div style={containerStyle}>
-      {/* Header */}
       <div style={headerStyle}>
         <h1 style={titleStyle}>Adventure System</h1>
         <p style={{ color: '#64748b' }}>
@@ -992,27 +1002,26 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         </p>
       </div>
 
-      {/* Navigation Tabs */}
       <div style={tabContainerStyle}>
-        <button 
+        <button
           style={tabStyle(activeTab === 'overview')}
           onClick={() => setActiveTab('overview')}
         >
           Overview
         </button>
-        <button 
+        <button
           style={tabStyle(activeTab === 'quests')}
           onClick={() => setActiveTab('quests')}
         >
           Quests
         </button>
-        <button 
+        <button
           style={tabStyle(activeTab === 'missions')}
           onClick={() => setActiveTab('missions')}
         >
           Missions
         </button>
-        <button 
+        <button
           style={tabStyle(activeTab === 'stats')}
           onClick={() => setActiveTab('stats')}
         >
@@ -1020,7 +1029,6 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         </button>
       </div>
 
-      {/* Content */}
       {activeTab === 'overview' && renderOverview()}
       {activeTab === 'quests' && renderQuests()}
       {activeTab === 'missions' && renderMissions()}
