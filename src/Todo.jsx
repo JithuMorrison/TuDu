@@ -40,25 +40,15 @@ function ToDo() {
   const [todaysGoal, setTodaysGoal] = useState(3);
   const [completedToday, setCompletedToday] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const [availableSkills, setAvailableSkills] = useState([
-      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
-      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
-      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
-      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
-    ]);
+  const [availableSkills, setAvailableSkills] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).skills : []);
 
-  const [userStats, setUserStats] = useState({
-    strength: 10,
-    agility: 10,
-    endurance: 10,
-    intelligence: 10,
-    hp: 100,
-    mp: 50
-  });
+  const [userStats, setUserStats] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).stats : {});
 
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
     const storedCategories = localStorage.getItem('data');
+    localStorage.getItem('userData') ? '' : localStorage.setItem('userData', JSON.stringify({xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, xp:0}]}));
+    localStorage.getItem('lastReset') ? '' : localStorage.setItem('lastReset', '');
     
     if (storedCategories) {
       setCato(JSON.parse(storedCategories));
@@ -96,7 +86,7 @@ function ToDo() {
     const checkForNewDay = () => {
       const now = new Date();
       const today = now.toDateString();
-      const userData = JSON.parse(localStorage.getItem('userData')) || {};
+      const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, xp:0}]};
       const lastReset = localStorage.getItem('lastReset');
 
       if (!lastReset || lastReset !== today) {
@@ -167,6 +157,7 @@ function ToDo() {
     const updatetask = [...task];
     const taskItem = updatetask[index];
     const wasCompleted = taskItem.status;
+    let updatedStats = { ...userStats };
     taskItem.status = isChecked;
     
     if (isChecked && !wasCompleted) {
@@ -200,15 +191,17 @@ function ToDo() {
         addXp(xpEarned);
         
         // Random chance to get stat improvements from regular tasks
-        if (Math.random() < 0.3) {
+        if (Math.random() < 1) {
           const stats = ['strength', 'agility', 'endurance', 'intelligence'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
           const statIncrease = Math.floor(Math.random() * 2) + 1;
           
-          setUserStats(prev => ({
-            ...prev,
-            [randomStat]: prev[randomStat] + statIncrease
-          }));
+          updatedStats = {
+            ...userStats,
+            [randomStat]: userStats[randomStat] + statIncrease
+          };
+
+          setUserStats(updatedStats);
           
           showTemporaryReward(`${randomStat.toUpperCase()} +${statIncrease}`, 'star');
         }
@@ -218,10 +211,12 @@ function ToDo() {
           const boostType = Math.random() > 0.5 ? 'hp' : 'mp';
           const boostAmount = Math.floor(Math.random() * 10) + 5;
           
-          setUserStats(prev => ({
-            ...prev,
-            [boostType]: prev[boostType] + boostAmount
-          }));
+          updatedStats = {
+            ...userStats,
+            [boostType]: userStats[boostType] + boostAmount
+          };
+
+          setUserStats(updatedStats);
           
           showTemporaryReward(`${boostType.toUpperCase()} +${boostAmount}`, 'heart');
         }
@@ -251,7 +246,8 @@ function ToDo() {
           saveUserData({
             streak: newStreak,
             lastCompletedDate: today,
-            completedToday: newCompleted
+            completedToday: newCompleted,
+            stats: userStats
           });
           
           // Award streak bonus every 3 days
@@ -265,7 +261,7 @@ function ToDo() {
         }
         else{
           setCompletedToday(newCompleted);
-          saveUserData({ completedToday: newCompleted });
+          saveUserData({ completedToday: newCompleted, stats: userStats});
         }
       }
       
@@ -504,7 +500,7 @@ function ToDo() {
   };
 
   const addXp = (amount) => {
-    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, completedToday:0, todaysGoal:2};
     const todayCompleted = userData.completedToday || 0;
     const todaysGoal = userData.todaysGoal || 3;
     
@@ -587,7 +583,7 @@ function ToDo() {
     const updatedData = { 
       ...userData, 
       ...updates,
-      stats: userStats,
+      stats: updates.stats || userData.stats,
       skills: availableSkills
     };
     localStorage.setItem('userData', JSON.stringify(updatedData));
