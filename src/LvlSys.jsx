@@ -400,25 +400,36 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   };
 
   const handleAddSkill = () => {
-    if (newSkill.name.trim() === '') return;
+  if (newSkill.name.trim() === '') return;
 
-    const skill = {
-      id: Date.now(),
-      ...newSkill,
-      level: 1,
-      xp: 0
-    };
-
-    setAvailableSkills([...availableSkills, skill]);
-    setNewSkill({
-      name: '',
-      description: '',
-      category: 'combat',
-      maxLevel: 10,
-      icon: 'star'
-    });
-    setShowSkillForm(false);
+  const skill = {
+    id: Date.now(),
+    ...newSkill,
+    level: 1,
+    xp: 0
   };
+
+  // Reset skill form
+  setNewSkill({
+    name: '',
+    description: '',
+    category: 'combat',
+    maxLevel: 10,
+    icon: 'star'
+  });
+  setShowSkillForm(false);
+
+  // Update user data and available skills properly
+  const updatedSkills = [...availableSkills, skill];
+
+  const updatedUserData = {
+    ...userData,
+    skills: updatedSkills
+  };
+
+  onUpdateUserData(updatedUserData);
+  setAvailableSkills([...availableSkills, skill]);
+};
 
   const handleAddTalent = () => {
     if (newTalent.name.trim() === '') return;
