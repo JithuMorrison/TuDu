@@ -26,7 +26,13 @@ import {
   faTrash,
   faEdit,
   faChevronLeft,
-  faChevronRight
+  faChevronRight,
+  faCalendar,
+  faCalendarAlt,
+  faClock,
+  faExclamationTriangle,
+  faFlag,
+  faCalendarDay
 } from '@fortawesome/free-solid-svg-icons';
 
 // Sortable Task Component for My Tasks
@@ -45,6 +51,16 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
     transition,
   };
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Urgent': return '#ef4444';
+      case 'High': return '#f59e0b';
+      case 'Medium': return '#3b82f6';
+      case 'Low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
   const taskItemStyle = {
     padding: '0.75rem',
     margin: '0.5rem 0',
@@ -54,6 +70,7 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
     cursor: isDragging ? 'grabbing' : 'grab',
     transition: 'all 0.2s ease',
     opacity: isDragging ? 0.8 : 1,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
   };
 
   const completedTaskStyle = {
@@ -72,14 +89,30 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-        <div {...attributes} {...listeners}>
+        <div {...attributes} {...listeners} style={{ cursor: 'grab' }}>
           <FontAwesomeIcon icon={faGripVertical} style={{ color: '#9ca3af' }} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>{task.content}</div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
-            {task.duration && <span>⏳ {task.duration}</span>}
-            {task.priority && <span>🎯 {task.priority}</span>}
+          <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '1rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+            {task.duration && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <FontAwesomeIcon icon={faClock} style={{ fontSize: '0.7rem' }} />
+                {task.duration}
+              </span>
+            )}
+            {task.priority && (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                color: getPriorityColor(task.priority),
+                fontWeight: '600'
+              }}>
+                <FontAwesomeIcon icon={faFlag} style={{ fontSize: '0.7rem' }} />
+                {task.priority}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -165,6 +198,16 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }
     transition,
   };
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Urgent': return '#ef4444';
+      case 'High': return '#f59e0b';
+      case 'Medium': return '#3b82f6';
+      case 'Low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
   const taskItemStyle = {
     padding: '0.5rem',
     margin: '0.25rem 0',
@@ -174,6 +217,7 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }
     cursor: isDragging ? 'grabbing' : 'grab',
     transition: 'all 0.2s ease',
     opacity: isDragging ? 0.8 : task.completed ? 0.7 : 1,
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
   };
 
   return (
@@ -197,9 +241,25 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }
           }}>
             {task.content}
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem' }}>
-            {task.duration && <span>⏳ {task.duration}</span>}
-            {task.priority && <span> • 🎯 {task.priority}</span>}
+          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {task.duration && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <FontAwesomeIcon icon={faClock} style={{ fontSize: '0.6rem' }} />
+                {task.duration}
+              </span>
+            )}
+            {task.priority && (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                color: getPriorityColor(task.priority),
+                fontWeight: '600'
+              }}>
+                <FontAwesomeIcon icon={faFlag} style={{ fontSize: '0.6rem' }} />
+                {task.priority}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -326,7 +386,8 @@ const Task = ({ task }) => {
     gap: '0.75rem',
     cursor: 'grabbing',
     transform: 'rotate(3deg)',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    maxWidth: '300px'
   };
 
   return (
@@ -340,13 +401,240 @@ const Task = ({ task }) => {
   );
 };
 
+// Calendar Component
+const Calendar = ({ selectedDates, onDateSelect, dayTasks }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState('month'); // 'month' or 'year'
+
+  const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const getTasksForDate = (date) => {
+    const dateString = date.toDateString();
+    return Object.values(dayTasks).flat().filter(task => 
+      task.date === dateString
+    );
+  };
+
+  const getPriorityCount = (tasks, priority) => {
+    return tasks.filter(task => task.priority === priority).length;
+  };
+
+  const renderMonthView = () => {
+    const daysInMonth = getDaysInMonth(currentDate);
+    const firstDay = getFirstDayOfMonth(currentDate);
+    const today = new Date();
+    
+    const days = [];
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} style={calendarDayStyle}></div>);
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const dateString = date.toDateString();
+      const isToday = date.toDateString() === today.toDateString();
+      const isSelected = selectedDates.some(selected => selected.toDateString() === dateString);
+      const dayTasks = getTasksForDate(date);
+      const hasUrgent = getPriorityCount(dayTasks, 'Urgent') > 0;
+      const hasHigh = getPriorityCount(dayTasks, 'High') > 0;
+      
+      days.push(
+        <div
+          key={day}
+          style={{
+            ...calendarDayStyle,
+            background: isSelected ? '#4f46e5' : isToday ? '#f0f9ff' : 'white',
+            color: isSelected ? 'white' : isToday ? '#4f46e5' : '#374151',
+            border: isSelected ? '2px solid #4f46e5' : isToday ? '2px solid #4f46e5' : '1px solid #e5e7eb',
+            fontWeight: isToday || isSelected ? '600' : '400',
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+          onClick={() => onDateSelect(date)}
+          title={`${dayTasks.length} tasks`}
+        >
+          {day}
+          {dayTasks.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '2px',
+              right: '2px',
+              display: 'flex',
+              gap: '1px'
+            }}>
+              {hasUrgent && <div style={{ width: '4px', height: '4px', background: '#ef4444', borderRadius: '50%' }}></div>}
+              {hasHigh && <div style={{ width: '4px', height: '4px', background: '#f59e0b', borderRadius: '50%' }}></div>}
+              {!hasUrgent && !hasHigh && dayTasks.length > 0 && (
+                <div style={{ width: '4px', height: '4px', background: '#10b981', borderRadius: '50%' }}></div>
+              )}
+            </div>
+          )}
+          {dayTasks.length > 0 && (
+            <div style={{
+              fontSize: '0.6rem',
+              color: isSelected ? 'white' : '#6b7280',
+              marginTop: '2px'
+            }}>
+              {dayTasks.length} task{dayTasks.length !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    return days;
+  };
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const navigateMonth = (direction) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1));
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  const calendarStyle = {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '1.5rem',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+    marginBottom: '2rem'
+  };
+
+  const calendarHeaderStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem'
+  };
+
+  const calendarGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '0.5rem'
+  };
+
+  const calendarDayStyle = {
+    padding: '0.75rem',
+    textAlign: 'center',
+    borderRadius: '8px',
+    fontSize: '0.9rem',
+    minHeight: '60px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease'
+  };
+
+  const dayHeaderStyle = {
+    textAlign: 'center',
+    fontWeight: '600',
+    color: '#4f46e5',
+    fontSize: '0.8rem',
+    padding: '0.5rem'
+  };
+
+  const navButtonStyle = {
+    background: '#4f46e5',
+    color: 'white',
+    border: 'none',
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
+  };
+
+  return (
+    <div style={calendarStyle}>
+      <div style={calendarHeaderStyle}>
+        <button 
+          onClick={() => navigateMonth(-1)}
+          style={navButtonStyle}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h3 style={{ margin: 0, color: '#2d3748' }}>
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </h3>
+          <button 
+            onClick={goToToday}
+            style={{
+              ...navButtonStyle,
+              background: '#f3f4f6',
+              color: '#4f46e5',
+              padding: '0.35rem 0.75rem',
+              fontSize: '0.8rem'
+            }}
+          >
+            Today
+          </button>
+        </div>
+        
+        <button 
+          onClick={() => navigateMonth(1)}
+          style={navButtonStyle}
+        >
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
+
+      <div style={calendarGridStyle}>
+        {dayNames.map(day => (
+          <div key={day} style={dayHeaderStyle}>
+            {day}
+          </div>
+        ))}
+        {renderMonthView()}
+      </div>
+
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+          <div style={{ width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }}></div>
+          <span>Urgent</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+          <div style={{ width: '8px', height: '8px', background: '#f59e0b', borderRadius: '50%' }}></div>
+          <span>High</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+          <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></div>
+          <span>Tasks</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Task Form Component
 const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
   const [formData, setFormData] = useState({
     content: task?.content || '',
     duration: task?.duration || '30m',
     priority: task?.priority || 'Medium',
-    description: task?.description || ''
+    description: task?.description || '',
+    date: task?.date || new Date().toDateString()
   });
 
   if (!isOpen) return null;
@@ -359,8 +647,19 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
         content: '',
         duration: '30m',
         priority: 'Medium',
-        description: ''
+        description: '',
+        date: new Date().toDateString()
       });
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Urgent': return '#ef4444';
+      case 'High': return '#f59e0b';
+      case 'Medium': return '#3b82f6';
+      case 'Low': return '#10b981';
+      default: return '#6b7280';
     }
   };
 
@@ -383,7 +682,9 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
         borderRadius: '12px',
         width: '90%',
         maxWidth: '500px',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+        maxHeight: '90vh',
+        overflowY: 'auto'
       }}>
         <h3 style={{ marginBottom: '1.5rem', color: '#1f2937' }}>
           {task ? 'Edit Task' : 'Create New Task'}
@@ -446,15 +747,34 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
                   width: '100%',
                   padding: '0.75rem',
                   border: '2px solid #e5e7eb',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  color: getPriorityColor(formData.priority),
+                  fontWeight: '600'
                 }}
               >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Urgent">Urgent</option>
+                <option value="Low" style={{ color: '#10b981' }}>Low</option>
+                <option value="Medium" style={{ color: '#3b82f6' }}>Medium</option>
+                <option value="High" style={{ color: '#f59e0b' }}>High</option>
+                <option value="Urgent" style={{ color: '#ef4444' }}>Urgent</option>
               </select>
             </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Date
+            </label>
+            <input
+              type="date"
+              value={formData.date ? new Date(formData.date).toISOString().split('T')[0] : ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, date: new Date(e.target.value).toDateString() }))}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px'
+              }}
+            />
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
@@ -518,16 +838,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [days] = useState([
-    { id: 'monday', name: 'Monday' },
-    { id: 'tuesday', name: 'Tuesday' },
-    { id: 'wednesday', name: 'Wednesday' },
-    { id: 'thursday', name: 'Thursday' },
-    { id: 'friday', name: 'Friday' },
-    { id: 'saturday', name: 'Saturday' },
-    { id: 'sunday', name: 'Sunday' }
-  ]);
-
+  const [selectedDates, setSelectedDates] = useState([]);
   const [dayTasks, setDayTasks] = useState(() => {
     const saved = localStorage.getItem('dayTasks');
     return saved ? JSON.parse(saved) : {};
@@ -545,6 +856,34 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Generate days based on selected dates
+  const getDaysFromSelectedDates = () => {
+    if (selectedDates.length === 0) {
+      // Default to current week if no dates selected
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      
+      return Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        return {
+          id: date.toDateString(),
+          name: date.toLocaleDateString('en-US', { weekday: 'long' }),
+          date: date
+        };
+      });
+    }
+
+    return selectedDates.map(date => ({
+      id: date.toDateString(),
+      name: date.toLocaleDateString('en-US', { weekday: 'long' }),
+      date: date
+    }));
+  };
+
+  const days = getDaysFromSelectedDates();
 
   // Time slots for the timeline (24 hours)
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -575,7 +914,24 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
     return null;
   };
 
-  // Add this function to handle moving tasks from days back to My Tasks
+  const handleDateSelect = (date) => {
+    setSelectedDates(prev => {
+      const dateString = date.toDateString();
+      const exists = prev.some(d => d.toDateString() === dateString);
+      
+      if (exists) {
+        // Remove date if already selected
+        return prev.filter(d => d.toDateString() !== dateString);
+      } else if (prev.length < 2) {
+        // Add date if less than 2 selected
+        return [...prev, date];
+      } else {
+        // Replace the oldest selected date
+        return [prev[1], date];
+      }
+    });
+  };
+
   const moveTaskToMyTasks = (taskId, dayId) => {
     if (!dayId) return;
 
@@ -710,6 +1066,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       duration: taskData.duration,
       priority: taskData.priority,
       description: taskData.description,
+      date: taskData.date,
       completed: false,
       createdAt: new Date().toISOString()
     };
@@ -959,9 +1316,16 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       <div style={headerStyle}>
         <h1 style={titleStyle}>Weekly Task Planner</h1>
         <p style={{ color: '#64748b', fontSize: '1.1rem' }}>
-          Drag tasks from "My Tasks" to the timeline, or move them back
+          Select dates from calendar and drag tasks to schedule them
         </p>
       </div>
+
+      {/* Calendar */}
+      <Calendar 
+        selectedDates={selectedDates} 
+        onDateSelect={handleDateSelect}
+        dayTasks={dayTasks}
+      />
 
       {/* Stats */}
       <div style={statsStyle}>
@@ -972,6 +1336,11 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
               {getCompletedCount()} of {getTotalTasks()} tasks completed
               ({Math.round((getCompletedCount() / Math.max(getTotalTasks(), 1)) * 100)}%)
             </p>
+            {selectedDates.length > 0 && (
+              <p style={{ margin: '0.5rem 0 0 0', color: '#4f46e5', fontSize: '0.9rem' }}>
+                📅 Viewing {selectedDates.length} selected date{selectedDates.length !== 1 ? 's' : ''}
+              </p>
+            )}
           </div>
           <div style={{ 
             background: '#4f46e5', 
@@ -1080,8 +1449,14 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                   Previous
                 </button>
                 
-                <h3 style={{ color: '#2d3748', margin: 0 }}>
-                  {visibleDays.map(d => d.name).join(' & ')}
+                <h3 style={{ color: '#2d3748', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FontAwesomeIcon icon={faCalendarDay} />
+                  {visibleDays.map((d, index) => (
+                    <span key={d.id}>
+                      {d.name} ({d.date.toLocaleDateString()})
+                      {index < visibleDays.length - 1 && ' & '}
+                    </span>
+                  ))}
                 </h3>
                 
                 <button
@@ -1104,7 +1479,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                     <div style={dayHeaderStyle}>
                       {day.name}
                       <div style={{ fontSize: '0.8rem', opacity: 0.9, marginTop: '0.25rem' }}>
-                        {(dayTasks[day.id] || []).length} tasks
+                        {day.date.toLocaleDateString()} • {(dayTasks[day.id] || []).length} tasks
                       </div>
                     </div>
                     
