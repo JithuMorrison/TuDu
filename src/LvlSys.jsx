@@ -685,16 +685,29 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   };
 
   const handleClassChange = (newClass) => {
+    // If player already has a class, get its stats
+    const currentStats = playerClasses[playerClass]?.stats || {};
+    const newClassStats = playerClasses[newClass].stats;
+
+    // Calculate updated stats by subtracting old class values and adding new class values
+    const updatedStats = {};
+    for (const key in userData.stats) {
+      const baseValue = userData.stats[key] || 0;
+      const currentClassValue = currentStats[key] || 0;
+      const newClassValue = newClassStats[key] || 0;
+
+      updatedStats[key] = baseValue - currentClassValue + newClassValue;
+    }
+
+    // Update state and description
     setPlayerClass(newClass);
     setPlayerDescription(playerClasses[newClass].description);
-    
-    // Update base stats based on class
-    const newStats = { ...userData.stats, ...playerClasses[newClass].stats };
+
     const updatedUserData = {
       ...userData,
-      stats: newStats
+      stats: updatedStats
     };
-    
+
     onUpdateUserData(updatedUserData);
   };
 
