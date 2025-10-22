@@ -589,7 +589,7 @@ function ToDo() {
       ...userData, 
       ...updates,
       stats: updates.stats || userData.stats,
-      skills: availableSkills
+      skills: updates.skills || availableSkills || userData.skills
     };
     localStorage.setItem('userData', JSON.stringify(updatedData));
   };
