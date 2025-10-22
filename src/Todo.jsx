@@ -252,7 +252,7 @@ function ToDo() {
             streak: newStreak,
             lastCompletedDate: today,
             completedToday: newCompleted,
-            stats: userStats
+            stats: updatedStats
           });
           
           // Award streak bonus every 3 days
@@ -266,7 +266,7 @@ function ToDo() {
         }
         else{
           setCompletedToday(newCompleted);
-          saveUserData({ completedToday: newCompleted, stats: userStats});
+          saveUserData({ completedToday: newCompleted, stats: updatedStats});
         }
       }
       
