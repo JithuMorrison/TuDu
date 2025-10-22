@@ -3,47 +3,146 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faFire, faTrophy, faStar, faMedal, faGem, faCheckCircle,
   faFistRaised, faShieldAlt, faRunning, faBrain, faHeart, faMagic,
-  faPlus, faTrash, faEdit, faList, faBullseye, faFlagCheckered
+  faPlus, faTrash, faEdit, faList, faBullseye, faFlagCheckered,
+  faCrown, faUser, faMagicWandSparkles, faBook, faGraduationCap,
+  faTags, faRocket, faShield, faDragon, faWandSparkles
 } from '@fortawesome/free-solid-svg-icons';
 
 const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvailableSkills }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [quests, setQuests] = useState(localStorage.getItem('userQuests') ? JSON.parse(localStorage.getItem('userQuests')) : []);
   const [missions, setMissions] = useState(localStorage.getItem('userMissions') ? JSON.parse(localStorage.getItem('userMissions')) : []);
+  const [achievements, setAchievements] = useState(localStorage.getItem('userAchievements') ? JSON.parse(localStorage.getItem('userAchievements')) : []);
+  const [titles, setTitles] = useState(localStorage.getItem('userTitles') ? JSON.parse(localStorage.getItem('userTitles')) : []);
+  const [talents, setTalents] = useState(localStorage.getItem('userTalents') ? JSON.parse(localStorage.getItem('userTalents')) : []);
+  
   const [showQuestForm, setShowQuestForm] = useState(false);
   const [showMissionForm, setShowMissionForm] = useState(false);
+  const [showSkillForm, setShowSkillForm] = useState(false);
+  const [showTalentForm, setShowTalentForm] = useState(false);
+  const [showTitleForm, setShowTitleForm] = useState(false);
+  
   const [editingQuest, setEditingQuest] = useState(null);
   const [editingMission, setEditingMission] = useState(null);
+  
   const [newQuest, setNewQuest] = useState({
     title: '',
     description: '',
     subtasks: [],
-    reward: { xp: 0, stats: {}, skills: [] },
+    reward: { xp: 0, stats: {}, skills: [], talents: [] },
+    requiredSkills: [],
     deadline: '',
     difficulty: 'medium'
   });
+  
   const [newMission, setNewMission] = useState({
     title: '',
     description: '',
-    reward: { xp: 0, stats: {}, skills: [] },
+    reward: { xp: 0, stats: {}, skills: [], talents: [] },
+    requiredSkills: [],
     deadline: '',
     type: 'daily'
   });
+  
+  const [newSkill, setNewSkill] = useState({
+    name: '',
+    description: '',
+    category: 'combat',
+    maxLevel: 10,
+    icon: 'star'
+  });
+  
+  const [newTalent, setNewTalent] = useState({
+    name: '',
+    description: '',
+    tree: 'general',
+    requiredLevel: 1,
+    cost: 1,
+    effects: {}
+  });
+  
+  const [newTitle, setNewTitle] = useState({
+    name: '',
+    description: '',
+    type: 'custom',
+    requirements: {}
+  });
+  
   const [newSubtask, setNewSubtask] = useState('');
+  const [playerClass, setPlayerClass] = useState(localStorage.getItem('playerClass') || 'Adventurer');
+  const [playerDescription, setPlayerDescription] = useState(localStorage.getItem('playerDescription') || 'A brave adventurer starting their journey');
 
-  // Persist quests to localStorage
+  // Available icons for skills
+  const skillIcons = {
+    star: faStar,
+    fire: faFire,
+    trophy: faTrophy,
+    medal: faMedal,
+    gem: faGem,
+    fist: faFistRaised,
+    shield: faShieldAlt,
+    running: faRunning,
+    brain: faBrain,
+    heart: faHeart,
+    magic: faMagic,
+    crown: faCrown,
+    wand: faWandSparkles,
+    book: faBook,
+    graduation: faGraduationCap
+  };
+
+  // Talent trees
+  const talentTrees = {
+    general: 'General',
+    combat: 'Combat',
+    magic: 'Magic',
+    crafting: 'Crafting',
+    stealth: 'Stealth',
+    leadership: 'Leadership'
+  };
+
+  // Player classes
+  const playerClasses = {
+    Adventurer: { description: 'A versatile explorer of the unknown', stats: { strength: 10, agility: 12, endurance: 10, intelligence: 8 } },
+    Warrior: { description: 'A master of weapons and combat', stats: { strength: 15, agility: 8, endurance: 12, intelligence: 5 } },
+    Mage: { description: 'A wielder of arcane powers', stats: { strength: 5, agility: 8, endurance: 6, intelligence: 18 } },
+    Rogue: { description: 'A stealthy and agile specialist', stats: { strength: 8, agility: 15, endurance: 8, intelligence: 9 } },
+    Cleric: { description: 'A divine servant with healing powers', stats: { strength: 10, agility: 8, endurance: 12, intelligence: 10 } },
+    Ranger: { description: 'A wilderness expert and tracker', stats: { strength: 10, agility: 14, endurance: 10, intelligence: 6 } }
+  };
+
+  // Persist data to localStorage
   useEffect(() => {
     localStorage.setItem('userQuests', JSON.stringify(quests));
   }, [quests]);
 
-  // Persist missions to localStorage
   useEffect(() => {
     localStorage.setItem('userMissions', JSON.stringify(missions));
   }, [missions]);
 
+  useEffect(() => {
+    localStorage.setItem('userAchievements', JSON.stringify(achievements));
+  }, [achievements]);
+
+  useEffect(() => {
+    localStorage.setItem('userTitles', JSON.stringify(titles));
+  }, [titles]);
+
+  useEffect(() => {
+    localStorage.setItem('userTalents', JSON.stringify(talents));
+  }, [talents]);
+
+  useEffect(() => {
+    localStorage.setItem('playerClass', playerClass);
+  }, [playerClass]);
+
+  useEffect(() => {
+    localStorage.setItem('playerDescription', playerDescription);
+  }, [playerDescription]);
+
   const containerStyle = {
     padding: '2rem',
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto'
   };
 
@@ -169,6 +268,11 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     background: '#ef4444'
   };
 
+  const successButtonStyle = {
+    ...buttonStyle,
+    background: '#10b981'
+  };
+
   const statsConfig = {
     strength: { icon: faFistRaised, color: '#dc2626', description: 'Physical power and capability' },
     agility: { icon: faRunning, color: '#16a34a', description: 'Speed and flexibility' },
@@ -176,6 +280,77 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     intelligence: { icon: faBrain, color: '#2563eb', description: 'Mental capacity and learning' },
     hp: { icon: faHeart, color: '#dc2626', description: 'Health Points' },
     mp: { icon: faMagic, color: '#7c3aed', description: 'Mana Points' }
+  };
+
+  // Initialize default skills if none exist
+  useEffect(() => {
+    if (availableSkills.length === 0) {
+      const defaultSkills = [
+        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'star' },
+        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'brain' },
+        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'shield' },
+        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'book' }
+      ];
+      setAvailableSkills(defaultSkills);
+    }
+  }, []);
+
+  // Initialize default titles
+  useEffect(() => {
+    if (titles.length === 0) {
+      const defaultTitles = [
+        { id: 1, name: 'Novice Adventurer', description: 'Completed first quest', type: 'auto', requirements: { questsCompleted: 1 } },
+        { id: 2, name: 'Quest Novice', description: 'Completed 10 quests', type: 'auto', requirements: { questsCompleted: 10 } },
+        { id: 3, name: 'Mission Specialist', description: 'Completed 25 missions', type: 'auto', requirements: { missionsCompleted: 25 } },
+        { id: 4, name: 'Master Adventurer', description: 'Completed 50 quests', type: 'auto', requirements: { questsCompleted: 50 } },
+        { id: 5, name: 'Legendary Hero', description: 'Completed 100 quests', type: 'auto', requirements: { questsCompleted: 100 } }
+      ];
+      setTitles(defaultTitles);
+    }
+  }, []);
+
+  // Check for title unlocks
+  useEffect(() => {
+    checkTitleUnlocks();
+  }, [quests, missions]);
+
+  const checkTitleUnlocks = () => {
+    const completedQuests = quests.filter(q => q.completed).length;
+    const completedMissions = missions.filter(m => m.completed).length;
+    
+    titles.forEach(title => {
+      if (title.type === 'auto' && !achievements.find(a => a.id === title.id)) {
+        let shouldUnlock = false;
+        
+        if (title.requirements.questsCompleted && completedQuests >= title.requirements.questsCompleted) {
+          shouldUnlock = true;
+        }
+        if (title.requirements.missionsCompleted && completedMissions >= title.requirements.missionsCompleted) {
+          shouldUnlock = true;
+        }
+        
+        if (shouldUnlock) {
+          const newAchievement = {
+            id: title.id,
+            name: title.name,
+            description: title.description,
+            type: 'title',
+            unlockedAt: new Date().toISOString(),
+            title: title
+          };
+          
+          setAchievements(prev => [...prev, newAchievement]);
+          
+          // Show notification
+          showTemporaryReward(`Title Unlocked: ${title.name}`, 'crown');
+        }
+      }
+    });
+  };
+
+  const showTemporaryReward = (message, icon) => {
+    // This would be connected to your notification system
+    console.log(`Reward: ${message}`);
   };
 
   const handleAddQuest = () => {
@@ -194,7 +369,8 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       title: '',
       description: '',
       subtasks: [],
-      reward: { xp: 0, stats: {}, skills: [] },
+      reward: { xp: 0, stats: {}, skills: [], talents: [] },
+      requiredSkills: [],
       deadline: '',
       difficulty: 'medium'
     });
@@ -215,11 +391,72 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     setNewMission({
       title: '',
       description: '',
-      reward: { xp: 0, stats: {}, skills: [] },
+      reward: { xp: 0, stats: {}, skills: [], talents: [] },
+      requiredSkills: [],
       deadline: '',
       type: 'daily'
     });
     setShowMissionForm(false);
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.name.trim() === '') return;
+
+    const skill = {
+      id: Date.now(),
+      ...newSkill,
+      level: 1,
+      xp: 0
+    };
+
+    setAvailableSkills([...availableSkills, skill]);
+    setNewSkill({
+      name: '',
+      description: '',
+      category: 'combat',
+      maxLevel: 10,
+      icon: 'star'
+    });
+    setShowSkillForm(false);
+  };
+
+  const handleAddTalent = () => {
+    if (newTalent.name.trim() === '') return;
+
+    const talent = {
+      id: Date.now(),
+      ...newTalent,
+      unlocked: false
+    };
+
+    setTalents([...talents, talent]);
+    setNewTalent({
+      name: '',
+      description: '',
+      tree: 'general',
+      requiredLevel: 1,
+      cost: 1,
+      effects: {}
+    });
+    setShowTalentForm(false);
+  };
+
+  const handleAddTitle = () => {
+    if (newTitle.name.trim() === '') return;
+
+    const title = {
+      id: Date.now(),
+      ...newTitle
+    };
+
+    setTitles([...titles, title]);
+    setNewTitle({
+      name: '',
+      description: '',
+      type: 'custom',
+      requirements: {}
+    });
+    setShowTitleForm(false);
   };
 
   const handleAddSubtask = () => {
@@ -260,7 +497,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             let newSkillLevel = skill.level;
             let remainingXp = newSkillXp;
 
-            while (remainingXp >= xpForNextLevel) {
+            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
               newSkillLevel += 1;
               remainingXp -= xpForNextLevel;
             }
@@ -283,10 +520,11 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         skills: updatedSkills
       };
 
-      console.log('Updating user data after completing quest:', updatedUserData);
-
       onUpdateUserData(updatedUserData);
       setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
+      
+      // Check for achievements
+      checkQuestAchievements();
     }
   };
 
@@ -319,7 +557,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             let newSkillLevel = skill.level;
             let remainingXp = newSkillXp;
 
-            while (remainingXp >= xpForNextLevel) {
+            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
               newSkillLevel += 1;
               remainingXp -= xpForNextLevel;
             }
@@ -342,10 +580,56 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         skills: updatedSkills
       };
 
-      console.log('Updating user data after completing mission:', updatedUserData);
-
       onUpdateUserData(updatedUserData);
       setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
+      
+      // Check for achievements
+      checkMissionAchievements();
+    }
+  };
+
+  const checkQuestAchievements = () => {
+    const completedQuests = quests.filter(q => q.completed).length;
+    
+    // Check for quest count achievements
+    if (completedQuests >= 10 && !achievements.find(a => a.name === 'Quest Novice')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Quest Novice',
+        description: 'Completed 10 quests',
+        type: 'quest',
+        unlockedAt: new Date().toISOString()
+      };
+      setAchievements(prev => [...prev, achievement]);
+      showTemporaryReward('Achievement Unlocked: Quest Novice', 'trophy');
+    }
+    
+    if (completedQuests >= 50 && !achievements.find(a => a.name === 'Master Adventurer')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Master Adventurer',
+        description: 'Completed 50 quests',
+        type: 'quest',
+        unlockedAt: new Date().toISOString()
+      };
+      setAchievements(prev => [...prev, achievement]);
+      showTemporaryReward('Achievement Unlocked: Master Adventurer', 'trophy');
+    }
+  };
+
+  const checkMissionAchievements = () => {
+    const completedMissions = missions.filter(m => m.completed).length;
+    
+    if (completedMissions >= 25 && !achievements.find(a => a.name === 'Mission Specialist')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Mission Specialist',
+        description: 'Completed 25 missions',
+        type: 'mission',
+        unlockedAt: new Date().toISOString()
+      };
+      setAchievements(prev => [...prev, achievement]);
+      showTemporaryReward('Achievement Unlocked: Mission Specialist', 'trophy');
     }
   };
 
@@ -374,15 +658,82 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     setMissions(missions.filter(m => m.id !== missionId));
   };
 
+  const handleUnlockTalent = (talentId) => {
+    const talent = talents.find(t => t.id === talentId);
+    if (talent && userData.level >= talent.requiredLevel) {
+      setTalents(talents.map(t => 
+        t.id === talentId ? { ...t, unlocked: true } : t
+      ));
+      
+      // Apply talent effects to user stats
+      if (talent.effects) {
+        const newStats = { ...userData.stats };
+        Object.keys(talent.effects).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + talent.effects[stat];
+        });
+        
+        const updatedUserData = {
+          ...userData,
+          stats: newStats
+        };
+        
+        onUpdateUserData(updatedUserData);
+      }
+      
+      showTemporaryReward(`Talent Unlocked: ${talent.name}`, 'magic');
+    }
+  };
+
+  const handleClassChange = (newClass) => {
+    setPlayerClass(newClass);
+    setPlayerDescription(playerClasses[newClass].description);
+    
+    // Update base stats based on class
+    const newStats = { ...userData.stats, ...playerClasses[newClass].stats };
+    const updatedUserData = {
+      ...userData,
+      stats: newStats
+    };
+    
+    onUpdateUserData(updatedUserData);
+  };
+
+  const toggleSkillSelection = (skillId) => {
+    setNewQuest(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.includes(skillId)
+        ? prev.requiredSkills.filter(id => id !== skillId)
+        : [...prev.requiredSkills, skillId]
+    }));
+  };
+
+  const toggleMissionSkillSelection = (skillId) => {
+    setNewMission(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.includes(skillId)
+        ? prev.requiredSkills.filter(id => id !== skillId)
+        : [...prev.requiredSkills, skillId]
+    }));
+  };
+
   const renderOverview = () => (
     <div>
       <div style={levelCardStyle}>
-        <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-          Level {userData.level}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '1.2rem', opacity: 0.9 }}>{playerClass}</div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{playerDescription}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Level {userData.level}
+            </div>
+            <div style={{ fontSize: '1.2rem', opacity: 0.9 }}>
+              {userData.xp} / {userData.level * 1000} XP
+            </div>
+          </div>
         </div>
-        <div style={{ fontSize: '1.2rem', opacity: 0.9 }}>
-          {userData.xp} / {userData.level * 1000} XP
-        </div>
+        
         <div style={progressBarStyle}>
           <div style={progressFillStyle}></div>
         </div>
@@ -403,7 +754,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         <div style={statItemStyle}>
           <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748' }}>
-            {userData.achievements?.length || 0}
+            {achievements.length}
           </div>
           <div style={{ color: '#64748b' }}>Achievements</div>
         </div>
@@ -449,8 +800,14 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         </div>
 
         <div style={cardStyle}>
-          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills</h3>
-          {(availableSkills || []).map(skill => {
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ color: '#2d3748', margin: 0 }}>Skills</h3>
+            <button style={buttonStyle} onClick={() => setShowSkillForm(true)}>
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+              New Skill
+            </button>
+          </div>
+          {availableSkills.map(skill => {
             const xpForNextLevel = skill.level * 100;
             const currentLevelXp = skill.xp % xpForNextLevel;
             const progress = (currentLevelXp / xpForNextLevel) * 100;
@@ -464,8 +821,18 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 borderBottom: '1px solid #e2e8f0'
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Level {skill.level}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FontAwesomeIcon 
+                      icon={skillIcons[skill.icon] || faStar} 
+                      style={{ color: '#4f46e5' }} 
+                    />
+                    <div>
+                      <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        Level {skill.level}/{skill.maxLevel} • {skill.category}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{currentLevelXp}/{xpForNextLevel} XP</div>
@@ -521,6 +888,36 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             value={newQuest.description}
             onChange={(e) => setNewQuest({ ...newQuest, description: e.target.value })}
           />
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Required Skills
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {availableSkills.map(skill => (
+                <button
+                  key={skill.id}
+                  type="button"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: newQuest.requiredSkills.includes(skill.id) ? '#4f46e5' : '#e5e7eb',
+                    color: newQuest.requiredSkills.includes(skill.id) ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onClick={() => toggleSkillSelection(skill.id)}
+                >
+                  <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
+                  {skill.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -628,6 +1025,29 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
               <div style={{ flex: 1 }}>
                 <h4 style={{ margin: '0 0 0.5rem 0', color: '#2d3748' }}>{quest.title}</h4>
                 <p style={{ margin: 0, color: '#64748b' }}>{quest.description}</p>
+                
+                {quest.requiredSkills.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    {quest.requiredSkills.map(skillId => {
+                      const skill = availableSkills.find(s => s.id === skillId);
+                      return skill ? (
+                        <span key={skillId} style={{
+                          padding: '0.25rem 0.5rem',
+                          background: '#e0e7ff',
+                          color: '#4f46e5',
+                          borderRadius: '12px',
+                          fontSize: '0.7rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
+                          {skill.name}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
@@ -748,6 +1168,36 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             onChange={(e) => setNewMission({ ...newMission, description: e.target.value })}
           />
 
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Required Skills
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {availableSkills.map(skill => (
+                <button
+                  key={skill.id}
+                  type="button"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: newMission.requiredSkills.includes(skill.id) ? '#4f46e5' : '#e5e7eb',
+                    color: newMission.requiredSkills.includes(skill.id) ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onClick={() => toggleMissionSkillSelection(skill.id)}
+                >
+                  <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
+                  {skill.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -842,6 +1292,29 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                   </span>
                 </div>
                 <p style={{ margin: 0, color: '#64748b' }}>{mission.description}</p>
+                
+                {mission.requiredSkills.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    {mission.requiredSkills.map(skillId => {
+                      const skill = availableSkills.find(s => s.id === skillId);
+                      return skill ? (
+                        <span key={skillId} style={{
+                          padding: '0.25rem 0.5rem',
+                          background: '#e0e7ff',
+                          color: '#4f46e5',
+                          borderRadius: '12px',
+                          fontSize: '0.7rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
+                          {skill.name}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
@@ -889,9 +1362,59 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
   const renderStats = () => (
     <div>
-      <h2 style={{ marginBottom: '2rem', color: '#2d3748' }}>Character Stats & Attributes</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h2 style={{ color: '#2d3748', margin: 0 }}>Character Development</h2>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button style={buttonStyle} onClick={() => setShowSkillForm(true)}>
+            <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+            New Skill
+          </button>
+          <button style={successButtonStyle} onClick={() => setShowTalentForm(true)}>
+            <FontAwesomeIcon icon={faMagicWandSparkles} style={{ marginRight: '0.5rem' }} />
+            New Talent
+          </button>
+        </div>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Player Class</h3>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Select Class
+            </label>
+            <select
+              style={inputStyle}
+              value={playerClass}
+              onChange={(e) => handleClassChange(e.target.value)}
+            >
+              {Object.keys(playerClasses).map(cls => (
+                <option key={cls} value={cls}>{cls}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Character Description
+            </label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
+              value={playerDescription}
+              onChange={(e) => setPlayerDescription(e.target.value)}
+              placeholder="Describe your character..."
+            />
+          </div>
+          <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+            <h4 style={{ margin: '0 0 0.5rem 0' }}>Class Bonuses</h4>
+            {Object.entries(playerClasses[playerClass].stats).map(([stat, value]) => (
+              <div key={stat} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ textTransform: 'capitalize' }}>{stat}:</span>
+                <span style={{ fontWeight: 'bold' }}>+{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Core Stats</h3>
           {Object.entries(statsConfig).map(([stat, config]) => (
@@ -943,7 +1466,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Skills Progress</h3>
-          {(availableSkills || []).map(skill => {
+          {availableSkills.map(skill => {
             const xpForNextLevel = skill.level * 100;
             const currentLevelXp = skill.xp % xpForNextLevel;
             const progress = (currentLevelXp / xpForNextLevel) * 100;
@@ -956,13 +1479,22 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   marginBottom: '0.5rem'
                 }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                      {skill.description}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FontAwesomeIcon 
+                      icon={skillIcons[skill.icon] || faStar} 
+                      style={{ color: '#4f46e5' }} 
+                    />
+                    <div>
+                      <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        {skill.description}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                        {skill.category} • Level {skill.level}/{skill.maxLevel}
+                      </div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -989,6 +1521,441 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             );
           })}
         </div>
+      </div>
+
+      {/* Talent Trees */}
+      <div style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ color: '#2d3748', margin: 0 }}>Talent Trees</h3>
+          <button style={successButtonStyle} onClick={() => setShowTalentForm(true)}>
+            <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+            New Talent
+          </button>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+          {Object.entries(talentTrees).map(([treeKey, treeName]) => {
+            const treeTalents = talents.filter(t => t.tree === treeKey);
+            return treeTalents.length > 0 ? (
+              <div key={treeKey} style={cardStyle}>
+                <h4 style={{ marginBottom: '1rem', color: '#4f46e5' }}>{treeName}</h4>
+                {treeTalents.map(talent => (
+                  <div key={talent.id} style={{
+                    padding: '0.75rem',
+                    background: talent.unlocked ? '#d1fae5' : '#f8fafc',
+                    border: `2px solid ${talent.unlocked ? '#10b981' : '#e2e8f0'}`,
+                    borderRadius: '8px',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold' }}>{talent.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{talent.description}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                          Level {talent.requiredLevel}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
+                          Cost: {talent.cost} points
+                        </div>
+                      </div>
+                    </div>
+                    {!talent.unlocked && userData.level >= talent.requiredLevel && (
+                      <button
+                        style={{ ...successButtonStyle, padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+                        onClick={() => handleUnlockTalent(talent.id)}
+                      >
+                        Unlock Talent
+                      </button>
+                    )}
+                    {talent.unlocked && (
+                      <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold' }}>
+                        ✓ Unlocked
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : null;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAchievements = () => (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <h2 style={{ color: '#2d3748', margin: 0 }}>Achievements & Titles</h2>
+        <button style={buttonStyle} onClick={() => setShowTitleForm(true)}>
+          <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+          Add Custom Title
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Your Achievements</h3>
+          {achievements.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {achievements.map(achievement => (
+                <div key={achievement.id} style={{
+                  padding: '1rem',
+                  background: '#f0f9ff',
+                  border: '2px solid #0ea5e9',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <FontAwesomeIcon icon={faTrophy} style={{ color: '#f59e0b', fontSize: '1.5rem' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 'bold', color: '#0ea5e9' }}>{achievement.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{achievement.description}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                      Unlocked: {new Date(achievement.unlockedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+              <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
+              <p>No achievements yet. Complete quests and missions to earn achievements!</p>
+            </div>
+          )}
+        </div>
+
+        <div style={cardStyle}>
+          <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Available Titles</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {titles.map(title => {
+              const isUnlocked = achievements.find(a => a.title?.id === title.id);
+              return (
+                <div key={title.id} style={{
+                  padding: '1rem',
+                  background: isUnlocked ? '#f0fdf4' : '#f8fafc',
+                  border: `2px solid ${isUnlocked ? '#10b981' : '#e2e8f0'}`,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <FontAwesomeIcon 
+                    icon={faCrown} 
+                    style={{ 
+                      color: isUnlocked ? '#f59e0b' : '#94a3b8',
+                      fontSize: '1.5rem'
+                    }} 
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 'bold', 
+                      color: isUnlocked ? '#059669' : '#64748b' 
+                    }}>
+                      {title.name}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{title.description}</div>
+                    <div style={{ 
+                      fontSize: '0.7rem', 
+                      color: title.type === 'auto' ? '#f59e0b' : '#8b5cf6',
+                      fontWeight: 'bold'
+                    }}>
+                      {title.type === 'auto' ? 'Auto-generated' : 'Custom'}
+                    </div>
+                    {!isUnlocked && title.type === 'auto' && (
+                      <div style={{ fontSize: '0.7rem', color: '#ef4444' }}>
+                        Requirements: {Object.entries(title.requirements).map(([key, value]) => 
+                          `${key}: ${value}`
+                        ).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                  {isUnlocked && (
+                    <div style={{
+                      padding: '0.25rem 0.5rem',
+                      background: '#10b981',
+                      color: 'white',
+                      borderRadius: '12px',
+                      fontSize: '0.7rem',
+                      fontWeight: 'bold'
+                    }}>
+                      UNLOCKED
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Skill Creation Form
+  const renderSkillForm = () => (
+    <div style={formStyle}>
+      <h3 style={{ marginBottom: '1rem' }}>Create New Skill</h3>
+      <input
+        style={inputStyle}
+        type="text"
+        placeholder="Skill Name"
+        value={newSkill.name}
+        onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+      />
+      <textarea
+        style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
+        placeholder="Skill Description"
+        value={newSkill.description}
+        onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })}
+      />
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Category
+          </label>
+          <select
+            style={inputStyle}
+            value={newSkill.category}
+            onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
+          >
+            <option value="combat">Combat</option>
+            <option value="magic">Magic</option>
+            <option value="crafting">Crafting</option>
+            <option value="stealth">Stealth</option>
+            <option value="general">General</option>
+            <option value="mental">Mental</option>
+          </select>
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Max Level
+          </label>
+          <input
+            style={inputStyle}
+            type="number"
+            min="1"
+            max="100"
+            value={newSkill.maxLevel}
+            onChange={(e) => setNewSkill({ ...newSkill, maxLevel: parseInt(e.target.value) })}
+          />
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Icon
+          </label>
+          <select
+            style={inputStyle}
+            value={newSkill.icon}
+            onChange={(e) => setNewSkill({ ...newSkill, icon: e.target.value })}
+          >
+            {Object.keys(skillIcons).map(iconKey => (
+              <option key={iconKey} value={iconKey}>{iconKey}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <button style={secondaryButtonStyle} onClick={() => setShowSkillForm(false)}>
+          Cancel
+        </button>
+        <button style={buttonStyle} onClick={handleAddSkill}>
+          Create Skill
+        </button>
+      </div>
+    </div>
+  );
+
+  // Talent Creation Form
+  const renderTalentForm = () => (
+    <div style={formStyle}>
+      <h3 style={{ marginBottom: '1rem' }}>Create New Talent</h3>
+      <input
+        style={inputStyle}
+        type="text"
+        placeholder="Talent Name"
+        value={newTalent.name}
+        onChange={(e) => setNewTalent({ ...newTalent, name: e.target.value })}
+      />
+      <textarea
+        style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
+        placeholder="Talent Description"
+        value={newTalent.description}
+        onChange={(e) => setNewTalent({ ...newTalent, description: e.target.value })}
+      />
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Talent Tree
+          </label>
+          <select
+            style={inputStyle}
+            value={newTalent.tree}
+            onChange={(e) => setNewTalent({ ...newTalent, tree: e.target.value })}
+          >
+            {Object.entries(talentTrees).map(([key, name]) => (
+              <option key={key} value={key}>{name}</option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Required Level
+          </label>
+          <input
+            style={inputStyle}
+            type="number"
+            min="1"
+            value={newTalent.requiredLevel}
+            onChange={(e) => setNewTalent({ ...newTalent, requiredLevel: parseInt(e.target.value) })}
+          />
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Talent Cost
+          </label>
+          <input
+            style={inputStyle}
+            type="number"
+            min="1"
+            value={newTalent.cost}
+            onChange={(e) => setNewTalent({ ...newTalent, cost: parseInt(e.target.value) })}
+          />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          Stat Effects
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem' }}>
+          {Object.keys(statsConfig).map(stat => (
+            <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.75rem', textTransform: 'capitalize', width: '60px' }}>
+                {stat}:
+              </span>
+              <input
+                style={{ ...inputStyle, marginBottom: 0, padding: '0.5rem', fontSize: '0.9rem', flex: 1 }}
+                type="number"
+                value={newTalent.effects[stat] || 0}
+                onChange={(e) => setNewTalent({
+                  ...newTalent,
+                  effects: {
+                    ...newTalent.effects,
+                    [stat]: parseInt(e.target.value) || 0
+                  }
+                })}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <button style={secondaryButtonStyle} onClick={() => setShowTalentForm(false)}>
+          Cancel
+        </button>
+        <button style={successButtonStyle} onClick={handleAddTalent}>
+          Create Talent
+        </button>
+      </div>
+    </div>
+  );
+
+  // Title Creation Form
+  const renderTitleForm = () => (
+    <div style={formStyle}>
+      <h3 style={{ marginBottom: '1rem' }}>Create Custom Title</h3>
+      <input
+        style={inputStyle}
+        type="text"
+        placeholder="Title Name"
+        value={newTitle.name}
+        onChange={(e) => setNewTitle({ ...newTitle, name: e.target.value })}
+      />
+      <textarea
+        style={{ ...inputStyle, minHeight: '80px', fontFamily: 'inherit' }}
+        placeholder="Title Description"
+        value={newTitle.description}
+        onChange={(e) => setNewTitle({ ...newTitle, description: e.target.value })}
+      />
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          Title Type
+        </label>
+        <select
+          style={inputStyle}
+          value={newTitle.type}
+          onChange={(e) => setNewTitle({ ...newTitle, type: e.target.value })}
+        >
+          <option value="custom">Custom</option>
+          <option value="auto">Auto-generated</option>
+        </select>
+      </div>
+
+      {newTitle.type === 'auto' && (
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+            Unlock Requirements
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem' }}>
+                Quests Completed
+              </label>
+              <input
+                style={inputStyle}
+                type="number"
+                min="0"
+                value={newTitle.requirements.questsCompleted || 0}
+                onChange={(e) => setNewTitle({
+                  ...newTitle,
+                  requirements: {
+                    ...newTitle.requirements,
+                    questsCompleted: parseInt(e.target.value) || 0
+                  }
+                })}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem' }}>
+                Missions Completed
+              </label>
+              <input
+                style={inputStyle}
+                type="number"
+                min="0"
+                value={newTitle.requirements.missionsCompleted || 0}
+                onChange={(e) => setNewTitle({
+                  ...newTitle,
+                  requirements: {
+                    ...newTitle.requirements,
+                    missionsCompleted: parseInt(e.target.value) || 0
+                  }
+                })}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <button style={secondaryButtonStyle} onClick={() => setShowTitleForm(false)}>
+          Cancel
+        </button>
+        <button style={buttonStyle} onClick={handleAddTitle}>
+          Create Title
+        </button>
       </div>
     </div>
   );
@@ -1027,12 +1994,23 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         >
           Stats & Skills
         </button>
+        <button
+          style={tabStyle(activeTab === 'achievements')}
+          onClick={() => setActiveTab('achievements')}
+        >
+          Achievements
+        </button>
       </div>
+
+      {showSkillForm && renderSkillForm()}
+      {showTalentForm && renderTalentForm()}
+      {showTitleForm && renderTitleForm()}
 
       {activeTab === 'overview' && renderOverview()}
       {activeTab === 'quests' && renderQuests()}
       {activeTab === 'missions' && renderMissions()}
       {activeTab === 'stats' && renderStats()}
+      {activeTab === 'achievements' && renderAchievements()}
     </div>
   );
 };

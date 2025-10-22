@@ -40,9 +40,14 @@ function ToDo() {
   const [todaysGoal, setTodaysGoal] = useState(3);
   const [completedToday, setCompletedToday] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const [availableSkills, setAvailableSkills] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).skills : []);
+  const [availableSkills, setAvailableSkills] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).skills : [
+    { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'star' },
+    { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'brain' },
+    { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'shield' },
+    { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'book' }
+  ]);
 
-  const [userStats, setUserStats] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).stats : {});
+  const [userStats, setUserStats] = useState(localStorage.getItem('userData') ? JSON.parse(localStorage.getItem('userData')).stats : { strength: 10, agility: 10, endurance: 10, intelligence: 10, hp: 100, mp: 50 });
 
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
