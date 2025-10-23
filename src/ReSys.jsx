@@ -113,6 +113,12 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
                 {task.priority}
               </span>
             )}
+            {task.date && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <FontAwesomeIcon icon={faCalendar} style={{ fontSize: '0.7rem' }} />
+                {new Date(task.date).toLocaleDateString()}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -183,7 +189,7 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete }) => {
 };
 
 // Timeline Task Component
-const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }) => {
+const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId, dayDate }) => {
   const {
     attributes,
     listeners,
@@ -260,6 +266,12 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }
                 {task.priority}
               </span>
             )}
+            {dayDate && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <FontAwesomeIcon icon={faCalendar} style={{ fontSize: '0.6rem' }} />
+                {dayDate.toLocaleDateString()}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -324,7 +336,7 @@ const TimelineTask = ({ task, onToggle, onEdit, onDelete, onMoveToTasks, dayId }
 };
 
 // Drop Zone Component for Timeline Slots
-const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete, onMoveToTasks }) => {
+const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete, onMoveToTasks, dayDate }) => {
   const { isOver, setNodeRef } = useDroppable({
     id: `timeline-${dayId}-${time}`,
   });
@@ -349,6 +361,7 @@ const TimelineSlot = ({ dayId, time, tasks, onToggle, onEdit, onDelete, onMoveTo
           onDelete={onDelete}
           onMoveToTasks={onMoveToTasks}
           dayId={dayId}
+          dayDate={dayDate}
         />
       ))}
     </div>
@@ -404,7 +417,6 @@ const Task = ({ task }) => {
 // Calendar Component
 const Calendar = ({ selectedDates, onDateSelect, dayTasks }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState('month'); // 'month' or 'year'
 
   const getDaysInMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -884,6 +896,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
   };
 
   const days = getDaysFromSelectedDates();
+  const isFullWeekView = selectedDates.length === 0;
 
   // Time slots for the timeline (24 hours)
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -930,6 +943,8 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         return [prev[1], date];
       }
     });
+    // Reset to first two dates when selecting new dates
+    setCurrentDayIndex(0);
   };
 
   const moveTaskToMyTasks = (taskId, dayId) => {
@@ -981,7 +996,13 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       const activeTaskInfo = findTask(activeId);
       if (!activeTaskInfo) return;
 
-      const taskToMove = { ...activeTaskInfo.task, time: timeSlot };
+      // Update task date to match the target day
+      const targetDate = new Date(targetDayId);
+      const taskToMove = { 
+        ...activeTaskInfo.task, 
+        time: timeSlot,
+        date: targetDate.toDateString()
+      };
 
       // Remove from source
       if (activeTaskInfo.container === 'timeline') {
@@ -1166,18 +1187,18 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
   };
 
   const nextDays = () => {
-    if (currentDayIndex < days.length - 2) {
+    if (isFullWeekView && currentDayIndex < days.length - 2) {
       setCurrentDayIndex(prev => prev + 2);
     }
   };
 
   const prevDays = () => {
-    if (currentDayIndex > 0) {
+    if (isFullWeekView && currentDayIndex > 0) {
       setCurrentDayIndex(prev => prev - 2);
     }
   };
 
-  const visibleDays = days.slice(currentDayIndex, currentDayIndex + 2);
+  const visibleDays = isFullWeekView ? days.slice(currentDayIndex, currentDayIndex + 2) : days;
 
   const { setNodeRef: setMyTasksRef, isOver: isOverMyTasks } = useDroppable({
     id: 'my-tasks-drop-zone',
@@ -1436,18 +1457,20 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
             {/* Days Timeline Section */}
             <div style={daysContainerStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <button
-                  onClick={prevDays}
-                  disabled={currentDayIndex === 0}
-                  style={{
-                    ...navButtonStyle,
-                    opacity: currentDayIndex === 0 ? 0.5 : 1,
-                    cursor: currentDayIndex === 0 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} />
-                  Previous
-                </button>
+                {isFullWeekView && (
+                  <button
+                    onClick={prevDays}
+                    disabled={currentDayIndex === 0}
+                    style={{
+                      ...navButtonStyle,
+                      opacity: currentDayIndex === 0 ? 0.5 : 1,
+                      cursor: currentDayIndex === 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                    Previous
+                  </button>
+                )}
                 
                 <h3 style={{ color: '#2d3748', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <FontAwesomeIcon icon={faCalendarDay} />
@@ -1459,18 +1482,20 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                   ))}
                 </h3>
                 
-                <button
-                  onClick={nextDays}
-                  disabled={currentDayIndex >= days.length - 2}
-                  style={{
-                    ...navButtonStyle,
-                    opacity: currentDayIndex >= days.length - 2 ? 0.5 : 1,
-                    cursor: currentDayIndex >= days.length - 2 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  Next
-                  <FontAwesomeIcon icon={faChevronRight} />
-                </button>
+                {isFullWeekView && (
+                  <button
+                    onClick={nextDays}
+                    disabled={currentDayIndex >= days.length - 2}
+                    style={{
+                      ...navButtonStyle,
+                      opacity: currentDayIndex >= days.length - 2 ? 0.5 : 1,
+                      cursor: currentDayIndex >= days.length - 2 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Next
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </button>
+                )}
               </div>
 
               <div style={timelineStyle}>
@@ -1500,6 +1525,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                                 onEdit={editTask}
                                 onDelete={deleteTask}
                                 onMoveToTasks={moveTaskToMyTasks}
+                                dayDate={day.date}
                               />
                             </div>
                           </div>
