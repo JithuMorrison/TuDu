@@ -163,6 +163,7 @@ function ToDo() {
     const taskItem = updatetask[index];
     const wasCompleted = taskItem.status;
     let updatedStats = { ...userStats };
+    let updatedSkills = [...availableSkills];
     taskItem.status = isChecked;
     
     if (isChecked && !wasCompleted) {
@@ -228,7 +229,7 @@ function ToDo() {
 
         // Skill XP from task completion
         const skillXpEarned = Math.floor(xpEarned * 0.1); // 10% of task XP goes to skills
-        improveRandomSkill(skillXpEarned);
+        updatedSkills = improveRandomSkill(skillXpEarned);
 
         if (newCompleted < todaysGoal) {
           showTemporaryReward(`Task Complete! +${xpEarned} XP`, 'star');
@@ -252,7 +253,8 @@ function ToDo() {
             streak: newStreak,
             lastCompletedDate: today,
             completedToday: newCompleted,
-            stats: updatedStats
+            stats: updatedStats,
+            skills: updatedSkills
           });
           
           // Award streak bonus every 3 days
@@ -266,7 +268,7 @@ function ToDo() {
         }
         else{
           setCompletedToday(newCompleted);
-          saveUserData({ completedToday: newCompleted, stats: updatedStats});
+          saveUserData({ completedToday: newCompleted, stats: updatedStats, skills: updatedSkills });
         }
       }
       
@@ -312,28 +314,24 @@ function ToDo() {
 
   // Add this function to improve random skills
   const improveRandomSkill = (xpAmount) => {
-    setAvailableSkills(prevSkills => {
-      const randomSkillIndex = Math.floor(Math.random() * prevSkills.length);
-      const updatedSkills = [...prevSkills];
-      updatedSkills[randomSkillIndex] = {
-        ...updatedSkills[randomSkillIndex],
-        xp: updatedSkills[randomSkillIndex].xp + xpAmount
-      };
-      
-      // Check for level up
-      const skill = updatedSkills[randomSkillIndex];
-      const xpForNextLevel = skill.level * 100;
-      if (skill.xp >= xpForNextLevel) {
-        updatedSkills[randomSkillIndex] = {
-          ...skill,
-          level: skill.level + 1,
-          xp: skill.xp - xpForNextLevel
-        };
-        showTemporaryReward(`${skill.name} Level ${skill.level + 1}!`, 'trophy');
-      }
-      
-      return updatedSkills;
-    });
+    const prevSkills = [...availableSkills];
+    const randomSkillIndex = Math.floor(Math.random() * prevSkills.length);
+    const skill = { ...prevSkills[randomSkillIndex] };
+
+    skill.xp += xpAmount;
+
+    const xpForNextLevel = skill.level * 100;
+    if (skill.xp >= xpForNextLevel) {
+      skill.level += 1;
+      skill.xp -= xpForNextLevel;
+      showTemporaryReward(`${skill.name} Level ${skill.level}!`, 'trophy');
+    }
+
+    const updatedSkills = [...prevSkills];
+    updatedSkills[randomSkillIndex] = skill;
+
+    setAvailableSkills(updatedSkills);
+    return updatedSkills;
   };
 
   const updateTask = () => {
