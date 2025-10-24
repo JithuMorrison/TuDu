@@ -111,6 +111,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     Ranger: { description: 'A wilderness expert and tracker', stats: { strength: 10, agility: 14, endurance: 10, intelligence: 6 } }
   };
 
+  const statsConfig = {
+    strength: { icon: faFistRaised, color: '#dc2626', description: 'Physical power and capability' },
+    agility: { icon: faRunning, color: '#16a34a', description: 'Speed and flexibility' },
+    endurance: { icon: faShieldAlt, color: '#ca8a04', description: 'Stamina and resilience' },
+    intelligence: { icon: faBrain, color: '#2563eb', description: 'Mental capacity and learning' },
+    hp: { icon: faHeart, color: '#dc2626', description: 'Health Points' },
+    mp: { icon: faMagic, color: '#7c3aed', description: 'Mana Points' }
+  };
+
   // Persist data to localStorage
   useEffect(() => {
     localStorage.setItem('userQuests', JSON.stringify(quests));
@@ -140,6 +149,545 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     localStorage.setItem('playerDescription', playerDescription);
   }, [playerDescription]);
 
+  // Initialize default skills if none exist
+  useEffect(() => {
+    if (availableSkills.length === 0) {
+      const defaultSkills = [
+        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'star' },
+        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'brain' },
+        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'shield' },
+        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'book' }
+      ];
+      setAvailableSkills(defaultSkills);
+    }
+  }, [availableSkills.length, setAvailableSkills]);
+
+  // Initialize default titles
+  useEffect(() => {
+    if (titles.length === 0) {
+      const defaultTitles = [
+        { id: 1, name: 'Newbie Adventurer', description: 'Completed first quest', type: 'auto', requirements: { questsCompleted: 1 } },
+        { id: 2, name: 'Random Explorer', description: 'Completed first mission', type: 'auto', requirements: { missionsCompleted: 1 } },
+        { id: 3, name: 'Quest Novice', description: 'Completed 10 quests', type: 'auto', requirements: { questsCompleted: 10 } },
+        { id: 4, name: 'Mission Specialist', description: 'Completed 25 missions', type: 'auto', requirements: { missionsCompleted: 25 } },
+        { id: 5, name: 'Master Adventurer', description: 'Completed 50 quests', type: 'auto', requirements: { questsCompleted: 50 } },
+        { id: 6, name: 'Legendary Hero', description: 'Completed 100 quests', type: 'auto', requirements: { questsCompleted: 100 } }
+      ];
+      setTitles(defaultTitles);
+    }
+  }, [titles.length]);
+
+  // Single source of truth for achievements - use userData.achievements
+  const currentAchievements = userData.achievements || [];
+
+  // Check for title unlocks when quests or missions change
+  useEffect(() => {
+    const newAchievements = checkTitleUnlocks();
+    if (newAchievements.length > 0 && onUpdateUserData) {
+      const updatedAchievements = [...currentAchievements, ...newAchievements];
+      
+      const updatedUserData = {
+        ...userData,
+        achievements: updatedAchievements
+      };
+      
+      onUpdateUserData(updatedUserData);
+      
+      // Also update local state for display
+      setAchievements(updatedAchievements);
+    }
+  }, [quests, missions]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const checkTitleUnlocks = () => {
+    const completedQuests = quests.filter(q => q.completed).length;
+    const completedMissions = missions.filter(m => m.completed).length;
+    const newAchievements = [];
+
+    titles.forEach(title => {
+      if (title.type === 'auto') {
+        const alreadyUnlocked = currentAchievements.find(a => a.id === title.id);
+        
+        if (!alreadyUnlocked) {
+          let shouldUnlock = false;
+          
+          if (title.requirements.questsCompleted && completedQuests >= title.requirements.questsCompleted) {
+            shouldUnlock = true;
+          }
+          if (title.requirements.missionsCompleted && completedMissions >= title.requirements.missionsCompleted) {
+            shouldUnlock = true;
+          }
+          
+          if (shouldUnlock) {
+            const newAchievement = {
+              id: title.id,
+              name: title.name,
+              description: title.description,
+              type: 'title',
+              unlockedAt: new Date().toISOString(),
+              title: title
+            };
+            
+            newAchievements.push(newAchievement);
+            showTemporaryReward(`Title Unlocked: ${title.name}`, 'crown');
+          }
+        }
+      }
+    });
+
+    return newAchievements;
+  };
+
+  const checkQuestAchievements = () => {
+    const completedQuests = quests.filter(q => q.completed).length;
+    const newAchievements = [];
+
+    // Check for quest count achievements
+    if (completedQuests >= 1 && !currentAchievements.find(a => a.name === 'Newbie Adventurer')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Newbie Adventurer',
+        description: 'Completed 1 quest',
+        type: 'quest',
+        unlockedAt: new Date().toISOString()
+      };
+      newAchievements.push(achievement);
+      showTemporaryReward('Achievement Unlocked: Newbie Adventurer', 'trophy');
+    }
+
+    if (completedQuests >= 10 && !currentAchievements.find(a => a.name === 'Quest Novice')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Quest Novice',
+        description: 'Completed 10 quests',
+        type: 'quest',
+        unlockedAt: new Date().toISOString()
+      };
+      newAchievements.push(achievement);
+      showTemporaryReward('Achievement Unlocked: Quest Novice', 'trophy');
+    }
+    
+    if (completedQuests >= 50 && !currentAchievements.find(a => a.name === 'Master Adventurer')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Master Adventurer',
+        description: 'Completed 50 quests',
+        type: 'quest',
+        unlockedAt: new Date().toISOString()
+      };
+      newAchievements.push(achievement);
+      showTemporaryReward('Achievement Unlocked: Master Adventurer', 'trophy');
+    }
+
+    return newAchievements;
+  };
+
+  const checkMissionAchievements = () => {
+    const completedMissions = missions.filter(m => m.completed).length;
+    const newAchievements = [];
+
+    if (completedMissions >= 1 && !currentAchievements.find(a => a.name === 'Random Explorer')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Random Explorer',
+        description: 'Completed 1 mission',
+        type: 'mission',
+        unlockedAt: new Date().toISOString()
+      };
+      newAchievements.push(achievement);
+      showTemporaryReward('Achievement Unlocked: Random Explorer', 'trophy');
+    }
+
+    if (completedMissions >= 25 && !currentAchievements.find(a => a.name === 'Mission Specialist')) {
+      const achievement = {
+        id: Date.now(),
+        name: 'Mission Specialist',
+        description: 'Completed 25 missions',
+        type: 'mission',
+        unlockedAt: new Date().toISOString()
+      };
+      newAchievements.push(achievement);
+      showTemporaryReward('Achievement Unlocked: Mission Specialist', 'trophy');
+    }
+
+    return newAchievements;
+  };
+
+  const showTemporaryReward = (message, icon) => {
+    console.log(`Reward: ${message}`);
+    // In a real app, you would show a toast notification here
+  };
+
+  const handleAddQuest = () => {
+    if (newQuest.title.trim() === '') return;
+
+    const quest = {
+      id: Date.now(),
+      ...newQuest,
+      completed: false,
+      progress: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    setQuests([...quests, quest]);
+    setNewQuest({
+      title: '',
+      description: '',
+      subtasks: [],
+      reward: { xp: 0, stats: {}, skills: [], talents: [] },
+      requiredSkills: [],
+      deadline: '',
+      difficulty: 'medium'
+    });
+    setShowQuestForm(false);
+  };
+
+  const handleAddMission = () => {
+    if (newMission.title.trim() === '') return;
+
+    const mission = {
+      id: Date.now(),
+      ...newMission,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+
+    setMissions([...missions, mission]);
+    setNewMission({
+      title: '',
+      description: '',
+      reward: { xp: 0, stats: {}, skills: [], talents: [] },
+      requiredSkills: [],
+      deadline: '',
+      type: 'daily'
+    });
+    setShowMissionForm(false);
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.name.trim() === '') return;
+
+    const skill = {
+      id: Date.now(),
+      ...newSkill,
+      level: 1,
+      xp: 0
+    };
+
+    const updatedSkills = [...availableSkills, skill];
+    setAvailableSkills(updatedSkills);
+    
+    setNewSkill({
+      name: '',
+      description: '',
+      category: 'combat',
+      maxLevel: 10,
+      icon: 'star'
+    });
+    setShowSkillForm(false);
+
+    if (onUpdateUserData) {
+      const updatedUserData = {
+        ...userData,
+        skills: updatedSkills
+      };
+      onUpdateUserData(updatedUserData);
+    }
+  };
+
+  const handleAddTalent = () => {
+    if (newTalent.name.trim() === '') return;
+
+    const talent = {
+      id: Date.now(),
+      ...newTalent,
+      unlocked: false
+    };
+
+    setTalents([...talents, talent]);
+    setNewTalent({
+      name: '',
+      description: '',
+      tree: 'general',
+      requiredLevel: 1,
+      cost: 1,
+      effects: {}
+    });
+    setShowTalentForm(false);
+  };
+
+  const handleAddTitle = () => {
+    if (newTitle.name.trim() === '') return;
+
+    const title = {
+      id: Date.now(),
+      ...newTitle
+    };
+
+    setTitles([...titles, title]);
+    setNewTitle({
+      name: '',
+      description: '',
+      type: 'custom',
+      requirements: {}
+    });
+    setShowTitleForm(false);
+  };
+
+  const handleAddSubtask = () => {
+    if (newSubtask.trim() === '') return;
+    setNewQuest({
+      ...newQuest,
+      subtasks: [...newQuest.subtasks, { text: newSubtask, completed: false }]
+    });
+    setNewSubtask('');
+  };
+
+  const handleUpdateSubtask = (questId, subtaskIndex, completed) => {
+    setQuests(quests.map(quest => {
+      if (quest.id === questId) {
+        const updatedSubtasks = quest.subtasks.map((subtask, index) =>
+          index === subtaskIndex ? { ...subtask, completed } : subtask
+        );
+
+        const progress = updatedSubtasks.length > 0 
+          ? (updatedSubtasks.filter(st => st.completed).length / updatedSubtasks.length) * 100
+          : 0;
+
+        return { ...quest, subtasks: updatedSubtasks, progress };
+      }
+      return quest;
+    }));
+  };
+
+  const handleCompleteQuest = (questId) => {
+    const quest = quests.find(q => q.id === questId);
+    if (quest && onUpdateUserData) {
+      let newXp = userData.xp + quest.reward.xp;
+      let newLevel = userData.level;
+      const xpNeeded = newLevel * 1000;
+
+      if (newXp >= xpNeeded) {
+        newLevel += 1;
+        newXp -= xpNeeded;
+      }
+
+      const newStats = { ...userData.stats };
+      if (quest.reward.stats) {
+        Object.keys(quest.reward.stats).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + quest.reward.stats[stat];
+        });
+      }
+
+      let updatedSkills = [...availableSkills];
+      if (quest.reward.skills && quest.reward.skills.length > 0) {
+        updatedSkills = availableSkills.map(skill => {
+          const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
+          if (improvement) {
+            const newSkillXp = skill.xp + improvement.xp;
+            const xpForNextLevel = skill.level * 100;
+            let newSkillLevel = skill.level;
+            let remainingXp = newSkillXp;
+
+            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
+              newSkillLevel += 1;
+              remainingXp -= xpForNextLevel;
+            }
+
+            return {
+              ...skill,
+              xp: remainingXp,
+              level: newSkillLevel
+            };
+          }
+          return skill;
+        });
+        setAvailableSkills(updatedSkills);
+      }
+
+      // Check for achievements
+      const questAchievements = checkQuestAchievements();
+      if (questAchievements.length > 0) {
+        const updatedAchievements = [...currentAchievements, ...questAchievements];
+        
+        const updatedUserData = {
+          xp: newXp,
+          level: newLevel,
+          stats: newStats,
+          skills: updatedSkills,
+          achievements: updatedAchievements
+        };
+
+        onUpdateUserData(updatedUserData);
+        setAchievements(updatedAchievements);
+      } else {
+        const updatedUserData = {
+          xp: newXp,
+          level: newLevel,
+          stats: newStats,
+          skills: updatedSkills,
+          achievements: currentAchievements
+        };
+
+        onUpdateUserData(updatedUserData);
+      }
+
+      setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
+    }
+  };
+
+  const handleCompleteMission = (missionId) => {
+    const mission = missions.find(m => m.id === missionId);
+    if (mission && onUpdateUserData) {
+      let newXp = userData.xp + mission.reward.xp;
+      let newLevel = userData.level;
+      const xpNeeded = newLevel * 1000;
+
+      if (newXp >= xpNeeded) {
+        newLevel += 1;
+        newXp -= xpNeeded;
+      }
+
+      const newStats = { ...userData.stats };
+      if (mission.reward.stats) {
+        Object.keys(mission.reward.stats).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + mission.reward.stats[stat];
+        });
+      }
+
+      let updatedSkills = [...availableSkills];
+      if (mission.reward.skills && mission.reward.skills.length > 0) {
+        updatedSkills = availableSkills.map(skill => {
+          const improvement = mission.reward.skills.find(s => s.skillId === skill.id);
+          if (improvement) {
+            const newSkillXp = skill.xp + improvement.xp;
+            const xpForNextLevel = skill.level * 100;
+            let newSkillLevel = skill.level;
+            let remainingXp = newSkillXp;
+
+            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
+              newSkillLevel += 1;
+              remainingXp -= xpForNextLevel;
+            }
+
+            return {
+              ...skill,
+              xp: remainingXp,
+              level: newSkillLevel
+            };
+          }
+          return skill;
+        });
+        setAvailableSkills(updatedSkills);
+      }
+
+      // Check for achievements
+      const missionAchievements = checkMissionAchievements();
+      if (missionAchievements.length > 0) {
+        const updatedAchievements = [...currentAchievements, ...missionAchievements];
+        
+        const updatedUserData = {
+          xp: newXp,
+          level: newLevel,
+          stats: newStats,
+          skills: updatedSkills,
+          achievements: updatedAchievements
+        };
+
+        onUpdateUserData(updatedUserData);
+        setAchievements(updatedAchievements);
+      } else {
+        const updatedUserData = {
+          xp: newXp,
+          level: newLevel,
+          stats: newStats,
+          skills: updatedSkills,
+          achievements: currentAchievements
+        };
+
+        onUpdateUserData(updatedUserData);
+      }
+
+      setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
+    }
+  };
+
+  const handleDeleteQuest = (questId) => {
+    setQuests(quests.filter(q => q.id !== questId));
+  };
+
+  const handleDeleteMission = (missionId) => {
+    setMissions(missions.filter(m => m.id !== missionId));
+  };
+
+  const handleUnlockTalent = (talentId) => {
+    const talent = talents.find(t => t.id === talentId);
+    if (talent && userData.level >= talent.requiredLevel) {
+      setTalents(talents.map(t => 
+        t.id === talentId ? { ...t, unlocked: true } : t
+      ));
+      
+      // Apply talent effects to user stats
+      if (talent.effects) {
+        const newStats = { ...userData.stats };
+        Object.keys(talent.effects).forEach(stat => {
+          newStats[stat] = (newStats[stat] || 0) + talent.effects[stat];
+        });
+        
+        const updatedUserData = {
+          ...userData,
+          stats: newStats
+        };
+        
+        onUpdateUserData(updatedUserData);
+      }
+      
+      showTemporaryReward(`Talent Unlocked: ${talent.name}`, 'magic');
+    }
+  };
+
+  const handleClassChange = (newClass) => {
+    const currentStats = playerClasses[playerClass]?.stats || {};
+    const newClassStats = playerClasses[newClass].stats;
+
+    const updatedStats = {};
+    for (const key in userData.stats) {
+      const baseValue = userData.stats[key] || 0;
+      const currentClassValue = currentStats[key] || 0;
+      const newClassValue = newClassStats[key] || 0;
+
+      updatedStats[key] = baseValue - currentClassValue + newClassValue;
+    }
+
+    setPlayerClass(newClass);
+    setPlayerDescription(playerClasses[newClass].description);
+
+    const updatedUserData = {
+      ...userData,
+      stats: updatedStats
+    };
+
+    onUpdateUserData(updatedUserData);
+  };
+
+  const toggleSkillSelection = (skillId) => {
+    setNewQuest(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.includes(skillId)
+        ? prev.requiredSkills.filter(id => id !== skillId)
+        : [...prev.requiredSkills, skillId]
+    }));
+  };
+
+  const toggleMissionSkillSelection = (skillId) => {
+    setNewMission(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.includes(skillId)
+        ? prev.requiredSkills.filter(id => id !== skillId)
+        : [...prev.requiredSkills, skillId]
+    }));
+  };
+
+  // Styles
   const containerStyle = {
     padding: '2rem',
     maxWidth: '1400px',
@@ -273,473 +821,6 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     background: '#10b981'
   };
 
-  const statsConfig = {
-    strength: { icon: faFistRaised, color: '#dc2626', description: 'Physical power and capability' },
-    agility: { icon: faRunning, color: '#16a34a', description: 'Speed and flexibility' },
-    endurance: { icon: faShieldAlt, color: '#ca8a04', description: 'Stamina and resilience' },
-    intelligence: { icon: faBrain, color: '#2563eb', description: 'Mental capacity and learning' },
-    hp: { icon: faHeart, color: '#dc2626', description: 'Health Points' },
-    mp: { icon: faMagic, color: '#7c3aed', description: 'Mana Points' }
-  };
-
-  // Initialize default skills if none exist
-  useEffect(() => {
-    if (availableSkills.length === 0) {
-      const defaultSkills = [
-        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'star' },
-        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'brain' },
-        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0, category: 'general', maxLevel: 10, icon: 'shield' },
-        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0, category: 'mental', maxLevel: 10, icon: 'book' }
-      ];
-      setAvailableSkills(defaultSkills);
-    }
-  }, []);
-
-  // Initialize default titles
-  useEffect(() => {
-    if (titles.length === 0) {
-      const defaultTitles = [
-        { id: 1, name: 'Novice Adventurer', description: 'Completed first quest', type: 'auto', requirements: { questsCompleted: 1 } },
-        { id: 2, name: 'Quest Novice', description: 'Completed 10 quests', type: 'auto', requirements: { questsCompleted: 10 } },
-        { id: 3, name: 'Mission Specialist', description: 'Completed 25 missions', type: 'auto', requirements: { missionsCompleted: 25 } },
-        { id: 4, name: 'Master Adventurer', description: 'Completed 50 quests', type: 'auto', requirements: { questsCompleted: 50 } },
-        { id: 5, name: 'Legendary Hero', description: 'Completed 100 quests', type: 'auto', requirements: { questsCompleted: 100 } }
-      ];
-      setTitles(defaultTitles);
-    }
-  }, []);
-
-  // Check for title unlocks
-  useEffect(() => {
-    checkTitleUnlocks();
-  }, [quests, missions]);
-
-  const checkTitleUnlocks = () => {
-    const completedQuests = quests.filter(q => q.completed).length;
-    const completedMissions = missions.filter(m => m.completed).length;
-    
-    titles.forEach(title => {
-      if (title.type === 'auto' && !achievements.find(a => a.id === title.id)) {
-        let shouldUnlock = false;
-        
-        if (title.requirements.questsCompleted && completedQuests >= title.requirements.questsCompleted) {
-          shouldUnlock = true;
-        }
-        if (title.requirements.missionsCompleted && completedMissions >= title.requirements.missionsCompleted) {
-          shouldUnlock = true;
-        }
-        
-        if (shouldUnlock) {
-          const newAchievement = {
-            id: title.id,
-            name: title.name,
-            description: title.description,
-            type: 'title',
-            unlockedAt: new Date().toISOString(),
-            title: title
-          };
-          
-          setAchievements(prev => [...prev, newAchievement]);
-          
-          // Show notification
-          showTemporaryReward(`Title Unlocked: ${title.name}`, 'crown');
-        }
-      }
-    });
-  };
-
-  const showTemporaryReward = (message, icon) => {
-    // This would be connected to your notification system
-    console.log(`Reward: ${message}`);
-  };
-
-  const handleAddQuest = () => {
-    if (newQuest.title.trim() === '') return;
-
-    const quest = {
-      id: Date.now(),
-      ...newQuest,
-      completed: false,
-      progress: 0,
-      createdAt: new Date().toISOString()
-    };
-
-    setQuests([...quests, quest]);
-    setNewQuest({
-      title: '',
-      description: '',
-      subtasks: [],
-      reward: { xp: 0, stats: {}, skills: [], talents: [] },
-      requiredSkills: [],
-      deadline: '',
-      difficulty: 'medium'
-    });
-    setShowQuestForm(false);
-  };
-
-  const handleAddMission = () => {
-    if (newMission.title.trim() === '') return;
-
-    const mission = {
-      id: Date.now(),
-      ...newMission,
-      completed: false,
-      createdAt: new Date().toISOString()
-    };
-
-    setMissions([...missions, mission]);
-    setNewMission({
-      title: '',
-      description: '',
-      reward: { xp: 0, stats: {}, skills: [], talents: [] },
-      requiredSkills: [],
-      deadline: '',
-      type: 'daily'
-    });
-    setShowMissionForm(false);
-  };
-
-  const handleAddSkill = () => {
-  if (newSkill.name.trim() === '') return;
-
-  const skill = {
-    id: Date.now(),
-    ...newSkill,
-    level: 1,
-    xp: 0
-  };
-
-  // Reset skill form
-  setNewSkill({
-    name: '',
-    description: '',
-    category: 'combat',
-    maxLevel: 10,
-    icon: 'star'
-  });
-  setShowSkillForm(false);
-
-  // Update user data and available skills properly
-  const updatedSkills = [...availableSkills, skill];
-
-  const updatedUserData = {
-    ...userData,
-    skills: updatedSkills
-  };
-
-  onUpdateUserData(updatedUserData);
-  setAvailableSkills([...availableSkills, skill]);
-};
-
-  const handleAddTalent = () => {
-    if (newTalent.name.trim() === '') return;
-
-    const talent = {
-      id: Date.now(),
-      ...newTalent,
-      unlocked: false
-    };
-
-    setTalents([...talents, talent]);
-    setNewTalent({
-      name: '',
-      description: '',
-      tree: 'general',
-      requiredLevel: 1,
-      cost: 1,
-      effects: {}
-    });
-    setShowTalentForm(false);
-  };
-
-  const handleAddTitle = () => {
-    if (newTitle.name.trim() === '') return;
-
-    const title = {
-      id: Date.now(),
-      ...newTitle
-    };
-
-    setTitles([...titles, title]);
-    setNewTitle({
-      name: '',
-      description: '',
-      type: 'custom',
-      requirements: {}
-    });
-    setShowTitleForm(false);
-  };
-
-  const handleAddSubtask = () => {
-    if (newSubtask.trim() === '') return;
-    setNewQuest({
-      ...newQuest,
-      subtasks: [...newQuest.subtasks, { text: newSubtask, completed: false }]
-    });
-    setNewSubtask('');
-  };
-
-  const handleCompleteQuest = (questId) => {
-    const quest = quests.find(q => q.id === questId);
-    if (quest && onUpdateUserData) {
-      let newXp = userData.xp + quest.reward.xp;
-      let newLevel = userData.level;
-      const xpNeeded = newLevel * 1000;
-
-      if (newXp >= xpNeeded) {
-        newLevel += 1;
-        newXp -= xpNeeded;
-      }
-
-      const newStats = { ...userData.stats };
-      if (quest.reward.stats) {
-        Object.keys(quest.reward.stats).forEach(stat => {
-          newStats[stat] = (newStats[stat] || 0) + quest.reward.stats[stat];
-        });
-      }
-
-      let updatedSkills = [...availableSkills];
-      if (quest.reward.skills && quest.reward.skills.length > 0) {
-        updatedSkills = availableSkills.map(skill => {
-          const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
-          if (improvement) {
-            const newSkillXp = skill.xp + improvement.xp;
-            const xpForNextLevel = skill.level * 100;
-            let newSkillLevel = skill.level;
-            let remainingXp = newSkillXp;
-
-            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
-              newSkillLevel += 1;
-              remainingXp -= xpForNextLevel;
-            }
-
-            return {
-              ...skill,
-              xp: remainingXp,
-              level: newSkillLevel
-            };
-          }
-          return skill;
-        });
-        setAvailableSkills(updatedSkills);
-      }
-
-      const updatedUserData = {
-        xp: newXp,
-        level: newLevel,
-        stats: newStats,
-        skills: updatedSkills
-      };
-
-      onUpdateUserData(updatedUserData);
-      setQuests(quests.map(q => q.id === questId ? { ...q, completed: true } : q));
-      
-      // Check for achievements
-      checkQuestAchievements();
-    }
-  };
-
-  const handleCompleteMission = (missionId) => {
-    const mission = missions.find(m => m.id === missionId);
-    if (mission && onUpdateUserData) {
-      let newXp = userData.xp + mission.reward.xp;
-      let newLevel = userData.level;
-      const xpNeeded = newLevel * 1000;
-
-      if (newXp >= xpNeeded) {
-        newLevel += 1;
-        newXp -= xpNeeded;
-      }
-
-      const newStats = { ...userData.stats };
-      if (mission.reward.stats) {
-        Object.keys(mission.reward.stats).forEach(stat => {
-          newStats[stat] = (newStats[stat] || 0) + mission.reward.stats[stat];
-        });
-      }
-
-      let updatedSkills = [...availableSkills];
-      if (mission.reward.skills && mission.reward.skills.length > 0) {
-        updatedSkills = availableSkills.map(skill => {
-          const improvement = mission.reward.skills.find(s => s.skillId === skill.id);
-          if (improvement) {
-            const newSkillXp = skill.xp + improvement.xp;
-            const xpForNextLevel = skill.level * 100;
-            let newSkillLevel = skill.level;
-            let remainingXp = newSkillXp;
-
-            while (remainingXp >= xpForNextLevel && newSkillLevel < skill.maxLevel) {
-              newSkillLevel += 1;
-              remainingXp -= xpForNextLevel;
-            }
-
-            return {
-              ...skill,
-              xp: remainingXp,
-              level: newSkillLevel
-            };
-          }
-          return skill;
-        });
-        setAvailableSkills(updatedSkills);
-      }
-
-      const updatedUserData = {
-        xp: newXp,
-        level: newLevel,
-        stats: newStats,
-        skills: updatedSkills
-      };
-
-      onUpdateUserData(updatedUserData);
-      setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
-      
-      // Check for achievements
-      checkMissionAchievements();
-    }
-  };
-
-  const checkQuestAchievements = () => {
-    const completedQuests = quests.filter(q => q.completed).length;
-    
-    // Check for quest count achievements
-    if (completedQuests >= 10 && !achievements.find(a => a.name === 'Quest Novice')) {
-      const achievement = {
-        id: Date.now(),
-        name: 'Quest Novice',
-        description: 'Completed 10 quests',
-        type: 'quest',
-        unlockedAt: new Date().toISOString()
-      };
-      setAchievements(prev => [...prev, achievement]);
-      showTemporaryReward('Achievement Unlocked: Quest Novice', 'trophy');
-    }
-    
-    if (completedQuests >= 50 && !achievements.find(a => a.name === 'Master Adventurer')) {
-      const achievement = {
-        id: Date.now(),
-        name: 'Master Adventurer',
-        description: 'Completed 50 quests',
-        type: 'quest',
-        unlockedAt: new Date().toISOString()
-      };
-      setAchievements(prev => [...prev, achievement]);
-      showTemporaryReward('Achievement Unlocked: Master Adventurer', 'trophy');
-    }
-  };
-
-  const checkMissionAchievements = () => {
-    const completedMissions = missions.filter(m => m.completed).length;
-    
-    if (completedMissions >= 25 && !achievements.find(a => a.name === 'Mission Specialist')) {
-      const achievement = {
-        id: Date.now(),
-        name: 'Mission Specialist',
-        description: 'Completed 25 missions',
-        type: 'mission',
-        unlockedAt: new Date().toISOString()
-      };
-      setAchievements(prev => [...prev, achievement]);
-      showTemporaryReward('Achievement Unlocked: Mission Specialist', 'trophy');
-    }
-  };
-
-  const handleUpdateSubtask = (questId, subtaskIndex, completed) => {
-    setQuests(quests.map(quest => {
-      if (quest.id === questId) {
-        const updatedSubtasks = quest.subtasks.map((subtask, index) =>
-          index === subtaskIndex ? { ...subtask, completed } : subtask
-        );
-
-        const progress = updatedSubtasks.length > 0 
-          ? (updatedSubtasks.filter(st => st.completed).length / updatedSubtasks.length) * 100
-          : 0;
-
-        return { ...quest, subtasks: updatedSubtasks, progress };
-      }
-      return quest;
-    }));
-  };
-
-  const handleDeleteQuest = (questId) => {
-    setQuests(quests.filter(q => q.id !== questId));
-  };
-
-  const handleDeleteMission = (missionId) => {
-    setMissions(missions.filter(m => m.id !== missionId));
-  };
-
-  const handleUnlockTalent = (talentId) => {
-    const talent = talents.find(t => t.id === talentId);
-    if (talent && userData.level >= talent.requiredLevel) {
-      setTalents(talents.map(t => 
-        t.id === talentId ? { ...t, unlocked: true } : t
-      ));
-      
-      // Apply talent effects to user stats
-      if (talent.effects) {
-        const newStats = { ...userData.stats };
-        Object.keys(talent.effects).forEach(stat => {
-          newStats[stat] = (newStats[stat] || 0) + talent.effects[stat];
-        });
-        
-        const updatedUserData = {
-          ...userData,
-          stats: newStats
-        };
-        
-        onUpdateUserData(updatedUserData);
-      }
-      
-      showTemporaryReward(`Talent Unlocked: ${talent.name}`, 'magic');
-    }
-  };
-
-  const handleClassChange = (newClass) => {
-    // If player already has a class, get its stats
-    const currentStats = playerClasses[playerClass]?.stats || {};
-    const newClassStats = playerClasses[newClass].stats;
-
-    // Calculate updated stats by subtracting old class values and adding new class values
-    const updatedStats = {};
-    for (const key in userData.stats) {
-      const baseValue = userData.stats[key] || 0;
-      const currentClassValue = currentStats[key] || 0;
-      const newClassValue = newClassStats[key] || 0;
-
-      updatedStats[key] = baseValue - currentClassValue + newClassValue;
-    }
-
-    // Update state and description
-    setPlayerClass(newClass);
-    setPlayerDescription(playerClasses[newClass].description);
-
-    const updatedUserData = {
-      ...userData,
-      stats: updatedStats
-    };
-
-    onUpdateUserData(updatedUserData);
-  };
-
-  const toggleSkillSelection = (skillId) => {
-    setNewQuest(prev => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.includes(skillId)
-        ? prev.requiredSkills.filter(id => id !== skillId)
-        : [...prev.requiredSkills, skillId]
-    }));
-  };
-
-  const toggleMissionSkillSelection = (skillId) => {
-    setNewMission(prev => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.includes(skillId)
-        ? prev.requiredSkills.filter(id => id !== skillId)
-        : [...prev.requiredSkills, skillId]
-    }));
-  };
-
   const renderOverview = () => (
     <div>
       <div style={levelCardStyle}>
@@ -778,7 +859,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         <div style={statItemStyle}>
           <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '2rem', color: '#f59e0b', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748' }}>
-            {achievements.length}
+            {currentAchievements.length}
           </div>
           <div style={{ color: '#64748b' }}>Achievements</div>
         </div>
@@ -1621,9 +1702,9 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         <div style={cardStyle}>
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Your Achievements</h3>
-          {achievements.length > 0 ? (
+          {currentAchievements.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {achievements.map(achievement => (
+              {currentAchievements.map(achievement => (
                 <div key={achievement.id} style={{
                   padding: '1rem',
                   background: '#f0f9ff',
@@ -1656,7 +1737,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Available Titles</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {titles.map(title => {
-              const isUnlocked = achievements.find(a => a.title?.id === title.id);
+              const isUnlocked = currentAchievements.find(a => a.title?.id === title.id);
               return (
                 <div key={title.id} style={{
                   padding: '1rem',
