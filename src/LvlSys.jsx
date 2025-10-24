@@ -481,9 +481,9 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       let updatedSkills = [...availableSkills];
       if (quest.reward.skills && quest.reward.skills.length > 0) {
         updatedSkills = availableSkills.map(skill => {
-          const improvement = quest.reward.skills.find(s => s.skillId === skill.id);
+          const improvement = quest.reward.skills.find(s => s === skill.id);
           if (improvement) {
-            const newSkillXp = skill.xp + improvement.xp;
+            const newSkillXp = skill.xp + quest.reward.xp;
             const xpForNextLevel = skill.level * 100;
             let newSkillLevel = skill.level;
             let remainingXp = newSkillXp;
@@ -557,9 +557,9 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       let updatedSkills = [...availableSkills];
       if (mission.reward.skills && mission.reward.skills.length > 0) {
         updatedSkills = availableSkills.map(skill => {
-          const improvement = mission.reward.skills.find(s => s.skillId === skill.id);
+          const improvement = mission.reward.skills.find(s => s === skill.id);
           if (improvement) {
-            const newSkillXp = skill.xp + improvement.xp;
+            const newSkillXp = skill.xp + mission.reward.xp;
             const xpForNextLevel = skill.level * 100;
             let newSkillLevel = skill.level;
             let remainingXp = newSkillXp;
@@ -670,21 +670,39 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   };
 
   const toggleSkillSelection = (skillId) => {
-    setNewQuest(prev => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.includes(skillId)
+    setNewQuest(prev => {
+      const isSelected = prev.requiredSkills.includes(skillId);
+      const updatedSkills = isSelected
         ? prev.requiredSkills.filter(id => id !== skillId)
-        : [...prev.requiredSkills, skillId]
-    }));
+        : [...prev.requiredSkills, skillId];
+
+      return {
+        ...prev,
+        requiredSkills: updatedSkills,
+        reward: {
+          ...prev.reward,
+          skills: updatedSkills
+        }
+      };
+    });
   };
 
   const toggleMissionSkillSelection = (skillId) => {
-    setNewMission(prev => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.includes(skillId)
+    setNewMission(prev => {
+      const isSelected = prev.requiredSkills.includes(skillId);
+      const updatedSkills = isSelected
         ? prev.requiredSkills.filter(id => id !== skillId)
-        : [...prev.requiredSkills, skillId]
-    }));
+        : [...prev.requiredSkills, skillId];
+
+      return {
+        ...prev,
+        requiredSkills: updatedSkills,
+        reward: {
+          ...prev.reward,
+          skills: updatedSkills
+        }
+      };
+    });
   };
 
   // Styles
