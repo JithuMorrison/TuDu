@@ -52,7 +52,7 @@ function ToDo() {
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
     const storedCategories = localStorage.getItem('data');
-    localStorage.getItem('userData') ? '' : localStorage.setItem('userData', JSON.stringify({xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, xp:0}]}));
+    localStorage.getItem('userData') ? '' : localStorage.setItem('userData', JSON.stringify({xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, maxLevel: 10, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, maxLevel: 10, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, maxLevel: 10, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, maxLevel: 10, xp:0}]}));
     localStorage.getItem('lastReset') ? '' : localStorage.setItem('lastReset', '');
     
     if (storedCategories) {
@@ -91,7 +91,7 @@ function ToDo() {
     const checkForNewDay = () => {
       const now = new Date();
       const today = now.toDateString();
-      const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, xp:0}]};
+      const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, maxLevel: 10, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, maxLevel: 10, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, maxLevel: 10, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, maxLevel: 10, xp:0}]};
       const lastReset = localStorage.getItem('lastReset');
 
       if (!lastReset || lastReset !== today) {
@@ -414,10 +414,10 @@ function ToDo() {
         mp: 50
       },
       skills: [
-        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
-        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
-        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
-        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+        { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, maxLevel: 10, xp: 0 },
+        { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, maxLevel: 10, xp: 0 },
+        { id: 3, name: 'Organization', description: 'Better task organization', level: 1, maxLevel: 10, xp: 0 },
+        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, maxLevel: 10, xp: 0 }
       ]
     };
     
@@ -437,10 +437,10 @@ function ToDo() {
       mp: 50
     });
     setAvailableSkills(userData.skills || [
-      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, xp: 0 },
-      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, xp: 0 },
-      { id: 3, name: 'Organization', description: 'Better task organization', level: 1, xp: 0 },
-      { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, xp: 0 }
+      { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, maxLevel: 10, xp: 0 },
+      { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, maxLevel: 10, xp: 0 },
+      { id: 3, name: 'Organization', description: 'Better task organization', maxLevel: 10, level: 1, xp: 0 },
+      { id: 4, name: 'Planning', description: 'Better deadline management', maxLevel: 10, level: 1, xp: 0 }
     ]);
 
     checkStreak();
