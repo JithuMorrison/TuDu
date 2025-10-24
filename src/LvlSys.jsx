@@ -5,7 +5,8 @@ import {
   faFistRaised, faShieldAlt, faRunning, faBrain, faHeart, faMagic,
   faPlus, faTrash, faEdit, faList, faBullseye, faFlagCheckered,
   faCrown, faUser, faMagicWandSparkles, faBook, faGraduationCap,
-  faTags, faRocket, faShield, faDragon, faWandSparkles
+  faTags, faRocket, faShield, faDragon, faWandSparkles,
+  faRedo, faSync, faHistory, faCalendarDay, faCalendarWeek, faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvailableSkills }) => {
@@ -71,6 +72,100 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const [newSubtask, setNewSubtask] = useState('');
   const [playerClass, setPlayerClass] = useState(localStorage.getItem('playerClass') || 'Adventurer');
   const [playerDescription, setPlayerDescription] = useState(localStorage.getItem('playerDescription') || 'A brave adventurer starting their journey');
+
+  // Mission templates for manual application
+  const missionTemplates = {
+    daily: [
+      {
+        title: 'Morning Routine',
+        description: 'Complete your daily morning tasks and set intentions for the day',
+        reward: { xp: 100, stats: { endurance: 1 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'daily'
+      },
+      {
+        title: 'Daily Exercise',
+        description: 'Get some physical activity to boost your energy and health',
+        reward: { xp: 150, stats: { strength: 1, agility: 1 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'daily'
+      },
+      {
+        title: 'Learning Session',
+        description: 'Spend time learning something new or improving your skills',
+        reward: { xp: 120, stats: { intelligence: 1 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'daily'
+      },
+      {
+        title: 'Evening Reflection',
+        description: 'Review your day and plan for tomorrow',
+        reward: { xp: 80, stats: { intelligence: 1 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'daily'
+      }
+    ],
+    weekly: [
+      {
+        title: 'Weekly Planning',
+        description: 'Set your goals and priorities for the upcoming week',
+        reward: { xp: 300, stats: { intelligence: 2 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'weekly'
+      },
+      {
+        title: 'Skill Development',
+        description: 'Dedicate time to improve a specific skill',
+        reward: { xp: 400, stats: { intelligence: 3 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'weekly'
+      },
+      {
+        title: 'Social Connection',
+        description: 'Connect with friends, family, or community',
+        reward: { xp: 250, stats: { endurance: 2 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'weekly'
+      },
+      {
+        title: 'Creative Project',
+        description: 'Work on a creative or personal project',
+        reward: { xp: 350, stats: { intelligence: 2, agility: 1 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'weekly'
+      }
+    ],
+    monthly: [
+      {
+        title: 'Monthly Review',
+        description: 'Reflect on your progress and achievements this month',
+        reward: { xp: 800, stats: { intelligence: 5, endurance: 3 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'monthly'
+      },
+      {
+        title: 'Goal Setting',
+        description: 'Set new goals and objectives for the coming month',
+        reward: { xp: 600, stats: { intelligence: 4 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'monthly'
+      },
+      {
+        title: 'Skill Mastery',
+        description: 'Reach a new level in one of your key skills',
+        reward: { xp: 1000, stats: { intelligence: 6, strength: 2 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'monthly'
+      },
+      {
+        title: 'Personal Growth',
+        description: 'Challenge yourself with something outside your comfort zone',
+        reward: { xp: 900, stats: { endurance: 4, agility: 3 }, skills: [], talents: [] },
+        requiredSkills: [],
+        type: 'monthly'
+      }
+    ]
+  };
 
   // Available icons for skills
   const skillIcons = {
@@ -176,6 +271,62 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       setTitles(defaultTitles);
     }
   }, [titles.length]);
+
+  // Check and regenerate recurring missions based on their deadlines
+  useEffect(() => {
+    const checkMissionRegeneration = () => {
+      const now = new Date();
+      let missionsUpdated = false;
+      
+      const updatedMissions = missions.map(mission => {
+        // Only regenerate completed recurring missions that have passed their deadline
+        if (mission.completed && ['daily', 'weekly', 'monthly'].includes(mission.type) && mission.deadline) {
+          const deadline = new Date(mission.deadline);
+          
+          if (now > deadline) {
+            missionsUpdated = true;
+            
+            // Calculate new deadline based on mission type
+            let newDeadline = new Date(now);
+            switch (mission.type) {
+              case 'daily':
+                newDeadline.setDate(newDeadline.getDate() + 1);
+                break;
+              case 'weekly':
+                newDeadline.setDate(newDeadline.getDate() + 7);
+                break;
+              case 'monthly':
+                newDeadline.setMonth(newDeadline.getMonth() + 1);
+                break;
+              default:
+                newDeadline.setDate(newDeadline.getDate() + 1);
+            }
+            
+            // Reset mission as incomplete with new deadline
+            return {
+              ...mission,
+              completed: false,
+              deadline: newDeadline.toISOString(),
+              createdAt: now.toISOString()
+            };
+          }
+        }
+        return mission;
+      });
+      
+      if (missionsUpdated) {
+        setMissions(updatedMissions);
+      }
+    };
+
+    // Check for regeneration every minute
+    const interval = setInterval(checkMissionRegeneration, 60000);
+    
+    // Initial check
+    checkMissionRegeneration();
+    
+    return () => clearInterval(interval);
+  }, [missions]);
 
   // Single source of truth for achievements - use userData.achievements
   const currentAchievements = userData.achievements || [];
@@ -344,11 +495,35 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const handleAddMission = () => {
     if (newMission.title.trim() === '') return;
 
+    const now = new Date();
+    let deadline = new Date(now);
+    
+    // Set appropriate deadline based on mission type
+    switch (newMission.type) {
+      case 'daily':
+        deadline.setDate(deadline.getDate() + 1);
+        break;
+      case 'weekly':
+        deadline.setDate(deadline.getDate() + 7);
+        break;
+      case 'monthly':
+        deadline.setMonth(deadline.getMonth() + 1);
+        break;
+      default:
+        // For special missions, use the provided deadline or set to 30 days default
+        if (newMission.deadline) {
+          deadline = new Date(newMission.deadline);
+        } else {
+          deadline.setDate(deadline.getDate() + 30);
+        }
+    }
+
     const mission = {
       id: Date.now(),
       ...newMission,
       completed: false,
-      createdAt: new Date().toISOString()
+      createdAt: now.toISOString(),
+      deadline: deadline.toISOString()
     };
 
     setMissions([...missions, mission]);
@@ -607,6 +782,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         onUpdateUserData(updatedUserData);
       }
 
+      // Mark mission as completed (it will auto-regenerate after deadline)
       setMissions(missions.map(m => m.id === missionId ? { ...m, completed: true } : m));
     }
   };
@@ -703,6 +879,112 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         }
       };
     });
+  };
+
+  const applyMissionTemplate = (type) => {
+    const now = new Date();
+    const templateMissions = missionTemplates[type] || [];
+    
+    // Check if any of these template missions already exist (by title)
+    const existingMissionTitles = missions.map(mission => mission.title);
+    const existingTemplateTitles = templateMissions.map(template => template.title);
+    
+    // Find which template missions are already applied
+    const alreadyAppliedTitles = existingTemplateTitles.filter(title => 
+      existingMissionTitles.includes(title)
+    );
+    
+    // If all template missions are already applied, show message and return
+    if (alreadyAppliedTitles.length === templateMissions.length) {
+      showTemporaryReward(`${type.charAt(0).toUpperCase() + type.slice(1)} template already applied!`, 'info');
+      return;
+    }
+    
+    // Filter out templates that are already applied
+    const newTemplates = templateMissions.filter(template => 
+      !existingMissionTitles.includes(template.title)
+    );
+    
+    const newMissions = newTemplates.map(template => {
+      let deadline = new Date(now);
+      
+      switch (type) {
+        case 'daily':
+          deadline.setDate(deadline.getDate() + 1);
+          break;
+        case 'weekly':
+          deadline.setDate(deadline.getDate() + 7);
+          break;
+        case 'monthly':
+          deadline.setMonth(deadline.getMonth() + 1);
+          break;
+        default:
+          deadline.setDate(deadline.getDate() + 1);
+      }
+      
+      return {
+        ...template,
+        id: Date.now() + Math.random(),
+        completed: false,
+        createdAt: now.toISOString(),
+        deadline: deadline.toISOString()
+      };
+    });
+    
+    // Add new template missions to existing missions
+    setMissions(prev => [...prev, ...newMissions]);
+    
+    if (newTemplates.length === templateMissions.length) {
+      showTemporaryReward(`Applied ${type} mission template!`, 'calendar-day');
+    } else if (newTemplates.length > 0) {
+      showTemporaryReward(`Added ${newTemplates.length} new missions from ${type} template!`, 'calendar-day');
+    } else {
+      showTemporaryReward(`${type.charAt(0).toUpperCase() + type.slice(1)} template already applied!`, 'info');
+    }
+  };
+
+  const manuallyRegenerateMissions = () => {
+    const now = new Date();
+    let missionsUpdated = false;
+    
+    const updatedMissions = missions.map(mission => {
+      // Only regenerate completed recurring missions
+      if (mission.completed && ['daily', 'weekly', 'monthly'].includes(mission.type)) {
+        missionsUpdated = true;
+        
+        // Calculate new deadline based on mission type
+        let newDeadline = new Date(now);
+        switch (mission.type) {
+          case 'daily':
+            newDeadline.setDate(newDeadline.getDate() + 1);
+            break;
+          case 'weekly':
+            newDeadline.setDate(newDeadline.getDate() + 7);
+            break;
+          case 'monthly':
+            newDeadline.setMonth(newDeadline.getMonth() + 1);
+            break;
+          default:
+            newDeadline.setDate(newDeadline.getDate() + 1);
+        }
+        
+        // Reset mission as incomplete with new deadline
+        return {
+          ...mission,
+          completed: false,
+          deadline: newDeadline.toISOString(),
+          createdAt: now.toISOString()
+        };
+      }
+      return mission;
+    });
+    
+    if (missionsUpdated) {
+      setMissions(updatedMissions);
+      showTemporaryReward('Missions regenerated!', 'sync');
+    } else {
+      showTemporaryReward('No completed missions to regenerate', 'info');
+    }
   };
 
   // Styles
@@ -837,6 +1119,16 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
   const successButtonStyle = {
     ...buttonStyle,
     background: '#10b981'
+  };
+
+  const warningButtonStyle = {
+    ...buttonStyle,
+    background: '#f59e0b'
+  };
+
+  const infoButtonStyle = {
+    ...buttonStyle,
+    background: '#3b82f6'
   };
 
   const renderOverview = () => (
@@ -1265,13 +1557,53 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 style={{ color: '#2d3748', margin: 0 }}>Your Missions</h2>
-        <button
-          style={buttonStyle}
-          onClick={() => setShowMissionForm(true)}
-        >
-          <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
-          New Mission
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            style={warningButtonStyle}
+            onClick={manuallyRegenerateMissions}
+          >
+            <FontAwesomeIcon icon={faSync} style={{ marginRight: '0.5rem' }} />
+            Regenerate Completed
+          </button>
+          <button
+            style={buttonStyle}
+            onClick={() => setShowMissionForm(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+            New Mission
+          </button>
+        </div>
+      </div>
+
+      {/* Mission Templates Section */}
+      <div style={cardStyle}>
+        <h3 style={{ marginBottom: '1rem', color: '#2d3748' }}>Mission Templates</h3>
+        <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+          Apply pre-made mission templates to quickly add recurring missions
+        </p>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            style={{ ...infoButtonStyle, background: '#10b981' }}
+            onClick={() => applyMissionTemplate('daily')}
+          >
+            <FontAwesomeIcon icon={faCalendarDay} style={{ marginRight: '0.5rem' }} />
+            Apply Daily Template
+          </button>
+          <button
+            style={{ ...infoButtonStyle, background: '#3b82f6' }}
+            onClick={() => applyMissionTemplate('weekly')}
+          >
+            <FontAwesomeIcon icon={faCalendarWeek} style={{ marginRight: '0.5rem' }} />
+            Apply Weekly Template
+          </button>
+          <button
+            style={{ ...infoButtonStyle, background: '#8b5cf6' }}
+            onClick={() => applyMissionTemplate('monthly')}
+          >
+            <FontAwesomeIcon icon={faCalendarAlt} style={{ marginRight: '0.5rem' }} />
+            Apply Monthly Template
+          </button>
+        </div>
       </div>
 
       {showMissionForm && (
@@ -1395,91 +1727,138 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {missions.filter(m => !m.completed).map(mission => (
-          <div key={mission.id} style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <h4 style={{ margin: 0, color: '#2d3748' }}>{mission.title}</h4>
-                  <span style={{
-                    padding: '0.25rem 0.75rem',
-                    background: '#e0e7ff',
-                    color: '#4f46e5',
-                    borderRadius: '12px',
-                    fontSize: '0.7rem',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase'
-                  }}>
-                    {mission.type}
-                  </span>
-                </div>
-                <p style={{ margin: 0, color: '#64748b' }}>{mission.description}</p>
-                
-                {mission.requiredSkills.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    {mission.requiredSkills.map(skillId => {
-                      const skill = availableSkills.find(s => s.id === skillId);
-                      return skill ? (
-                        <span key={skillId} style={{
-                          padding: '0.25rem 0.5rem',
-                          background: '#e0e7ff',
-                          color: '#4f46e5',
-                          borderRadius: '12px',
-                          fontSize: '0.7rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.25rem'
-                        }}>
-                          <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
-                          {skill.name}
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  style={{ ...buttonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
-                  onClick={() => handleCompleteMission(mission.id)}
-                >
-                  Complete
-                </button>
-                <button
-                  style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
-                  onClick={() => handleDeleteMission(mission.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '0.8rem',
-              color: '#64748b',
-              flexWrap: 'wrap',
-              gap: '0.5rem'
+      {/* Mission type sections */}
+      {['daily', 'weekly', 'monthly', 'special'].map(missionType => {
+        const typeMissions = missions.filter(m => m.type === missionType && !m.completed);
+        const typeLabel = missionType.charAt(0).toUpperCase() + missionType.slice(1);
+        
+        return (
+          <div key={missionType} style={{ marginBottom: '2rem' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              marginBottom: '1rem',
+              padding: '0.5rem 0',
+              borderBottom: '2px solid #e2e8f0'
             }}>
-              <span>Reward: {mission.reward.xp} XP</span>
-              {mission.deadline && (
-                <span>Due: {new Date(mission.deadline).toLocaleDateString()}</span>
-              )}
+              <FontAwesomeIcon 
+                icon={missionType === 'daily' ? faCalendarDay : missionType === 'weekly' ? faCalendarWeek : missionType === 'monthly' ? faCalendarAlt : faStar} 
+                style={{ color: missionType === 'daily' ? '#10b981' : missionType === 'weekly' ? '#3b82f6' : missionType === 'monthly' ? '#8b5cf6' : '#f59e0b' }} 
+              />
+              <h3 style={{ margin: 0, color: '#2d3748' }}>{typeLabel} Missions</h3>
+              <span style={{
+                padding: '0.25rem 0.75rem',
+                background: missionType === 'daily' ? '#d1fae5' : missionType === 'weekly' ? '#dbeafe' : missionType === 'monthly' ? '#e0e7ff' : '#fef3c7',
+                color: missionType === 'daily' ? '#065f46' : (missionType === 'weekly' ? '#1e40af' : (missionType === 'monthly' ? '#3730a3' : '#92400e')),
+                borderRadius: '12px',
+                fontSize: '0.7rem',
+                fontWeight: 'bold'
+              }}>
+                {typeMissions.length} active
+              </span>
             </div>
-          </div>
-        ))}
+            
+            {typeMissions.length > 0 ? (
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {typeMissions.map(mission => (
+                  <div key={mission.id} style={cardStyle}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          <h4 style={{ margin: 0, color: '#2d3748' }}>{mission.title}</h4>
+                          <span style={{
+                            padding: '0.25rem 0.75rem',
+                            background: missionType === 'daily' ? '#d1fae5' : missionType === 'weekly' ? '#dbeafe' : missionType === 'monthly' ? '#e0e7ff' : '#fef3c7',
+                            color: missionType === 'daily' ? '#065f46' : missionType === 'weekly' ? '#1e40af' : missionType === 'monthly' ? '#3730a3' : '#92400e',
+                            borderRadius: '12px',
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase'
+                          }}>
+                            {mission.type}
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, color: '#64748b' }}>{mission.description}</p>
+                        
+                        {mission.requiredSkills.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            {mission.requiredSkills.map(skillId => {
+                              const skill = availableSkills.find(s => s.id === skillId);
+                              return skill ? (
+                                <span key={skillId} style={{
+                                  padding: '0.25rem 0.5rem',
+                                  background: '#e0e7ff',
+                                  color: '#4f46e5',
+                                  borderRadius: '12px',
+                                  fontSize: '0.7rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem'
+                                }}>
+                                  <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
+                                  {skill.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          style={{ ...buttonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
+                          onClick={() => handleCompleteMission(mission.id)}
+                        >
+                          Complete
+                        </button>
+                        {mission.type === 'special' && (
+                          <button
+                            style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
+                            onClick={() => handleDeleteMission(mission.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
-        {missions.filter(m => !m.completed).length === 0 && (
-          <div style={{ ...cardStyle, textAlign: 'center', color: '#64748b' }}>
-            <FontAwesomeIcon icon={faFlagCheckered} style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
-            <h3>No Active Missions</h3>
-            <p>Create your first mission to get started!</p>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '0.8rem',
+                      color: '#64748b',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem'
+                    }}>
+                      <span>Reward: {mission.reward.xp} XP</span>
+                      {mission.deadline && (
+                        <span>Due: {new Date(mission.deadline).toLocaleDateString()}</span>
+                      )}
+                      {mission.type !== 'special' && (
+                        <span style={{ 
+                          color: missionType === 'daily' ? '#10b981' : missionType === 'weekly' ? '#3b82f6' : '#8b5cf6',
+                          fontWeight: 'bold'
+                        }}>
+                          Auto-regenerates after deadline
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ ...cardStyle, textAlign: 'center', color: '#64748b' }}>
+                <FontAwesomeIcon 
+                  icon={missionType === 'daily' ? faCalendarDay : missionType === 'weekly' ? faCalendarWeek : missionType === 'monthly' ? faCalendarAlt : faStar} 
+                  style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }} 
+                />
+                <p>No active {missionType} missions. {missionType !== 'special' && 'Completed missions will regenerate automatically after their deadline.'}</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })}
     </div>
   );
 
