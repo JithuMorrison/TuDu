@@ -626,7 +626,7 @@ function ToDo() {
       case 'ToDo':
         return renderToDoSection();
       case 'LevelingSystem':
-        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
+        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
       case 'RearrangePage':
         return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
       default:
@@ -1060,7 +1060,7 @@ function ToDo() {
                         gap: '5px'
                       }}>
                         <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
-                        {ach}
+                        {ach.name}
                       </div>
                     ))}
                     {achievements.length === 0 && (
@@ -1223,7 +1223,7 @@ function ToDo() {
                       gap: '5px'
                     }}>
                       <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
-                      {ach}
+                      {ach.name}
                     </div>
                   ))}
                   {achievements.length === 0 && (
