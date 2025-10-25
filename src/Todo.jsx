@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Card from './Card';
 import Card3 from './Card3';
 import Card2 from './Card2';
+import SubtaskManager from './Subtask';
 import Button from './Button/button';
 import Confetti from 'react-confetti';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -142,7 +143,7 @@ function ToDo() {
     checkForNewDay();
   }, []);
 
-  // Modified addItem with XP rewards
+  // Modified addItem with XP rewards and subtasks initialization
   const addItem = (newItem) => {
     const updatedData = [...task, newItem];
     setTask(updatedData);
@@ -157,7 +158,7 @@ function ToDo() {
     }
   };
 
-  // Modified handleChecked function for Card component
+  // Modified handleChecked function for Card component with subtask XP
   const handleChecked = (index, isChecked) => {
     const updatetask = [...task];
     const taskItem = updatetask[index];
@@ -175,6 +176,14 @@ function ToDo() {
 
       if (newCompleted <= todaysGoal && lastCompletedDate !== today) {
         let xpEarned = 50;
+        
+        // Bonus for completed subtasks
+        if (taskItem.subtasks && taskItem.subtasks.length > 0) {
+          const completedSubtasks = taskItem.subtasks.filter(st => st.completed).length;
+          const totalSubtasks = taskItem.subtasks.length;
+          const subtaskBonus = Math.floor((completedSubtasks / totalSubtasks) * 25);
+          xpEarned += subtaskBonus;
+        }
         
         if (taskItem.deadline) {
           const deadline = new Date(taskItem.deadline);
@@ -343,6 +352,7 @@ function ToDo() {
     }
   }
 
+  // Updated handleSubmit to include subtasks initialization
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newtask.trim() !== "") {
@@ -354,6 +364,7 @@ function ToDo() {
         deadline: deadlineValue,
         status: false,
         isDaily: isDailyTask,
+        subtasks: [] // Initialize with empty subtasks array
       });
       setNewtask("");
       setIsDailyTask(false);
@@ -417,7 +428,7 @@ function ToDo() {
         { id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, maxLevel: 10, xp: 0 },
         { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, maxLevel: 10, xp: 0 },
         { id: 3, name: 'Organization', description: 'Better task organization', level: 1, maxLevel: 10, xp: 0 },
-        { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, maxLevel: 10, xp: 0 }
+        { id: 4, name: 'Planning', description: 'Better deadline management', maxLevel: 10, level: 1, xp: 0 }
       ]
     };
     
@@ -986,9 +997,33 @@ function ToDo() {
                   </button>
                 </div>
                 {show === 1 ? (
-                  <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
+                  <Card2 
+                    name={task[ind]?.name} 
+                    para={task[ind]?.para} 
+                    time={task[ind]?.time} 
+                    index={ind} 
+                    isMobileView={isMobileView} 
+                    status={task[ind]?.status} 
+                    isDaily={task[ind]?.isDaily}
+                    task={task[ind]}
+                  />
                 ) : show === 0 ? (
-                  <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} fetcho={fetcho} />
+                  <Card3 
+                    task={task} 
+                    settask={setTask} 
+                    index={ind} 
+                    isMobileView={isMobileView} 
+                    fetcho={fetcho} 
+                  />
+                ) : show === 2 ? (
+                  <SubtaskManager 
+                    task={task[ind]}
+                    taskIndex={ind}
+                    tasks={task}
+                    setTasks={setTask}
+                    fetcho={fetcho}
+                    onClose={() => setShow(-1)}
+                  />
                 ) : (
                   <div style={{ 
                     color: '#64748b', 
@@ -1169,7 +1204,7 @@ function ToDo() {
           </div>
 
           {isMobileView && (
-            <div style={{ borderTop: '1px solid #e5e7eb' }}>
+            <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', backgroundColor: 'white', borderRadius: '12px', marginTop: '16px' }}>
                 <h3 style={{ marginBottom: '10px' }}>Your Achievements</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {achievements.map((ach, i) => (
@@ -1230,27 +1265,53 @@ function ToDo() {
                 overflowY: 'auto'
               }}>
                 {show === 1 ? (
-                  <Card2 name={task[ind]?.name} para={task[ind]?.para} time={task[ind]?.time} index={ind} isMobileView={isMobileView} status={task[ind]?.status} isDaily={task[ind]?.isDaily} />
+                  <Card2 
+                    name={task[ind]?.name} 
+                    para={task[ind]?.para} 
+                    time={task[ind]?.time} 
+                    index={ind} 
+                    isMobileView={isMobileView} 
+                    status={task[ind]?.status} 
+                    isDaily={task[ind]?.isDaily}
+                    task={task[ind]}
+                  />
                 ) : show === 0 ? (
-                  <Card3 task={task} settask={setTask} index={ind} isMobileView={isMobileView} fetcho={fetcho} />
+                  <Card3 
+                    task={task} 
+                    settask={setTask} 
+                    index={ind} 
+                    isMobileView={isMobileView} 
+                    fetcho={fetcho} 
+                  />
+                ) : show === 2 ? (
+                  <SubtaskManager 
+                    task={task[ind]}
+                    taskIndex={ind}
+                    tasks={task}
+                    setTasks={setTask}
+                    fetcho={fetcho}
+                    onClose={() => setShow(-1)}
+                  />
                 ) : (
                   <div>No Task Selected</div>
                 )}
-                <button
-                  style={{
-                    marginTop: '16px',
-                    padding: '12px 24px',
-                    backgroundColor: '#4f46e5',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    width: '100%'
-                  }}
-                  onClick={() => setShow(-1)}
-                >
-                  Close
-                </button>
+                {show !== 2 && (
+                  <button
+                    style={{
+                      marginTop: '16px',
+                      padding: '12px 24px',
+                      backgroundColor: '#4f46e5',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      width: '100%'
+                    }}
+                    onClick={() => setShow(-1)}
+                  >
+                    Close
+                  </button>
+                )}
               </div>
             </div>
           )}

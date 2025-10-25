@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faArrowUp, faArrowDown, faEdit, faEye, faCheckCircle, faWarning, faClock, faExclamationTriangle, faListCheck } from "@fortawesome/free-solid-svg-icons";
 import Button from './Button/button';
 
 function Card(ip) {
   const currentDate = new Date();
   const ipDate = ip.ded ? new Date(ip.ded) : null;
   const isOverdue = ipDate && currentDate > ipDate && !ip.status;
-  const isDueSoon = ipDate && !ip.status && (ipDate - currentDate) < (24 * 60 * 60 * 1000); // Due within 24 hours
+  const isDueSoon = ipDate && !ip.status && (ipDate - currentDate) < (24 * 60 * 60 * 1000);
   const [profileImg, setProfileImg] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(false);
 
   const profileImages = [
     'https://www.zoologiste.com/images/main/lion.jpg',
@@ -23,6 +24,18 @@ function Card(ip) {
     const randomIndex = Math.floor(Math.random() * profileImages.length);
     setProfileImg(profileImages[randomIndex]);
   }, []);
+
+  // Calculate subtask progress
+const calculateSubtaskProgress = () => {
+  const task = ip.tasks[ip.index];
+  if (!task || !task.subtasks || task.subtasks.length === 0) return 0;
+  
+  const completed = task.subtasks.filter(st => st && st.completed).length;
+  return Math.round((completed / task.subtasks.length) * 100);
+};
+
+  const progress = calculateSubtaskProgress();
+  const hasSubtasks = ip.tasks[ip.index]?.subtasks && (ip.tasks[ip.index].subtasks || []).length > 0;
 
   function deletetask() {
     const updatetask = ip.tasks.filter((_, i) => i != ip.index);   
@@ -58,22 +71,36 @@ function Card(ip) {
     ip.setShow(0);
   }
 
-  function handleChecked() {
-    if (!ip.status || ip.tasks[ip.index].isDaily) {
-      const updatetask = [...ip.tasks];
-      updatetask[ip.index].status = !updatetask[ip.index].status;
-      
-      // Record completion time if marking as complete
-      if (updatetask[ip.index].status) {
-        updatetask[ip.index].completionTime = new Date().toISOString();
-      } else {
-        updatetask[ip.index].completionTime = null;
-      }
-      
-      ip.settask(updatetask);
-      localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
-    }
+  function displaySubtasks() {
+    ip.setInd(ip.index);
+    ip.setShow(2); // 2 for subtask management
   }
+
+  const handleChecked = () => {
+    const newStatus = !ip.status;
+    ip.onCheck(ip.index, newStatus);
+    
+    if (newStatus && ip.streak > 0) {
+      const potentialBonus = Math.floor(50 * (1 + ip.streak * 0.1));
+      setShowTooltip(`Complete for +${potentialBonus} XP!`);
+      setTimeout(() => setShowTooltip(false), 2000);
+    }
+  };
+
+  const toggleSubtask = (subIndex) => {
+    const updatedTasks = [...ip.tasks];
+    if (!updatedTasks[ip.index].subtasks) {
+      updatedTasks[ip.index].subtasks = [];
+    }
+    
+    if (updatedTasks[ip.index].subtasks[subIndex]) {
+      updatedTasks[ip.index].subtasks[subIndex].completed = 
+        !updatedTasks[ip.index].subtasks[subIndex].completed;
+      
+      ip.settask(updatedTasks);
+      localStorage.setItem(ip.fetcho, JSON.stringify(updatedTasks));
+    }
+  };
 
   const streakEffect = ip.streak > 0 ? {
     boxShadow: `0 0 10px ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
@@ -81,19 +108,6 @@ function Card(ip) {
     borderRight: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
     borderBottom: `2px solid ${ip.streak > 3 ? '#f59e0b' : '#a5b4fc'}`,
   } : {};
-
-  // Enhanced handleChecked with streak consideration
-  function handleChecked() {
-    const newStatus = !ip.status;
-    ip.onCheck(ip.index, newStatus);
-    
-    if (newStatus && ip.streak > 0) {
-      // Show streak bonus potential
-      const potentialBonus = Math.floor(50 * (1 + ip.streak * 0.1));
-      setShowTooltip(`Complete for +${potentialBonus} XP!`);
-      setTimeout(() => setShowTooltip(false), 2000);
-    }
-  }
 
   const getStatusIcon = () => {
     if (ip.status) return faCheckCircle;
@@ -121,6 +135,7 @@ function Card(ip) {
     transition: 'all 0.2s ease',
     borderLeft: `4px solid ${getStatusColor()}`,
     opacity: ip.status ? 0.8 : 1,
+    marginBottom: '12px',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
@@ -196,6 +211,36 @@ function Card(ip) {
     fontWeight: isOverdue || isDueSoon ? '600' : '400'
   };
 
+  const subtaskButtonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    backgroundColor: hasSubtasks ? (progress === 100 ? '#10b98120' : '#4f46e520') : '#f8fafc',
+    border: `2px solid ${hasSubtasks ? (progress === 100 ? '#10b981' : '#4f46e5') : '#e5e7eb'}`,
+    borderRadius: '20px',
+    color: hasSubtasks ? (progress === 100 ? '#10b981' : '#4f46e5') : '#64748b',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    marginRight: '8px'
+  };
+
+  const progressBarStyle = {
+    height: '4px',
+    backgroundColor: '#e5e7eb',
+    borderRadius: '2px',
+    marginTop: '8px',
+    overflow: 'hidden'
+  };
+
+  const progressFillStyle = {
+    height: '100%',
+    backgroundColor: progress === 100 ? '#10b981' : '#4f46e5',
+    width: `${progress}%`,
+    transition: 'width 0.3s ease'
+  };
+
   const streakIndicator = ip.streak > 0 ? (
     <div style={{
       position: 'absolute',
@@ -217,7 +262,6 @@ function Card(ip) {
     </div>
   ) : null;
 
-  // Add XP potential tooltip
   const xpTooltip = showTooltip && typeof showTooltip === 'string' ? (
     <div style={{
       position: 'absolute',
@@ -311,6 +355,64 @@ function Card(ip) {
                 <span>Daily Task</span>
               )}
             </div>
+
+            {/* Subtasks Progress Bar */}
+            {hasSubtasks && (
+              <div style={progressBarStyle}>
+                <div style={progressFillStyle}></div>
+              </div>
+            )}
+
+            {/* Subtasks Panel */}
+            {showSubtasks && (
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '8px'
+                }}>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#4f46e5' }}>
+                    Subtasks ({progress}% completed)
+                  </h4>
+                </div>
+                
+                {(ip.tasks[ip.index].subtasks || []).slice(0, 3).map((subtask, subIndex) => (
+                  <div key={subIndex} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '4px 0',
+                    fontSize: '0.8rem'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={subtask.completed}
+                      onChange={(e) => toggleSubtask(subIndex)}
+                      style={{ width: '14px', height: '14px' }}
+                    />
+                    <span style={{
+                      textDecoration: subtask.completed ? 'line-through' : 'none',
+                      color: subtask.completed ? '#6b7280' : '#374151'
+                    }}>
+                      {subtask.name}
+                    </span>
+                  </div>
+                ))}
+                
+                {(ip.tasks[ip.index].subtasks || []).length > 3 && (
+                  <div style={{ fontSize: '0.7rem', color: '#6b7280', marginTop: '4px' }}>
+                    +{(ip.tasks[ip.index].subtasks || []).length - 3} more subtasks
+                  </div>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <div style={{display: "flex", flexDirection: 'row', width: '500px', marginTop: '-8px'}}>
@@ -354,12 +456,24 @@ function Card(ip) {
       </div>
       
       <div style={buttonGroupStyle}>
+        {/* Subtask Button */}
+        <button 
+          style={subtaskButtonStyle}
+          onClick={() => setShowSubtasks(!showSubtasks)}
+          title="Toggle Subtasks"
+        >
+          <FontAwesomeIcon icon={faListCheck} />
+          {hasSubtasks && (
+            <span>{progress}%</span>
+          )}
+        </button>
+
         <Button 
           icon={faEye} 
           onClick={displayinfo} 
           color="#3b82f6" 
           width="36px"
-          tooltip="View details (+10 XP possible)"
+          tooltip="View details"
         />
         <Button 
           icon={faEdit} 

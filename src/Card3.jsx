@@ -1,12 +1,14 @@
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Button from './Button/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarAlt, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarAlt, faClock, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 function Card3(ip) {
   const nameref = useRef(null);
   const input = useRef(null);
   const [isDailyTask, setIsDailyTask] = useState(ip.task[ip.index]?.isDaily || false);
+  const [newSubtask, setNewSubtask] = useState('');
+  const [subtasks, setSubtasks] = useState(ip.task[ip.index]?.subtasks || []);
 
   const cardStyle = {
     display: 'flex',
@@ -75,12 +77,35 @@ function Card3(ip) {
     if (nameref.current && ip.task[ip.index]) {
       nameref.current.value = ip.task[ip.index].name || '';
       setIsDailyTask(ip.task[ip.index].isDaily || false);
+      setSubtasks(ip.task[ip.index].subtasks || []);
   
       if (input.current && !ip.task[ip.index].isDaily) {
         input.current.value = ip.task[ip.index].deadline || '';
       }
     }
   }, [ip.task, ip.index]);
+
+  const addSubtask = () => {
+    if (newSubtask.trim() === '') return;
+    
+    const subtask = {
+      name: newSubtask.trim(),
+      completed: false
+    };
+
+    setSubtasks(prev => [...prev, subtask]);
+    setNewSubtask('');
+  };
+
+  const removeSubtask = (index) => {
+    setSubtasks(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleSubtask = (index) => {
+    setSubtasks(prev => prev.map((subtask, i) => 
+      i === index ? { ...subtask, completed: !subtask.completed } : subtask
+    ));
+  };
 
   function changetask() {
     const updatetask = ip.task.map((task, i) => {
@@ -96,17 +121,28 @@ function Card3(ip) {
           names = nameref.current.value;
         }
   
-        return { ...task, name: names, deadline: dedlin, isDaily: isDailyTask };
+        return { 
+          ...task, 
+          name: names, 
+          deadline: dedlin, 
+          isDaily: isDailyTask,
+          subtasks: subtasks 
+        };
       }
       return task;
     });
   
-    if (nameref.current) nameref.current.value = '';
-    if (input.current) input.current.value = ''; // Only clear if it exists
-  
     ip.settask(updatetask);
     localStorage.setItem(ip.fetcho, JSON.stringify(updatetask));
-  }  
+  }
+
+  const calculateProgress = () => {
+    if (subtasks.length === 0) return 0;
+    const completed = subtasks.filter(st => st.completed).length;
+    return Math.round((completed / subtasks.length) * 100);
+  };
+
+  const progress = calculateProgress();
 
   return (
     <div style={cardStyle}>
@@ -151,6 +187,95 @@ function Card3(ip) {
           />
         </>
       )}
+
+      {/* Subtasks Management */}
+      <div style={{ width: '100%', marginBottom: '16px' }}>
+        <label style={labelStyle}>
+          <FontAwesomeIcon icon={faCalendarAlt} />
+          Subtasks {subtasks.length > 0 && `(${progress}% completed)`}
+        </label>
+        
+        {/* Add Subtask */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          <input
+            type="text"
+            value={newSubtask}
+            onChange={(e) => setNewSubtask(e.target.value)}
+            placeholder="Add new subtask..."
+            style={{
+              ...inputStyle,
+              marginBottom: '0',
+              fontSize: '0.9rem',
+              padding: '8px 12px'
+            }}
+            onKeyPress={(e) => e.key === 'Enter' && addSubtask()}
+          />
+          <Button
+            icon={faPlus}
+            onClick={addSubtask}
+            color="#10b981"
+            width="36px"
+            tooltip="Add subtask"
+          />
+        </div>
+
+        {/* Subtasks List */}
+        {subtasks.length > 0 ? (
+          <div style={{ 
+            maxHeight: '150px',
+            overflowY: 'auto',
+            border: '1px solid #e5e7eb',
+            borderRadius: '8px',
+            padding: '8px'
+          }}>
+            {subtasks.map((subtask, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '6px',
+                marginBottom: '4px'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={subtask.completed}
+                  onChange={() => toggleSubtask(index)}
+                  style={{ width: '16px', height: '16px' }}
+                />
+                <span style={{
+                  flex: 1,
+                  textDecoration: subtask.completed ? 'line-through' : 'none',
+                  color: subtask.completed ? '#6b7280' : '#374151',
+                  fontSize: '0.9rem'
+                }}>
+                  {subtask.name}
+                </span>
+                <Button
+                  icon={faTrash}
+                  onClick={() => removeSubtask(index)}
+                  color="#ef4444"
+                  width="28px"
+                  tooltip="Remove subtask"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ 
+            padding: '16px', 
+            textAlign: 'center', 
+            color: '#6b7280',
+            backgroundColor: '#f8fafc',
+            borderRadius: '8px',
+            border: '1px dashed #d1d5db',
+            fontSize: '0.9rem'
+          }}>
+            No subtasks added yet
+          </div>
+        )}
+      </div>
       
       <button
         style={buttonStyle}
