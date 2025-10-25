@@ -626,7 +626,7 @@ function ToDo() {
       case 'ToDo':
         return renderToDoSection();
       case 'LevelingSystem':
-        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
+        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.skills) setAvailableSkills(updates.skills); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
       case 'RearrangePage':
         return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
       default:

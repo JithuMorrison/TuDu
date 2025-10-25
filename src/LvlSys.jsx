@@ -599,6 +599,26 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     };
 
     setTitles([...titles, title]);
+
+    if (newTitle.type === 'custom') {
+      const newAchievement = {
+        id: Date.now(),
+        name: newTitle.name,
+        description: newTitle.description || 'Custom achievement unlocked',
+        type: 'title',
+        unlockedAt: new Date().toISOString(),
+        title: title,
+      };
+
+      const updatedAchievements = [...achievements, newAchievement];
+      setAchievements(updatedAchievements);
+
+      // Persist the updated achievements to user data
+      onUpdateUserData({
+        achievements: updatedAchievements,
+      });
+    }
+
     setNewTitle({
       name: '',
       description: '',
