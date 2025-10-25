@@ -679,6 +679,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         setAvailableSkills(updatedSkills);
       }
 
+      if (quest.reward.talents && quest.reward.talents.length > 0) {
+        quest.reward.talents.forEach(talentId => {
+          const talent = talents.find(t => t.id === talentId);
+          if (talent && !talent.unlocked) {
+            handleUnlockTalent(talentId);
+          }
+        });
+      }
+
       // Check for achievements
       const questAchievements = checkQuestAchievements();
       if (questAchievements.length > 0) {
@@ -755,6 +764,15 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         setAvailableSkills(updatedSkills);
       }
 
+      if (mission.reward.talents && mission.reward.talents.length > 0) {
+        mission.reward.talents.forEach(talentId => {
+          const talent = talents.find(t => t.id === talentId);
+          if (talent && !talent.unlocked) {
+            handleUnlockTalent(talentId);
+          }
+        });
+      }
+
       // Check for achievements
       const missionAchievements = checkMissionAchievements();
       if (missionAchievements.length > 0) {
@@ -797,7 +815,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
   const handleUnlockTalent = (talentId) => {
     const talent = talents.find(t => t.id === talentId);
-    if (talent && userData.level >= talent.requiredLevel) {
+    if (talent && userData.level >= talent.requiredLevel && !talent.unlocked) {
       setTalents(talents.map(t => 
         t.id === talentId ? { ...t, unlocked: true } : t
       ));
@@ -876,6 +894,40 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
         reward: {
           ...prev.reward,
           skills: updatedSkills
+        }
+      };
+    });
+  };
+
+  const toggleTalentSelection = (talentId) => {
+    setNewQuest(prev => {
+      const isSelected = prev.reward.talents.includes(talentId);
+      const updatedTalents = isSelected
+        ? prev.reward.talents.filter(id => id !== talentId)
+        : [...prev.reward.talents, talentId];
+
+      return {
+        ...prev,
+        reward: {
+          ...prev.reward,
+          talents: updatedTalents
+        }
+      };
+    });
+  };
+
+  const toggleMissionTalentSelection = (talentId) => {
+    setNewMission(prev => {
+      const isSelected = prev.reward.talents.includes(talentId);
+      const updatedTalents = isSelected
+        ? prev.reward.talents.filter(id => id !== talentId)
+        : [...prev.reward.talents, talentId];
+
+      return {
+        ...prev,
+        reward: {
+          ...prev.reward,
+          talents: updatedTalents
         }
       };
     });
@@ -1336,6 +1388,41 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
 
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Talent Rewards
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {talents.map(talent => (
+                <button
+                  key={talent.id}
+                  type="button"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: newQuest.reward.talents.includes(talent.id) ? '#10b981' : '#e5e7eb',
+                    color: newQuest.reward.talents.includes(talent.id) ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onClick={() => toggleTalentSelection(talent.id)}
+                >
+                  <FontAwesomeIcon icon={faMagicWandSparkles} />
+                  {talent.name}
+                </button>
+              ))}
+            </div>
+            {talents.length === 0 && (
+              <p style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
+                No talents available. Create talents first in the Stats & Skills tab.
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
               Subtasks
             </label>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
@@ -1458,6 +1545,29 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                         }}>
                           <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
                           {skill.name}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {quest.reward.talents.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    {quest.reward.talents.map(talentId => {
+                      const talent = talents.find(t => t.id === talentId);
+                      return talent ? (
+                        <span key={talentId} style={{
+                          padding: '0.25rem 0.5rem',
+                          background: '#d1fae5',
+                          color: '#065f46',
+                          borderRadius: '12px',
+                          fontSize: '0.7rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          <FontAwesomeIcon icon={faMagicWandSparkles} />
+                          {talent.name}
                         </span>
                       ) : null;
                     })}
@@ -1653,6 +1763,41 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
             </div>
           </div>
 
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              Talent Rewards
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {talents.map(talent => (
+                <button
+                  key={talent.id}
+                  type="button"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: newMission.reward.talents.includes(talent.id) ? '#10b981' : '#e5e7eb',
+                    color: newMission.reward.talents.includes(talent.id) ? 'white' : '#374151',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onClick={() => toggleMissionTalentSelection(talent.id)}
+                >
+                  <FontAwesomeIcon icon={faMagicWandSparkles} />
+                  {talent.name}
+                </button>
+              ))}
+            </div>
+            {talents.length === 0 && (
+              <p style={{ fontSize: '0.8rem', color: '#64748b', fontStyle: 'italic' }}>
+                No talents available. Create talents first in the Stats & Skills tab.
+              </p>
+            )}
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
@@ -1798,6 +1943,29 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                                 }}>
                                   <FontAwesomeIcon icon={skillIcons[skill.icon] || faStar} />
                                   {skill.name}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        )}
+
+                        {mission.reward.talents.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            {mission.reward.talents.map(talentId => {
+                              const talent = talents.find(t => t.id === talentId);
+                              return talent ? (
+                                <span key={talentId} style={{
+                                  padding: '0.25rem 0.5rem',
+                                  background: '#d1fae5',
+                                  color: '#065f46',
+                                  borderRadius: '12px',
+                                  fontSize: '0.7rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem'
+                                }}>
+                                  <FontAwesomeIcon icon={faMagicWandSparkles} />
+                                  {talent.name}
                                 </span>
                               ) : null;
                             })}
