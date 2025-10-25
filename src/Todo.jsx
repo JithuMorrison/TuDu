@@ -595,10 +595,7 @@ function ToDo() {
   // Navigation Styles
   const navStyle = {
     display: 'flex',
-    background: 'white',
-    padding: '1rem 2rem',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
-    borderBottom: '1px solid #e5e7eb',
     gap: '0.5rem',
     position: 'sticky',
     top: 0,
@@ -606,9 +603,9 @@ function ToDo() {
   };
 
   const navButtonStyle = (isActive) => ({
-    padding: '0.75rem 1.5rem',
+    padding: '0.5rem 1.5rem',
     borderRadius: '8px',
-    background: isActive ? '#4f46e5' : '#f8fafc',
+    background: isActive ? '#46e54eff' : '#f8fafc',
     color: isActive ? 'white' : '#64748b',
     fontWeight: '500',
     cursor: 'pointer',
@@ -618,6 +615,64 @@ function ToDo() {
     alignItems: 'center',
     gap: '0.5rem'
   });
+
+  const progressBarStyle = {
+    height: '10px',
+    borderRadius: '5px',
+    backgroundColor: '#e0e0e0',
+    margin: '10px 0',
+    overflow: 'hidden'
+  };
+
+  const progressFillStyle = {
+    height: '100%',
+    borderRadius: '5px',
+    backgroundColor: '#e5b046ff',
+    width: `${(xp / (level * 1000)) * 100}%`,
+    transition: 'width 0.3s ease'
+  };
+
+  const userProgressStyle = {
+    position: 'absolute',
+    bottom: '10px',
+    left: '24px',
+    right: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    color: 'white',
+    fontSize: '14px'
+  };
+
+  const streakStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    color: streak > 0 ? '#fbbf24' : 'white',
+    padding: '4px 8px',
+  };
+
+  const headerStyle = {
+    backgroundColor: '#4f46e5',
+    padding: '16px 24px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    color: 'white',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  };
+
+  const enhancedHeaderStyle = {
+    ...headerStyle,
+    position: 'relative',
+    paddingBottom: '40px'
+  };
+
+  const timeStyle = {
+    fontSize: '14px',
+    fontWeight: 'normal',
+    opacity: 0.9
+  };
 
   const renderCurrentSection = () => {
     switch (currentSection) {
@@ -635,42 +690,6 @@ function ToDo() {
   };
 
   const renderToDoSection = () => {
-    // Progress bar style
-    const progressBarStyle = {
-      height: '10px',
-      borderRadius: '5px',
-      backgroundColor: '#e0e0e0',
-      margin: '10px 0',
-      overflow: 'hidden'
-    };
-
-    const progressFillStyle = {
-      height: '100%',
-      borderRadius: '5px',
-      backgroundColor: '#4f46e5',
-      width: `${(xp / (level * 1000)) * 100}%`,
-      transition: 'width 0.3s ease'
-    };
-
-    const userProgressStyle = {
-      position: 'absolute',
-      bottom: '10px',
-      left: '24px',
-      right: '24px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      color: 'white',
-      fontSize: '14px'
-    };
-
-    const streakStyle = {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '5px',
-      color: streak > 0 ? '#fbbf24' : 'white'
-    };
-
     const containerStyle = {
       display: 'flex',
       flexDirection: isMobileView ? 'column' : 'row',
@@ -733,28 +752,6 @@ function ToDo() {
       justifyContent: 'center',
       alignItems: 'center',
       padding: '20px'
-    };
-
-    const headerStyle = {
-      backgroundColor: '#4f46e5',
-      padding: '16px 24px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      color: 'white',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    };
-
-    const enhancedHeaderStyle = {
-      ...headerStyle,
-      position: 'relative',
-      paddingBottom: '40px'
-    };
-
-    const timeStyle = {
-      fontSize: '14px',
-      fontWeight: 'normal',
-      opacity: 0.9
     };
 
     const inputStyle = {
@@ -854,42 +851,6 @@ function ToDo() {
             <span>{showReward.message}</span>
           </div>
         )}
-        
-        {/* Header */}
-        <div style={enhancedHeaderStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
-            <span style={{ 
-              backgroundColor: '#4338ca',
-              padding: '2px 8px',
-              borderRadius: '10px',
-              fontSize: '0.8rem'
-            }}>
-              Lvl {level}
-            </span>
-          </div>
-          <div style={timeStyle}>
-            {time.toLocaleDateString()} | {time.toLocaleTimeString()}
-          </div>
-          
-          {/* User Progress Bar */}
-          <div style={userProgressStyle}>
-            <span>Progress</span>
-            
-            <div style={{ flex: 1, margin: '0 10px' }}>
-              <div style={progressBarStyle}>
-                <div style={progressFillStyle}></div>
-              </div>
-            </div>
-            
-            <span>{xp}/{level * 1000} XP</span>
-            
-            <div style={streakStyle}>
-              <FontAwesomeIcon icon={faFire} />
-              <span>{streak}</span>
-            </div>
-          </div>
-        </div>
 
         {/* Main Content */}
         <div style={containerStyle}>
@@ -1300,38 +1261,72 @@ function ToDo() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
-      {/* Top Navigation */}
-      <nav style={navStyle}>
-        <button 
-          style={navButtonStyle(currentSection === 'Home')}
-          onClick={() => setCurrentSection('Home')}
-        >
-          <FontAwesomeIcon icon={faHome} />
-          Home
-        </button>
-        <button 
-          style={navButtonStyle(currentSection === 'ToDo')}
-          onClick={() => setCurrentSection('ToDo')}
-        >
-          <FontAwesomeIcon icon={faList} />
-          ToDo
-        </button>
-        <button 
-          style={navButtonStyle(currentSection === 'LevelingSystem')}
-          onClick={() => setCurrentSection('LevelingSystem')}
-        >
-          <FontAwesomeIcon icon={faChartLine} />
-          Leveling System
-        </button>
-        <button 
-          style={navButtonStyle(currentSection === 'RearrangePage')}
-          onClick={() => setCurrentSection('RearrangePage')}
-        >
-          <FontAwesomeIcon icon={faArrowsAlt} />
-          Rearrange Page
-        </button>
-      </nav>
-
+      {/* Header */}
+      <div style={enhancedHeaderStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
+          <span style={{ 
+            backgroundColor: '#4338ca',
+            padding: '2px 8px',
+            borderRadius: '10px',
+            fontSize: '0.8rem'
+          }}>
+            Lvl {level}
+          </span>
+        </div>
+        {/* Top Navigation */}
+        <nav style={navStyle}>
+          <button 
+            style={navButtonStyle(currentSection === 'Home')}
+            onClick={() => setCurrentSection('Home')}
+          >
+            <FontAwesomeIcon icon={faHome} />
+            Home
+          </button>
+          <button 
+            style={navButtonStyle(currentSection === 'ToDo')}
+            onClick={() => setCurrentSection('ToDo')}
+          >
+            <FontAwesomeIcon icon={faList} />
+            ToDo
+          </button>
+          <button 
+            style={navButtonStyle(currentSection === 'LevelingSystem')}
+            onClick={() => setCurrentSection('LevelingSystem')}
+          >
+            <FontAwesomeIcon icon={faChartLine} />
+            Leveling System
+          </button>
+          <button 
+            style={navButtonStyle(currentSection === 'RearrangePage')}
+            onClick={() => setCurrentSection('RearrangePage')}
+          >
+            <FontAwesomeIcon icon={faArrowsAlt} />
+            Rearrange Page
+          </button>
+        </nav>
+        <div style={timeStyle}>
+          {time.toLocaleDateString()} | {time.toLocaleTimeString()}
+        </div>
+        
+        {/* User Progress Bar */}
+        <div style={userProgressStyle}>
+          <span>Progress</span>
+          
+          <div style={{ flex: 1, margin: '0 10px' }}>
+            <div style={progressBarStyle}>
+              <div style={progressFillStyle}></div>
+            </div>
+          </div>
+          
+          <span>{xp}/{level * 1000} XP</span>
+          
+          <div style={streakStyle}>
+            <FontAwesomeIcon icon={faFire} />
+            <span>{streak}</span>
+          </div>
+        </div>
+      </div>
       {/* Main Content */}
       <main style={{ flex: 1 }}>
         {renderCurrentSection()}
