@@ -833,6 +833,39 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
     setMissions(missions.filter(m => m.id !== missionId));
   };
 
+  const handleDeleteSkill = (skillId) => {
+    const updatedSkills = availableSkills.filter(s => s.id !== skillId);
+    setAvailableSkills(updatedSkills);
+    
+    if (onUpdateUserData) {
+      const updatedUserData = {
+        ...userData,
+        skills: updatedSkills
+      };
+      onUpdateUserData(updatedUserData);
+    }
+  };
+
+  const handleDeleteTalent = (talentId) => {
+    setTalents(talents.filter(t => t.id !== talentId));
+  };
+
+  const handleDeleteTitle = (titleId) => {
+    setTitles(titles.filter(t => t.id !== titleId));
+    
+    // Also remove from achievements if it was unlocked
+    const updatedAchievements = currentAchievements.filter(a => a.title?.id !== titleId);
+    setAchievements(updatedAchievements);
+    
+    if (onUpdateUserData) {
+      const updatedUserData = {
+        ...userData,
+        achievements: updatedAchievements
+      };
+      onUpdateUserData(updatedUserData);
+    }
+  };
+
   const handleUnlockTalent = (talentId) => {
     const talent = talents.find(t => t.id === talentId);
     if (talent && userData.level >= talent.requiredLevel && !talent.unlocked) {
@@ -1286,62 +1319,71 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
           ))}
         </div>
 
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ color: '#2d3748', margin: 0 }}>Skills</h3>
-            <button style={buttonStyle} onClick={() => setShowSkillForm(true)}>
-              <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
-              New Skill
-            </button>
-          </div>
-          {availableSkills.map(skill => {
-            const xpForNextLevel = skill.level * 100;
-            const currentLevelXp = skill.xp % xpForNextLevel;
-            const progress = (currentLevelXp / xpForNextLevel) * 100;
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ color: '#2d3748', margin: 0 }}>Skills</h3>
+              <button style={buttonStyle} onClick={() => setShowSkillForm(true)}>
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: '0.5rem' }} />
+                New Skill
+              </button>
+            </div>
+            {availableSkills.map(skill => {
+              const xpForNextLevel = skill.level * 100;
+              const currentLevelXp = skill.xp % xpForNextLevel;
+              const progress = (currentLevelXp / xpForNextLevel) * 100;
 
-            return (
-              <div key={skill.id} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.5rem 0',
-                borderBottom: '1px solid #e2e8f0'
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FontAwesomeIcon 
-                      icon={skillIcons[skill.icon] || faStar} 
-                      style={{ color: '#4f46e5' }} 
-                    />
-                    <div>
-                      <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                        Level {skill.level}/{skill.maxLevel} • {skill.category}
+              return (
+                <div key={skill.id} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.5rem 0',
+                  borderBottom: '1px solid #e2e8f0'
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <FontAwesomeIcon 
+                        icon={skillIcons[skill.icon] || faStar} 
+                        style={{ color: '#4f46e5' }} 
+                      />
+                      <div>
+                        <div style={{ fontWeight: 'bold' }}>{skill.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                          Level {skill.level}/{skill.maxLevel} • {skill.category}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{currentLevelXp}/{xpForNextLevel} XP</div>
-                  <div style={{
-                    width: '80px',
-                    height: '6px',
-                    background: '#e2e8f0',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                    marginTop: '2px'
-                  }}>
-                    <div style={{
-                      width: `${progress}%`,
-                      height: '100%',
-                      background: '#4f46e5'
-                    }}></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{currentLevelXp}/{xpForNextLevel} XP</div>
+                      <div style={{
+                        width: '80px',
+                        height: '6px',
+                        background: '#e2e8f0',
+                        borderRadius: '3px',
+                        overflow: 'hidden',
+                        marginTop: '2px'
+                      }}>
+                        <div style={{
+                          width: `${progress}%`,
+                          height: '100%',
+                          background: '#4f46e5'
+                        }}></div>
+                      </div>
+                    </div>
+                    <button
+                      style={{ ...dangerButtonStyle, padding: '0.25rem 0.5rem', fontSize: '0.7rem', marginRight: 0 }}
+                      onClick={() => handleDeleteSkill(skill.id)}
+                      title="Delete skill"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
       </div>
     </div>
   );
@@ -1999,14 +2041,12 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                         >
                           Complete
                         </button>
-                        {mission.type === 'special' && (
-                          <button
-                            style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
-                            onClick={() => handleDeleteMission(mission.id)}
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        )}
+                        <button
+                          style={{ ...dangerButtonStyle, padding: '0.5rem 1rem', marginRight: 0 }}
+                          onClick={() => handleDeleteMission(mission.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       </div>
                     </div>
 
@@ -2238,17 +2278,26 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                     marginBottom: '0.5rem'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                      <div>
+                      <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 'bold' }}>{talent.name}</div>
                         <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{talent.description}</div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                          Level {talent.requiredLevel}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                            Level {talent.requiredLevel}
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
+                            Cost: {talent.cost} points
+                          </div>
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
-                          Cost: {talent.cost} points
-                        </div>
+                        <button
+                          style={{ ...dangerButtonStyle, padding: '0.25rem 0.5rem', fontSize: '0.7rem', marginRight: 0 }}
+                          onClick={() => handleDeleteTalent(talent.id)}
+                          title="Delete talent"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       </div>
                     </div>
                     {!talent.unlocked && userData.level >= talent.requiredLevel && (
@@ -2363,18 +2412,27 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
                       </div>
                     )}
                   </div>
-                  {isUnlocked && (
-                    <div style={{
-                      padding: '0.25rem 0.5rem',
-                      background: '#10b981',
-                      color: 'white',
-                      borderRadius: '12px',
-                      fontSize: '0.7rem',
-                      fontWeight: 'bold'
-                    }}>
-                      UNLOCKED
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {isUnlocked && (
+                      <div style={{
+                        padding: '0.25rem 0.5rem',
+                        background: '#10b981',
+                        color: 'white',
+                        borderRadius: '12px',
+                        fontSize: '0.7rem',
+                        fontWeight: 'bold'
+                      }}>
+                        UNLOCKED
+                      </div>
+                    )}
+                    <button
+                      style={{ ...dangerButtonStyle, padding: '0.25rem 0.5rem', fontSize: '0.7rem', marginRight: 0 }}
+                      onClick={() => handleDeleteTitle(title.id)}
+                      title="Delete title"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
