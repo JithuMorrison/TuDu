@@ -157,7 +157,7 @@ const Home = ({ userData }) => {
             </p>
           </div>
           <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
-            <h3 style={{ color: '#4f46e5', marginBottom: '0.5rem' }}>🎮 Gamification</h3>
+            <h3 style={{ color: '#4f46e5', marginBottom: '0.5rem' }}>🎮 Gamified Levelling System</h3>
             <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
               Earn XP, level up, and unlock achievements as you complete tasks.
             </p>
