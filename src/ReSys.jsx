@@ -387,6 +387,171 @@ const MyTasksDropZone = ({ isOver }) => {
   );
 };
 
+// Allocated Tasks Component
+const AllocatedTasksList = ({ tasks, onNavigateToTask, onClose }) => {
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Urgent': return '#ef4444';
+      case 'High': return '#f59e0b';
+      case 'Medium': return '#3b82f6';
+      case 'Low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
+  const formatDateTime = (task) => {
+    const date = task.dayDate.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    const time = task.time || 'No time set';
+    return `${date} at ${time}`;
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        background: 'white',
+        padding: '2rem',
+        borderRadius: '12px',
+        width: '90%',
+        maxWidth: '600px',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ margin: 0, color: '#1f2937' }}>
+            📅 Allocated Tasks ({tasks.length})
+          </h3>
+          <button
+            onClick={onClose}
+            style={{
+              background: '#f3f4f6',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+          >
+            Close
+          </button>
+        </div>
+
+        {tasks.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#9ca3af', 
+            padding: '3rem 1rem'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
+            <h4 style={{ margin: '0 0 0.5rem 0', color: '#6b7280' }}>No allocated tasks</h4>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>Drag tasks from "My Tasks" to the calendar to schedule them</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {tasks.map(task => (
+              <div
+                key={`${task.dayId}-${task.id}`}
+                style={{
+                  padding: '1rem',
+                  background: task.completed ? '#f0fdf4' : 'white',
+                  border: `2px solid ${task.completed ? '#86efac' : '#e2e8f0'}`,
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  opacity: task.completed ? 0.8 : 1
+                }}
+                onClick={() => onNavigateToTask(task)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: '600', 
+                      fontSize: '1rem',
+                      textDecoration: task.completed ? 'line-through' : 'none',
+                      marginBottom: '0.25rem'
+                    }}>
+                      {task.content}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      marginBottom: '0.25rem'
+                    }}>
+                      <FontAwesomeIcon icon={faCalendar} style={{ fontSize: '0.7rem' }} />
+                      {formatDateTime(task)}
+                    </div>
+                    <div style={{ 
+                      fontSize: '0.75rem', 
+                      color: '#64748b', 
+                      display: 'flex', 
+                      gap: '1rem', 
+                      flexWrap: 'wrap' 
+                    }}>
+                      {task.duration && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <FontAwesomeIcon icon={faClock} style={{ fontSize: '0.6rem' }} />
+                          {task.duration}
+                        </span>
+                      )}
+                      {task.priority && (
+                        <span style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.25rem',
+                          color: getPriorityColor(task.priority),
+                          fontWeight: '600'
+                        }}>
+                          <FontAwesomeIcon icon={faFlag} style={{ fontSize: '0.6rem' }} />
+                          {task.priority}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '0.25rem 0.75rem',
+                    background: task.completed ? '#10b981' : '#e0f2fe',
+                    color: task.completed ? 'white' : '#0369a1',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {task.completed ? '✓ Done' : 'Scheduled'}
+                  </div>
+                </div>
+                <div style={{ 
+                  fontSize: '0.7rem', 
+                  color: '#4f46e5',
+                  fontWeight: '500'
+                }}>
+                  👆 Click to navigate to this date
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Task component for DragOverlay
 const Task = ({ task }) => {
   const taskItemStyle = {
@@ -861,6 +1026,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
   const [editingTask, setEditingTask] = useState(null);
   const [editingDayId, setEditingDayId] = useState(null);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [showAllocatedTasks, setShowAllocatedTasks] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -1176,6 +1342,55 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
     return timelineTotal + daysTotal;
   };
 
+  const getAllAllocatedTasks = () => {
+    const allocatedTasks = [];
+    
+    Object.entries(dayTasks).forEach(([dayId, tasks]) => {
+      tasks.forEach(task => {
+        allocatedTasks.push({
+          ...task,
+          dayId,
+          dayDate: new Date(dayId)
+        });
+      });
+    });
+    
+    // Sort by date and time
+    return allocatedTasks.sort((a, b) => {
+      const dateCompare = a.dayDate.getTime() - b.dayDate.getTime();
+      if (dateCompare !== 0) return dateCompare;
+      
+      // If same date, sort by time
+      if (a.time && b.time) {
+        return a.time.localeCompare(b.time);
+      }
+      return 0;
+    });
+  };
+
+  const navigateToTaskDate = (task) => {
+    const taskDate = new Date(task.dayId);
+    
+    // Add the date to selected dates if not already there
+    setSelectedDates(prev => {
+      const exists = prev.some(d => d.toDateString() === taskDate.toDateString());
+      if (!exists) {
+        if (prev.length < 2) {
+          return [...prev, taskDate];
+        } else {
+          return [prev[1], taskDate];
+        }
+      }
+      return prev;
+    });
+    
+    // Close allocated tasks view
+    setShowAllocatedTasks(false);
+    
+    // Reset day index to show the selected date
+    setCurrentDayIndex(0);
+  };
+
   const getAllTaskIds = () => {
     const timelineIds = dailyTasks.map(task => task.id);
     const dayIds = Object.values(dayTasks).flat().map(task => task.id);
@@ -1399,18 +1614,39 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
           <div style={layoutStyle}>
             {/* My Tasks Section */}
             <div style={myTasksStyle}>
-              <h3 style={{ marginBottom: '1rem', color: '#2d3748', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📋 My Tasks
-                <span style={{ 
-                  background: '#4f46e5', 
-                  color: 'white', 
-                  padding: '0.25rem 0.5rem', 
-                  borderRadius: '12px',
-                  fontSize: '0.8rem'
-                }}>
-                  {dailyTasks.length}
-                </span>
-              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ color: '#2d3748', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  📋 My Tasks
+                  <span style={{ 
+                    background: '#4f46e5', 
+                    color: 'white', 
+                    padding: '0.25rem 0.5rem', 
+                    borderRadius: '12px',
+                    fontSize: '0.8rem'
+                  }}>
+                    {dailyTasks.length}
+                  </span>
+                </h3>
+                <button
+                  onClick={() => setShowAllocatedTasks(true)}
+                  style={{
+                    background: '#e0f2fe',
+                    color: '#0369a1',
+                    border: 'none',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}
+                  title="View all allocated tasks"
+                >
+                  📅 Allocated ({getAllAllocatedTasks().length})
+                </button>
+              </div>
               
               <button
                 onClick={() => setShowTaskForm(true)}
@@ -1543,6 +1779,15 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
           {activeTask ? <Task task={activeTask} /> : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Allocated Tasks Modal */}
+      {showAllocatedTasks && (
+        <AllocatedTasksList
+          tasks={getAllAllocatedTasks()}
+          onNavigateToTask={navigateToTaskDate}
+          onClose={() => setShowAllocatedTasks(false)}
+        />
+      )}
 
       {/* Task Form Modal */}
       <TaskForm
