@@ -12,6 +12,7 @@ import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem, faHome, faLi
 import Home from './Home';
 import LevelingSystem from './LvlSys';
 import RearrangePage from './ReSys';
+import CategoryItemManager from './Listing';
 
 function ToDo() {
   const [currentSection, setCurrentSection] = useState('Home');
@@ -695,6 +696,8 @@ function ToDo() {
         return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.skills) setAvailableSkills(updates.skills); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
       case 'RearrangePage':
         return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
+      case 'Lisp':
+        return <CategoryItemManager />;
       default:
         return <Home userData={{ xp, level, streak, achievements, completedToday, todaysGoal }} />;
     }
@@ -1364,6 +1367,13 @@ function ToDo() {
           >
             <FontAwesomeIcon icon={faArrowsAlt} />
             Rearrange Page
+          </button>
+          <button 
+            style={navButtonStyle(currentSection === 'Lisp')}
+            onClick={() => setCurrentSection('Lisp')}
+          >
+            <FontAwesomeIcon icon={faArrowsAlt} />
+            Lisp
           </button>
         </nav>
         <div style={timeStyle}>
