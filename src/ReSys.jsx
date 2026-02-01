@@ -439,7 +439,7 @@ const AllocatedTasksList = ({ tasks, onNavigateToTask, onClose }) => {
           <button
             onClick={onClose}
             style={{
-              background: '#f3f4f6',
+              background: '#6193f6ff',
               border: 'none',
               padding: '0.5rem 1rem',
               borderRadius: '8px',
@@ -979,8 +979,8 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
               onClick={onClose}
               style={{
                 padding: '0.75rem 1.5rem',
-                border: '2px solid #e5e7eb',
-                background: 'white',
+                border: '2px solid rgba(95, 147, 249, 1)ff',
+                background: '#3176feff',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontWeight: '500'
