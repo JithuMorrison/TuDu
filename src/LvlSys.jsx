@@ -604,7 +604,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       const newAchievement = {
         id: Date.now(),
         name: newTitle.name,
-        description: newTitle.description || 'Custom achievement unlocke',
+        description: newTitle.description || 'Custom achievement unlocked',
         type: 'title',
         unlockedAt: new Date().toISOString(),
         title: title,
