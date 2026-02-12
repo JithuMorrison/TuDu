@@ -223,7 +223,7 @@ function SubtaskManager({ task, taskIndex, tasks, setTasks, fetcho, onClose }) {
             borderRadius: '8px',
             border: '1px dashed #d1d5db'
           }}>
-            No subtasks added yet. Add your first subtask above!!
+            No subtasks added yet. Add your first subtask above!
           </div>
         )}
       </div>
