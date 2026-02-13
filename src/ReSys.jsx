@@ -1552,7 +1552,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       <div style={headerStyle}>
         <h1 style={titleStyle}>Weekly Task Planner</h1>
         <p style={{ color: '#64748b', fontSize: '1.1rem' }}>
-          Select dates from calendar and drag tasks to schedule them
+          Select dates from calendar and drag tasks to schedule them!
         </p>
       </div>
 
