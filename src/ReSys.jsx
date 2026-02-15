@@ -1682,7 +1682,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                       background: '#fafafa'
                     }}>
                       <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📝</div>
-                      <h4 style={{ margin: '0 0 0.5rem 0', color: '#6b7280' }}>No tasks yet!!</h4>
+                      <h4 style={{ margin: '0 0 0.5rem 0', color: '#6b7280' }}>No tasks yet</h4>
                       <p style={{ margin: 0, fontSize: '0.85rem' }}>Create tasks or drag them back here</p>
                     </div>
                   )}
