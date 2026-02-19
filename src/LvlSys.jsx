@@ -613,7 +613,7 @@ const LevelingSystem = ({ userData, onUpdateUserData, availableSkills, setAvaila
       const updatedAchievements = [...achievements, newAchievement];
       setAchievements(updatedAchievements);
 
-      // Persist the updated achievements to user data!!
+      // Persist the updated achievements to user data
       onUpdateUserData({
         achievements: updatedAchievements,
       });
