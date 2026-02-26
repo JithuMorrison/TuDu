@@ -1780,7 +1780,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         </DragOverlay>
       </DndContext>
 
-      {/* Allocated Tasks Modal!! */}
+      {/* Allocated Tasks Modal */}
       {showAllocatedTasks && (
         <AllocatedTasksList
           tasks={getAllAllocatedTasks()}
