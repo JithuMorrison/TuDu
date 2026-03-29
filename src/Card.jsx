@@ -457,16 +457,16 @@ const calculateSubtaskProgress = () => {
       
       <div style={buttonGroupStyle}>
         {/* Subtask Button */}
-        <button 
-          style={subtaskButtonStyle}
-          onClick={() => setShowSubtasks(!showSubtasks)}
-          title="Toggle Subtasks"
-        >
-          <FontAwesomeIcon icon={faListCheck} />
-          {hasSubtasks && (
+        {hasSubtasks && (
+          <button 
+            style={subtaskButtonStyle}
+            onClick={() => setShowSubtasks(!showSubtasks)}
+            title="Toggle Subtasks"
+          >
+            <FontAwesomeIcon icon={faListCheck} />
             <span>{progress}%</span>
-          )}
-        </button>
+          </button>
+        )}
 
         <Button 
           icon={faEye} 
