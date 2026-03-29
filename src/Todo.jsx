@@ -6,7 +6,7 @@ import SubtaskManager from './Subtask';
 import Button from './Button/button';
 import Confetti from 'react-confetti';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem, faHome, faList, faChartLine, faArrowsAlt } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem, faHome, faList, faChartLine, faArrowsAlt, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 // Import the page components
 import Home from './Home';
@@ -607,83 +607,92 @@ function ToDo() {
   // Navigation Styles
   const navStyle = {
     display: 'flex',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
-    gap: '0.5rem',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100
+    gap: '1rem',
+    overflowX: 'auto',
+    paddingBottom: '4px',
+    zIndex: 100,
+    scrollbarWidth: 'none',
   };
 
   const navButtonStyle = (isActive) => ({
-    padding: '0.5rem 1.5rem',
-    borderRadius: '8px',
-    background: isActive ? '#46e54eff' : '#f8fafc',
-    color: isActive ? 'white' : '#64748b',
-    fontWeight: '500',
+    padding: '0.6rem 1.2rem',
+    borderRadius: '12px',
+    background: isActive ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+    color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+    fontWeight: isActive ? '600' : '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    border: '2px solid transparent',
+    transition: 'all 0.3s ease',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '0.5rem',
+    whiteSpace: 'nowrap',
+    backdropFilter: isActive ? 'blur(10px)' : 'none',
   });
 
+  const headerStyle = {
+    background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)',
+    padding: '24px 32px',
+    color: 'white',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    borderBottomLeftRadius: '24px',
+    borderBottomRightRadius: '24px',
+    boxShadow: '0 10px 30px rgba(67, 56, 202, 0.15)',
+    marginBottom: '20px',
+    position: 'relative',
+  };
+
+  const topHeaderRowStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px'
+  };
+
+  const userProgressStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '0.9rem',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  };
+
   const progressBarStyle = {
-    height: '10px',
-    borderRadius: '5px',
-    backgroundColor: '#e0e0e0',
-    margin: '10px 0',
+    height: '6px',
+    width: '100px',
+    borderRadius: '3px',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     overflow: 'hidden'
   };
 
   const progressFillStyle = {
     height: '100%',
-    borderRadius: '5px',
-    backgroundColor: '#e5b046ff',
+    borderRadius: '3px',
+    backgroundColor: '#10b981',
     width: `${(xp / (level * 1000)) * 100}%`,
-    transition: 'width 0.3s ease'
-  };
-
-  const userProgressStyle = {
-    position: 'absolute',
-    bottom: '10px',
-    left: '24px',
-    right: '24px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    color: 'white',
-    fontSize: '14px'
+    transition: 'width 0.3s ease',
+    boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)'
   };
 
   const streakStyle = {
     display: 'flex',
     alignItems: 'center',
     gap: '5px',
-    color: streak > 0 ? '#fbbf24' : 'white',
-    padding: '4px 8px',
+    color: streak > 0 ? '#fbbf24' : 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '600'
   };
-
-  const headerStyle = {
-    backgroundColor: '#4f46e5',
-    padding: '16px 24px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    color: 'white',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  };
-
-  const enhancedHeaderStyle = {
-    ...headerStyle,
-    position: 'relative',
-    paddingBottom: '40px'
-  };
-
+  
   const timeStyle = {
-    fontSize: '14px',
-    fontWeight: 'normal',
-    opacity: 0.9
+    fontSize: '0.9rem',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '500'
   };
 
   const renderCurrentSection = () => {
@@ -1324,77 +1333,82 @@ function ToDo() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
       {/* Header */}
-      <div style={enhancedHeaderStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>TuDu</h1>
-          <span style={{ 
-            backgroundColor: '#4338ca',
-            padding: '2px 8px',
-            borderRadius: '10px',
-            fontSize: '0.8rem'
-          }}>
-            Lvl {level}
-          </span>
-        </div>
-        {/* Top Navigation */}
-        <nav style={navStyle}>
-          <button 
-            style={navButtonStyle(currentSection === 'Home')}
-            onClick={() => setCurrentSection('Home')}
-          >
-            <FontAwesomeIcon icon={faHome} />
-            Home
-          </button>
-          <button 
-            style={navButtonStyle(currentSection === 'ToDo')}
-            onClick={() => setCurrentSection('ToDo')}
-          >
-            <FontAwesomeIcon icon={faList} />
-            ToDo
-          </button>
-          <button 
-            style={navButtonStyle(currentSection === 'LevelingSystem')}
-            onClick={() => setCurrentSection('LevelingSystem')}
-          >
-            <FontAwesomeIcon icon={faChartLine} />
-            Leveling System
-          </button>
-          <button 
-            style={navButtonStyle(currentSection === 'RearrangePage')}
-            onClick={() => setCurrentSection('RearrangePage')}
-          >
-            <FontAwesomeIcon icon={faArrowsAlt} />
-            Rearrange Page
-          </button>
-          <button 
-            style={navButtonStyle(currentSection === 'Lisp')}
-            onClick={() => setCurrentSection('Lisp')}
-          >
-            <FontAwesomeIcon icon={faArrowsAlt} />
-            Lisp
-          </button>
-        </nav>
-        <div style={timeStyle}>
-          {time.toLocaleDateString()} | {time.toLocaleTimeString()}
-        </div>
-        
-        {/* User Progress Bar */}
-        <div style={userProgressStyle}>
-          <span>Progress</span>
-          
-          <div style={{ flex: 1, margin: '0 10px' }}>
-            <div style={progressBarStyle}>
-              <div style={progressFillStyle}></div>
+      <div style={headerStyle}>
+        <div style={topHeaderRowStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ 
+              background: 'linear-gradient(135deg, #10b981, #3b82f6)',
+              padding: '8px',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <FontAwesomeIcon icon={faCheckCircle} style={{ fontSize: '1.2rem', color: 'white' }} />
+            </div>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 'bold', letterSpacing: '-0.02em' }}>TuDu</h1>
+          </div>
+
+          <div style={userProgressStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 'bold' }}>Lvl {level}</span>
+              <div style={progressBarStyle}>
+                <div style={progressFillStyle}></div>
+              </div>
+            </div>
+            <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.8rem' }}>{xp} / {level * 1000} XP</span>
+            <div style={{ width: '1px', height: '16px', background: 'rgba(255, 255, 255, 0.2)', margin: '0 4px' }}></div>
+            <div style={streakStyle}>
+              <FontAwesomeIcon icon={faFire} />
+              <span>{streak}</span>
             </div>
           </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px' }}>
+          {/* Top Navigation */}
+          <nav style={navStyle}>
+            <button 
+              style={navButtonStyle(currentSection === 'Home')}
+              onClick={() => setCurrentSection('Home')}
+            >
+              <FontAwesomeIcon icon={faHome} />
+              Home
+            </button>
+            <button 
+              style={navButtonStyle(currentSection === 'ToDo')}
+              onClick={() => setCurrentSection('ToDo')}
+            >
+              <FontAwesomeIcon icon={faList} />
+              Tasks
+            </button>
+            <button 
+              style={navButtonStyle(currentSection === 'LevelingSystem')}
+              onClick={() => setCurrentSection('LevelingSystem')}
+            >
+              <FontAwesomeIcon icon={faChartLine} />
+              Stats
+            </button>
+            <button 
+              style={navButtonStyle(currentSection === 'RearrangePage')}
+              onClick={() => setCurrentSection('RearrangePage')}
+            >
+              <FontAwesomeIcon icon={faArrowsAlt} />
+              Rearrange
+            </button>
+            <button 
+              style={navButtonStyle(currentSection === 'Lisp')}
+              onClick={() => setCurrentSection('Lisp')}
+            >
+              <FontAwesomeIcon icon={faList} />
+              Lists
+            </button>
+          </nav>
           
-          <span>{xp}/{level * 1000} XP</span>
-          
-          <div style={streakStyle}>
-            <FontAwesomeIcon icon={faFire} />
-            <span>{streak}</span>
+          <div style={timeStyle}>
+            {time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
           </div>
         </div>
       </div>
