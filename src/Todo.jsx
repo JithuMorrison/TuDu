@@ -62,13 +62,19 @@ function ToDo() {
     }
 
     if (storedData) {
-      setTask(JSON.parse(storedData));
+      try {
+        const parsed = JSON.parse(storedData);
+        setTask(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setTask([]);
+      }
     } else {
       fetch('/data.json')
         .then((response) => response.json())
-        .then((task) => {
-          localStorage.setItem(fetcho, JSON.stringify(task));
-          setTask(task);
+        .then((data) => {
+          const tasks = Array.isArray(data) ? data : [];
+          localStorage.setItem(fetcho, JSON.stringify(tasks));
+          setTask(tasks);
         })
         .catch((error) => console.error('Error fetching data:', error));
     }
@@ -1154,7 +1160,7 @@ function ToDo() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {task
+                {(Array.isArray(task) ? task : [])
                   .sort((a, b) => {
                     const now = new Date();
                     

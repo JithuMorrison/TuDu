@@ -1011,14 +1011,30 @@ const TaskForm = ({ isOpen, onClose, onSave, task = null, dayId = null }) => {
 
 const RearrangePage = ({ userData, setXp, saveUserData }) => {
   const [dailyTasks, setDailyTasks] = useState(() => {
-    const saved = localStorage.getItem('dailyTasks');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('dailyTasks');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
 
   const [selectedDates, setSelectedDates] = useState([]);
   const [dayTasks, setDayTasks] = useState(() => {
-    const saved = localStorage.getItem('dayTasks');
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem('dayTasks');
+      const parsed = saved ? JSON.parse(saved) : {};
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return {};
+      // Ensure each day's value is an array
+      const sanitized = {};
+      Object.keys(parsed).forEach(key => {
+        sanitized[key] = Array.isArray(parsed[key]) ? parsed[key] : [];
+      });
+      return sanitized;
+    } catch {
+      return {};
+    }
   });
 
   const [activeTask, setActiveTask] = useState(null);
@@ -1392,8 +1408,9 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
   };
 
   const getAllTaskIds = () => {
-    const timelineIds = dailyTasks.map(task => task.id);
-    const dayIds = Object.values(dayTasks).flat().map(task => task.id);
+    const timelineIds = Array.isArray(dailyTasks) ? dailyTasks.map(task => task.id) : [];
+    const dayValues = typeof dayTasks === 'object' && dayTasks !== null ? Object.values(dayTasks) : [];
+    const dayIds = dayValues.flat().map(task => task.id);
     return [...timelineIds, ...dayIds];
   };
 
