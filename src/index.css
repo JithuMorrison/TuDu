@@ -1,6 +1,9 @@
-body{
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+body {
   background-color: rgb(38, 33, 33);
 }
+
 .todolist {
   font-family: Arial, sans-serif;
   margin: 20px auto;
@@ -22,6 +25,7 @@ body{
   margin-right: 30px;
   flex: 1;
 }
+
 .toka1 {
   font-family: Arial, sans-serif;
   margin: 20px auto;
@@ -95,13 +99,13 @@ button:hover {
   }
 }
 
-.inputfield1{
+.inputfield1 {
   height: 45px;
   border-radius: 5px;
   border: 1px solid #ced4da;
   padding: 10px;
-  padding-left:13px;
-  padding-right:13px;
+  padding-left: 13px;
+  padding-right: 13px;
   min-width: 176px;
   margin-left: 5px;
   margin-right: 5px;
@@ -109,13 +113,13 @@ button:hover {
   height: 30px;
 }
 
-.inputfield2{
+.inputfield2 {
   height: 45px;
   border-radius: 5px;
   border: 1px solid #ced4da;
   padding: 10px;
-  padding-left:13px;
-  padding-right:13px;
+  padding-left: 13px;
+  padding-right: 13px;
   min-width: 176px;
   margin-left: 5px;
   margin-right: 5px;
@@ -125,29 +129,31 @@ button:hover {
   height: 30px;
 }
 
-.card{
-  border-radius:  10px;
-  text-align:center;
+.card {
+  border-radius: 10px;
+  text-align: center;
   max-width: 96%;
-  display:flex;
-  margin-bottom: 20px; 
+  display: flex;
+  margin-bottom: 20px;
   margin-left: -20px;
 }
-.profileimg{
+
+.profileimg {
   max-width: 60px;
   max-height: 60px;
-  border-radius:10%;
+  border-radius: 10%;
   padding-top: 20px;
   border-radius: 20%;
 }
-.card .profileimg{
+
+.card .profileimg {
   max-width: 60px;
   max-height: 60px;
-  border-radius:20%;
+  border-radius: 20%;
   padding: 4px;
 }
 
-.profiletitle{
+.profiletitle {
   font-size: 1.5em;
   font-weight: bold;
   margin-left: 20px;
@@ -156,7 +162,7 @@ button:hover {
   font-family: Arial, sans-serif;
 }
 
-.card .profiletitle{
+.card .profiletitle {
   font-size: 1.5em;
   font-weight: bold;
   margin-left: 20px;
@@ -164,7 +170,7 @@ button:hover {
   font-family: Arial, sans-serif;
 }
 
-.profileinfo{
+.profileinfo {
   font-size: 1em;
   font-family: Arial, sans-serif;
   width: 130px;
@@ -172,13 +178,13 @@ button:hover {
   margin-top: -10px;
 }
 
-.card .profiletitle1{
+.card .profiletitle1 {
   font-size: 1em;
   font-weight: bold;
   font-family: Arial, sans-serif;
 }
 
-.profileinfo1{
+.profileinfo1 {
   font-size: 0.8em;
   margin-left: 15px;
   margin-right: 20px;
@@ -188,7 +194,7 @@ button:hover {
   opacity: 80%;
 }
 
-.profileinfo2{
+.profileinfo2 {
   font-size: 0.8em;
   margin-left: 15px;
   margin-right: 20px;
@@ -196,36 +202,38 @@ button:hover {
   opacity: 80%;
 }
 
-.card2{  
+.card2 {
   background-color: #e5fff2;
   border: 1px solid #bababa;
-  border-radius:  10px;
+  border-radius: 10px;
   box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
-  text-align:center;
+  text-align: center;
   min-width: 300px;
-  display:inline-block;
+  display: inline-block;
   margin: 15px;
   padding-bottom: 10px;
 }
 
-.card21{  
+.card21 {
   background-color: #e5fff2;
   border: 1px solid #bababa;
-  border-radius:  10px;
+  border-radius: 10px;
   box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
-  text-align:center;
+  text-align: center;
   width: 90%;
-  display:inline-block;
+  display: inline-block;
   margin: 15px;
   padding-bottom: 10px;
 }
+
 .outercard {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.card2, .card21 {
+.card2,
+.card21 {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -234,7 +242,8 @@ button:hover {
   transition: all 0.3s ease;
 }
 
-.card2:hover, .card21:hover {
+.card2:hover,
+.card21:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -308,11 +317,15 @@ body {
   color: #2d3748;
 }
 
-input, select, button {
+input,
+select,
+button {
   transition: all 0.2s ease;
 }
 
-input:hover, select:hover, button:hover {
+input:hover,
+select:hover,
+button:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -321,11 +334,15 @@ button:active {
 }
 
 /* Add smooth transitions for cards */
-.card, .card2, .card3 {
+.card,
+.card2,
+.card3 {
   transition: all 0.2s ease;
 }
 
-.card:hover, .card2:hover, .card3:hover {
+.card:hover,
+.card2:hover,
+.card3:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -346,4 +363,156 @@ button:active {
 .hover-lift-sm:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESYS — Dark Glassmorphism Theme
+   ═══════════════════════════════════════════════════════════════ */
+
+.resys-root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 2rem;
+  padding-top: 2rem;
+  max-width: 1600px;
+  margin: -10px auto 0;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Animated background glow */
+.resys-root::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.06) 0%, transparent 40%),
+              radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: resysGlow 20s ease-in-out infinite alternate;
+}
+
+.resys-root > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scrollbar */
+.resys-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.resys-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.resys-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 3px;
+}
+
+.resys-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+.resys-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Animations */
+@keyframes resysFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes resysSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes resysGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(3deg); }
+}
+
+@keyframes resysPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Override global button styles inside resys */
+.resys-root button {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.resys-root button:hover {
+  box-shadow: none;
+}
+
+.resys-root input,
+.resys-root select,
+.resys-root textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.resys-root input:focus,
+.resys-root select:focus,
+.resys-root textarea:focus {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Select dropdown options dark bg */
+.resys-root select option {
+  background: #1e1b4b;
+  color: #e2e8f0;
+}
+
+/* Light mode overrides */
+.resys-root.resys-light::before {
+  background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.02) 0%, transparent 50%);
+}
+
+.resys-root.resys-light select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.resys-root.resys-light .resys-scrollbar::-webkit-scrollbar-track {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.resys-root.resys-light .resys-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.resys-root.resys-light .resys-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+.resys-root.resys-light input:focus,
+.resys-root.resys-light select:focus,
+.resys-root.resys-light textarea:focus {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08) !important;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .resys-root {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .resys-root {
+    padding: 0.75rem;
+  }
 }
