@@ -306,7 +306,14 @@ const modalBox = makeModalBox(makeTheme(true));
 // ═══════════════════════════════════════════════════════════════
 //  CATEGORY MANAGER MODAL
 // ═══════════════════════════════════════════════════════════════
-const CategoryManager = ({ categories, onSave, onClose }) => {
+const CategoryManager = ({ categories, onSave, onClose, theme: t }) => {
+  const glass = makeGlass(t);
+  const glassCard = makeGlassCard(t);
+  const inputStyle = makeInputStyle(t);
+  const labelStyle = makeLabelStyle(t);
+  const btnGhost = makeBtnGhost(t);
+  const modalOverlay = makeModalOverlay(t);
+  const modalBox = makeModalBox(t);
   const [cats, setCats] = useState([...categories]);
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState('#6366f1');
@@ -336,7 +343,7 @@ const CategoryManager = ({ categories, onSave, onClose }) => {
     <div style={modalOverlay} onClick={onClose}>
       <div style={modalBox} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ margin: 0, color: t.textHeading, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FontAwesomeIcon icon={faPalette} style={{ color: '#a855f7' }} />
             Manage Categories
           </h3>
@@ -373,7 +380,7 @@ const CategoryManager = ({ categories, onSave, onClose }) => {
                   onKeyDown={e => e.key === 'Enter' && setEditingId(null)}
                 />
               ) : (
-                <span style={{ flex: 1, color: '#e2e8f0', fontWeight: '500', cursor: 'pointer' }}
+                <span style={{ flex: 1, color: t.textPrimary, fontWeight: '500', cursor: 'pointer' }}
                   onClick={() => setEditingId(cat.id)}>
                   {cat.name}
                 </span>
@@ -444,7 +451,12 @@ const CategoryManager = ({ categories, onSave, onClose }) => {
 // ═══════════════════════════════════════════════════════════════
 //  RECURRING EVENT FORM MODAL
 // ═══════════════════════════════════════════════════════════════
-const RecurringEventForm = ({ event, categories, onSave, onClose }) => {
+const RecurringEventForm = ({ event, categories, onSave, onClose, theme: t }) => {
+  const inputStyle = makeInputStyle(t);
+  const labelStyle = makeLabelStyle(t);
+  const btnGhost = makeBtnGhost(t);
+  const modalOverlay = makeModalOverlay(t);
+  const modalBox = makeModalBox(t);
   const [form, setForm] = useState({
     content: event?.content || '',
     startTime: event?.startTime || '09:00',
@@ -482,7 +494,7 @@ const RecurringEventForm = ({ event, categories, onSave, onClose }) => {
     <div style={modalOverlay} onClick={onClose}>
       <div style={modalBox} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ margin: 0, color: t.textHeading, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FontAwesomeIcon icon={faSync} style={{ color: '#8b5cf6' }} />
             {event ? 'Edit Recurring Event' : 'New Recurring Event'}
           </h3>
@@ -523,9 +535,9 @@ const RecurringEventForm = ({ event, categories, onSave, onClose }) => {
                     ...btnGhost,
                     padding: '0.4rem 0.8rem',
                     fontSize: '0.8rem',
-                    background: form.recurrence === r ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.06)',
-                    color: form.recurrence === r ? '#a5b4fc' : '#94a3b8',
-                    borderColor: form.recurrence === r ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)',
+                    background: form.recurrence === r ? t.accentActive : t.btnGhostBg,
+                    color: form.recurrence === r ? t.accentText : t.textMuted,
+                    borderColor: form.recurrence === r ? t.accent : t.btnGhostBorder,
                   }}>
                   {r.charAt(0).toUpperCase() + r.slice(1)}
                 </button>
@@ -544,9 +556,9 @@ const RecurringEventForm = ({ event, categories, onSave, onClose }) => {
                       padding: '0.4rem 0.6rem',
                       fontSize: '0.78rem',
                       minWidth: '42px',
-                      background: form.customDays.includes(i) ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.04)',
-                      color: form.customDays.includes(i) ? '#a5b4fc' : '#64748b',
-                      borderColor: form.customDays.includes(i) ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.08)',
+                      background: form.customDays.includes(i) ? t.accentActive : t.btnGhostBg,
+                      color: form.customDays.includes(i) ? t.accentText : t.textMuted,
+                      borderColor: form.customDays.includes(i) ? t.accent : t.btnGhostBorder,
                     }}>
                     {d}
                   </button>
@@ -599,7 +611,11 @@ const RecurringEventForm = ({ event, categories, onSave, onClose }) => {
 // ═══════════════════════════════════════════════════════════════
 //  RECURRING EVENTS MANAGER PANEL
 // ═══════════════════════════════════════════════════════════════
-const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose }) => {
+const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose, theme: t }) => {
+  const glassCard = makeGlassCard(t);
+  const btnGhost = makeBtnGhost(t);
+  const modalOverlay = makeModalOverlay(t);
+  const modalBox = makeModalBox(t);
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 
@@ -623,7 +639,7 @@ const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose
     <div style={modalOverlay} onClick={onClose}>
       <div style={{ ...modalBox, maxWidth: '640px' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ margin: 0, color: t.textHeading, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FontAwesomeIcon icon={faRedo} style={{ color: '#8b5cf6' }} />
             Recurring Events
             <span style={{
@@ -662,10 +678,10 @@ const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose
                 }}>
                   {getPriorityDot(ev.priority, 10)}
                   <div style={{ flex: 1 }}>
-                    <div style={{ color: '#e2e8f0', fontWeight: '600', fontSize: '0.92rem', marginBottom: '0.25rem' }}>
+                    <div style={{ color: t.textPrimary, fontWeight: '600', fontSize: '0.92rem', marginBottom: '0.25rem' }}>
                       {ev.content}
                     </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.78rem', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.78rem', color: t.textSecondary }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <FontAwesomeIcon icon={faClock} style={{ fontSize: '0.65rem' }} />
                         {formatTime12(ev.startTime)} – {formatTime12(ev.endTime)}
@@ -700,6 +716,7 @@ const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose
           <RecurringEventForm
             event={editingEvent}
             categories={categories}
+            theme={t}
             onSave={(ev) => {
               if (editingEvent) onEdit(ev);
               else onAdd(ev);
@@ -717,7 +734,13 @@ const RecurringManager = ({ events, categories, onAdd, onEdit, onDelete, onClose
 // ═══════════════════════════════════════════════════════════════
 //  FREE TIME FINDER MODAL
 // ═══════════════════════════════════════════════════════════════
-const FreeTimeFinder = ({ dayTasks, recurringEvents, categories, onClose }) => {
+const FreeTimeFinder = ({ dayTasks, recurringEvents, categories, onClose, theme: t }) => {
+  const glassCard = makeGlassCard(t);
+  const inputStyle = makeInputStyle(t);
+  const labelStyle = makeLabelStyle(t);
+  const btnGhost = makeBtnGhost(t);
+  const modalOverlay = makeModalOverlay(t);
+  const modalBox = makeModalBox(t);
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
   const [dateTo, setDateTo] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 6);
@@ -801,7 +824,7 @@ const FreeTimeFinder = ({ dayTasks, recurringEvents, categories, onClose }) => {
     <div style={modalOverlay} onClick={onClose}>
       <div style={{ ...modalBox, maxWidth: '580px' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ margin: 0, color: t.textHeading, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FontAwesomeIcon icon={faSearch} style={{ color: '#22c55e' }} />
             Find Free Time
           </h3>
@@ -863,11 +886,11 @@ const FreeTimeFinder = ({ dayTasks, recurringEvents, categories, onClose }) => {
                       border: '1px solid rgba(34,197,94,0.15)',
                     }}>
                       <FontAwesomeIcon icon={faCalendar} style={{ color: '#22c55e', fontSize: '0.8rem' }} />
-                      <span style={{ color: '#e2e8f0', fontSize: '0.85rem', fontWeight: '500' }}>
+                      <span style={{ color: t.textPrimary, fontSize: '0.85rem', fontWeight: '500' }}>
                         {slot.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                       </span>
-                      <FontAwesomeIcon icon={faArrowRight} style={{ color: '#475569', fontSize: '0.65rem' }} />
-                      <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                      <FontAwesomeIcon icon={faArrowRight} style={{ color: t.textSecondary, fontSize: '0.65rem' }} />
+                      <span style={{ color: t.textSecondary, fontSize: '0.85rem' }}>
                         {formatTime12(slot.start)} – {formatTime12(slot.end)}
                       </span>
                     </div>
@@ -885,7 +908,15 @@ const FreeTimeFinder = ({ dayTasks, recurringEvents, categories, onClose }) => {
 // ═══════════════════════════════════════════════════════════════
 //  TASK FORM MODAL (Enhanced with start/end time, category, recurring)
 // ═══════════════════════════════════════════════════════════════
-const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories }) => {
+const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories, theme: t }) => {
+  const inputStyle = t ? makeInputStyle(t) : makeInputStyle(makeTheme(true));
+  const labelStyle = t ? makeLabelStyle(t) : makeLabelStyle(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const modalOverlay = t ? makeModalOverlay(t) : makeModalOverlay(makeTheme(true));
+  const modalBox = t ? makeModalBox(t) : makeModalBox(makeTheme(true));
+  const textHeading = t ? t.textHeading : '#f1f5f9';
+  const selectBg = t ? t.selectOptionBg : '#1e1b4b';
+  const selectColor = t ? t.inputColor : '#e2e8f0';
   const [form, setForm] = useState({
     content: task?.content || '',
     startTime: task?.startTime || '09:00',
@@ -924,7 +955,7 @@ const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories }) => {
     <div style={modalOverlay} onClick={onClose}>
       <div style={modalBox} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem' }}>
+          <h3 style={{ margin: 0, color: textHeading, fontSize: '1.2rem' }}>
             {task ? '✏️ Edit Task' : '✨ New Task'}
           </h3>
           <button onClick={onClose} style={{ ...btnGhost, padding: '0.4rem 0.7rem' }}>
@@ -961,7 +992,7 @@ const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories }) => {
                 onChange={e => setForm(p => ({ ...p, categoryId: e.target.value }))}
                 style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}>
                 {categories.map(c => (
-                  <option key={c.id} value={c.id} style={{ background: '#1e1b4b' }}>{c.name}</option>
+                  <option key={c.id} value={c.id} style={{ background: selectBg, color: selectColor }}>{c.name}</option>
                 ))}
               </select>
               {selectedCat && (
@@ -974,7 +1005,7 @@ const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories }) => {
                 onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
                 style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}>
                 {['Low', 'Medium', 'High', 'Urgent'].map(p => (
-                  <option key={p} value={p} style={{ background: '#1e1b4b' }}>{p}</option>
+                  <option key={p} value={p} style={{ background: selectBg, color: selectColor }}>{p}</option>
                 ))}
               </select>
             </div>
@@ -1012,7 +1043,11 @@ const TaskForm = ({ isOpen, onClose, onSave, task, dayId, categories }) => {
 // ═══════════════════════════════════════════════════════════════
 //  SORTABLE TASK (My Tasks panel)
 // ═══════════════════════════════════════════════════════════════
-const SortableTask = ({ task, onToggle, onEdit, onDelete, categories }) => {
+const SortableTask = ({ task, onToggle, onEdit, onDelete, categories, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const textPrimary = t ? t.textPrimary : '#e2e8f0';
+  const textMuted = t ? t.textMuted : '#64748b';
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const cat = categories.find(c => c.id === task.categoryId);
@@ -1037,7 +1072,7 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, categories }) => {
           }}>
             {getPriorityDot(task.priority)}
             <span style={{
-              color: '#e2e8f0', fontWeight: '500', fontSize: '0.88rem',
+              color: textPrimary, fontWeight: '500', fontSize: '0.88rem',
               textDecoration: task.completed ? 'line-through' : 'none',
               opacity: task.completed ? 0.7 : 1,
               wordBreak: 'break-word',
@@ -1045,7 +1080,7 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, categories }) => {
               {task.content}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', fontSize: '0.72rem', color: '#64748b' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', fontSize: '0.72rem', color: textMuted }}>
             {task.startTime && task.endTime && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                 <FontAwesomeIcon icon={faClock} style={{ fontSize: '0.6rem' }} />
@@ -1091,7 +1126,11 @@ const SortableTask = ({ task, onToggle, onEdit, onDelete, categories }) => {
 // ═══════════════════════════════════════════════════════════════
 //  TIMELINE TASK (in day columns)
 // ═══════════════════════════════════════════════════════════════
-const TimelineTask = ({ task, onToggle, onDelete, onMoveToTasks, dayId, categories, isRecurring }) => {
+const TimelineTask = ({ task, onToggle, onDelete, onMoveToTasks, dayId, categories, isRecurring, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const textPrimary = t ? t.textPrimary : '#e2e8f0';
+  const textMuted = t ? t.textMuted : '#64748b';
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     disabled: isRecurring,
@@ -1122,14 +1161,14 @@ const TimelineTask = ({ task, onToggle, onDelete, onMoveToTasks, dayId, categori
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
             {getPriorityDot(task.priority, 6)}
             <span style={{
-              color: '#e2e8f0', fontWeight: '500', fontSize: '0.82rem',
+              color: textPrimary, fontWeight: '500', fontSize: '0.82rem',
               textDecoration: task.completed ? 'line-through' : 'none',
               wordBreak: 'break-word',
             }}>
               {task.content}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.68rem', color: '#64748b', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.68rem', color: textMuted, flexWrap: 'wrap' }}>
             {task.startTime && task.endTime && (
               <span><FontAwesomeIcon icon={faClock} style={{ fontSize: '0.55rem', marginRight: '2px' }} />
                 {formatTime12(task.startTime)}–{formatTime12(task.endTime)}</span>
@@ -1198,17 +1237,18 @@ const TimelineSlot = ({ dayId, time, tasks, recurringTasks, onToggle, onDelete, 
 // ═══════════════════════════════════════════════════════════════
 const MyTasksDropZone = ({ isOver }) => (
   <div style={{
-    padding: '0.6rem',
+    padding: '0.25rem',
+    marginTop: '0.25rem',
     border: isOver ? '2px dashed rgba(99,102,241,0.5)' : '1px dashed rgba(255,255,255,0.1)',
-    borderRadius: '10px',
+    borderRadius: '8px',
     background: isOver ? 'rgba(99,102,241,0.1)' : 'transparent',
     textAlign: 'center',
     color: isOver ? '#a5b4fc' : '#475569',
-    fontSize: '0.8rem',
+    fontSize: '0.7rem',
     transition: 'all 0.2s',
     fontWeight: isOver ? '600' : '400',
   }}>
-    {isOver ? '📥 Drop here!' : '↕ Drag tasks here'}
+    {isOver ? '📥 Drop here!' : '↕ Move to My Tasks'}
   </div>
 );
 
@@ -1246,7 +1286,11 @@ const DragOverlayTask = ({ task, categories }) => {
 // ═══════════════════════════════════════════════════════════════
 //  VIEW TOGGLE
 // ═══════════════════════════════════════════════════════════════
-const ViewToggle = ({ viewMode, setViewMode }) => {
+const ViewToggle = ({ viewMode, setViewMode, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const activeText = t ? t.accentText : '#a5b4fc';
+  const inactiveText = t ? t.textMuted : '#64748b';
   const views = [
     { key: 'day', icon: faListUl, label: 'Day' },
     { key: 'week', icon: faCalendarWeek, label: 'Week' },
@@ -1262,8 +1306,8 @@ const ViewToggle = ({ viewMode, setViewMode }) => {
             fontSize: '0.8rem',
             borderRadius: '9px',
             border: 'none',
-            background: viewMode === v.key ? 'rgba(99,102,241,0.3)' : 'transparent',
-            color: viewMode === v.key ? '#a5b4fc' : '#64748b',
+            background: viewMode === v.key ? (t ? t.accentActive : 'rgba(99,102,241,0.3)') : 'transparent',
+            color: viewMode === v.key ? activeText : inactiveText,
             fontWeight: viewMode === v.key ? '600' : '400',
           }}>
           <FontAwesomeIcon icon={v.icon} style={{ marginRight: '0.3rem' }} />
@@ -1277,7 +1321,10 @@ const ViewToggle = ({ viewMode, setViewMode }) => {
 // ═══════════════════════════════════════════════════════════════
 //  WEEKLY VIEW
 // ═══════════════════════════════════════════════════════════════
-const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateClick }) => {
+const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateClick, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const textHeading = t ? t.textHeading : '#f1f5f9';
+  const textMuted = t ? t.textMuted : '#64748b';
   const isEventOnDate = (ev, date) => {
     const dow = date.getDay();
     switch (ev.recurrence) {
@@ -1294,7 +1341,7 @@ const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateCli
 
   return (
     <div style={{ ...glassCard, padding: '1.25rem' }}>
-      <h3 style={{ color: '#f1f5f9', margin: '0 0 1rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <h3 style={{ color: textHeading, margin: '0 0 1rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <FontAwesomeIcon icon={faCalendarWeek} style={{ color: '#6366f1' }} />
         Weekly Overview
       </h3>
@@ -1312,18 +1359,18 @@ const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateCli
                 cursor: 'pointer',
                 minHeight: '140px',
                 padding: '0.75rem',
-                background: isToday ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.03)',
-                borderColor: isToday ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.06)',
+                background: isToday ? (t ? t.accentSoft : 'rgba(99,102,241,0.12)') : (t ? t.glassBg : 'rgba(255,255,255,0.03)'),
+                borderColor: isToday ? (t ? t.accent + '55' : 'rgba(99,102,241,0.3)') : (t ? t.glassBorder : 'rgba(255,255,255,0.06)'),
               }}>
               <div style={{
-                fontSize: '0.75rem', color: '#64748b', fontWeight: '600',
+                fontSize: '0.75rem', color: textMuted, fontWeight: '600',
                 textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem',
               }}>
                 {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
               </div>
               <div style={{
                 fontSize: '1.3rem', fontWeight: '700',
-                color: isToday ? '#a5b4fc' : '#e2e8f0',
+                color: isToday ? (t ? t.accentText : '#a5b4fc') : (t ? t.textPrimary : '#e2e8f0'),
                 marginBottom: '0.5rem',
               }}>
                 {day.date.getDate()}
@@ -1341,7 +1388,7 @@ const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateCli
                     }}>
                       {getPriorityDot(t.priority, 4)}
                       <span style={{
-                        fontSize: '0.65rem', color: '#cbd5e1',
+                        fontSize: '0.65rem', color: t ? t.textSecondary : '#cbd5e1',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {t.content}
@@ -1366,7 +1413,12 @@ const WeeklyView = ({ weekDays, dayTasks, recurringEvents, categories, onDateCli
 // ═══════════════════════════════════════════════════════════════
 //  MONTHLY VIEW (Calendar)
 // ═══════════════════════════════════════════════════════════════
-const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onDateSelect }) => {
+const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onDateSelect, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const textHeading = t ? t.textHeading : '#f1f5f9';
+  const textMuted = t ? t.textMuted : '#64748b';
+  const textSecondary = t ? t.textSecondary : '#94a3b8';
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
 
@@ -1403,7 +1455,7 @@ const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onD
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.15rem' }}>
+          <h3 style={{ margin: 0, color: textHeading, fontSize: '1.15rem' }}>
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button onClick={() => setCurrentDate(new Date())}
@@ -1447,15 +1499,15 @@ const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onD
               style={{
                 minHeight: '70px', padding: '0.5rem',
                 borderRadius: '10px', cursor: 'pointer',
-                background: isSelected ? 'rgba(99,102,241,0.2)' : isToday ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)',
-                border: isSelected ? '1px solid rgba(99,102,241,0.4)' : isToday ? '1px solid rgba(99,102,241,0.2)' : '1px solid rgba(255,255,255,0.04)',
+                background: isSelected ? (t ? t.accentActive : 'rgba(99,102,241,0.2)') : isToday ? (t ? t.accentSofter : 'rgba(99,102,241,0.08)') : (t ? t.glassBg : 'rgba(255,255,255,0.02)'),
+                border: isSelected ? `1px solid ${t ? t.accent + '66' : 'rgba(99,102,241,0.4)'}` : isToday ? `1px solid ${t ? t.accent + '33' : 'rgba(99,102,241,0.2)'}` : `1px solid ${t ? t.glassBorder : 'rgba(255,255,255,0.04)'}`,
                 transition: 'all 0.2s',
                 position: 'relative',
               }}>
               <div style={{
                 fontSize: '0.88rem',
                 fontWeight: isToday || isSelected ? '700' : '500',
-                color: isSelected ? '#a5b4fc' : isToday ? '#818cf8' : '#cbd5e1',
+                color: isSelected ? (t ? t.accentText : '#a5b4fc') : isToday ? '#818cf8' : (t ? t.textSecondary : '#cbd5e1'),
                 marginBottom: '0.3rem',
               }}>
                 {day}
@@ -1488,7 +1540,7 @@ const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onD
               )}
               {tasks.length > 0 && (
                 <div style={{
-                  fontSize: '0.6rem', color: isSelected ? '#a5b4fc' : '#64748b',
+                  fontSize: '0.6rem', color: isSelected ? (t ? t.accentText : '#a5b4fc') : textMuted,
                   marginTop: '0.15rem',
                 }}>
                   {tasks.length}
@@ -1502,7 +1554,7 @@ const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onD
       {/* Legend */}
       <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
         {['Urgent', 'High', 'Medium', 'Low'].map(p => (
-          <div key={p} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#94a3b8' }}>
+          <div key={p} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: textSecondary }}>
             {getPriorityDot(p, 6)}
             <span>{p}</span>
           </div>
@@ -1517,7 +1569,12 @@ const MonthlyView = ({ dayTasks, recurringEvents, categories, selectedDates, onD
 // ═══════════════════════════════════════════════════════════════
 const HOUR_HEIGHT = 60;
 const MONTH_HOUR_HEIGHT = 60;
-const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClick }) => {
+const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClick, theme: t }) => {
+  const glassCard = t ? makeGlassCard(t) : makeGlassCard(makeTheme(true));
+  const btnGhost = t ? makeBtnGhost(t) : makeBtnGhost(makeTheme(true));
+  const textHeading = t ? t.textHeading : '#f1f5f9';
+  const textMuted = t ? t.textMuted : '#64748b';
+  const stickyBg = t ? t.stickyBg : 'rgba(15,15,30,0.95)';
   const [currentDate, setCurrentDate] = useState(new Date());
   const scrollRef = useRef(null);
   const today = new Date().toDateString();
@@ -1580,7 +1637,7 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ margin: 0, color: textHeading, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FontAwesomeIcon icon={faThLarge} style={{ color: '#6366f1' }} />
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()} — Timeline
           </h3>
@@ -1598,22 +1655,22 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
         overflowX: 'auto', overflowY: 'auto',
         maxHeight: 'calc(100vh - 300px)',
         borderRadius: '10px',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: `1px solid ${t ? t.glassBorder : 'rgba(255,255,255,0.06)'}`,
       }}>
         <div style={{ display: 'flex', minWidth: `${70 + daysInMonth * 150}px` }}>
           {/* Time labels column */}
-          <div style={{ width: '70px', flexShrink: 0, position: 'sticky', left: 0, zIndex: 2, background: 'rgba(15,15,30,0.95)' }}>
+          <div style={{ width: '70px', flexShrink: 0, position: 'sticky', left: 0, zIndex: 2, background: stickyBg }}>
             <div style={{
-              height: '48px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-              background: 'rgba(15,15,30,0.95)',
+              height: '48px', borderBottom: `1px solid ${t ? t.glassBorder : 'rgba(255,255,255,0.06)'}`,
+              background: stickyBg,
             }} />
             {hours.map(h => (
               <div key={h} style={{
                 height: `${MONTH_HOUR_HEIGHT}px`, display: 'flex', alignItems: 'flex-start',
                 justifyContent: 'center', paddingTop: '2px',
-                fontSize: '0.7rem', color: '#64748b', fontWeight: '600',
-                borderBottom: '1px solid rgba(255,255,255,0.03)',
-                background: 'rgba(15,15,30,0.95)',
+                fontSize: '0.7rem', color: textMuted, fontWeight: '600',
+                borderBottom: `1px solid ${t ? t.slotBorder : 'rgba(255,255,255,0.03)'}`,
+                background: stickyBg,
               }}>
                 {formatTime12(`${h.toString().padStart(2, '0')}:00`).replace(':00 ', ' ')}
               </div>
@@ -1634,16 +1691,16 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
                   height: '48px', display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
                   position: 'sticky', top: 0, zIndex: 1,
-                  background: isToday ? 'rgba(99,102,241,0.2)' : 'rgba(15,15,30,0.95)',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  background: isToday ? (t ? t.accentSoft : 'rgba(99,102,241,0.2)') : stickyBg,
+                  borderBottom: `1px solid ${t ? t.glassBorder : 'rgba(255,255,255,0.06)'}`,
                   transition: 'all 0.2s',
                 }}>
-                  <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>
+                  <div style={{ fontSize: '0.68rem', color: textMuted, fontWeight: '600', textTransform: 'uppercase' }}>
                     {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </div>
                   <div style={{
                     fontSize: '1rem', fontWeight: '700',
-                    color: isToday ? '#a5b4fc' : '#e2e8f0',
+                    color: isToday ? (t ? t.accentText : '#a5b4fc') : (t ? t.textPrimary : '#e2e8f0'),
                   }}>
                     {day.dayNum}
                   </div>
@@ -1688,14 +1745,14 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
                       >
                         <div style={{
                           fontSize: '0.62rem', fontWeight: '600',
-                          color: '#e2e8f0', lineHeight: '1.2',
+                          color: t ? t.textPrimary : '#e2e8f0', lineHeight: '1.2',
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {block.isRecurring && <span style={{ marginRight: '2px' }}>🔁</span>}
                           {block.content}
                         </div>
                         {height > 22 && (
-                          <div style={{ fontSize: '0.55rem', color: '#94a3b8', marginTop: '1px' }}>
+                          <div style={{ fontSize: '0.55rem', color: t ? t.textSecondary : '#94a3b8', marginTop: '1px' }}>
                             {formatTime12(block.startTime)}–{formatTime12(block.endTime)}
                           </div>
                         )}
@@ -2064,7 +2121,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         justifyContent: 'space-between', alignItems: 'center',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          <ViewToggle viewMode={viewMode} setViewMode={setViewMode} theme={T} />
           {/* Theme toggle */}
           <button onClick={() => setIsDarkMode(p => !p)}
             style={{
@@ -2136,7 +2193,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       <div style={{ marginBottom: '1.5rem' }}>
         <MonthlyView
           dayTasks={dayTasks} recurringEvents={recurringEvents} categories={categories}
-          selectedDates={selectedDates} onDateSelect={handleDateSelect}
+          selectedDates={selectedDates} onDateSelect={handleDateSelect} theme={T}
         />
       </div>
 
@@ -2145,7 +2202,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         <div style={{ marginBottom: '1.5rem' }}>
           <MonthlyTimelineView
             dayTasks={dayTasks} recurringEvents={recurringEvents}
-            categories={categories} onDateClick={handleDateSelect}
+            categories={categories} onDateClick={handleDateSelect} theme={T}
           />
         </div>
       )}
@@ -2155,7 +2212,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         <div style={{ marginBottom: '1.5rem' }}>
           <WeeklyView
             weekDays={days} dayTasks={dayTasks} recurringEvents={recurringEvents}
-            categories={categories} onDateClick={handleDateSelect}
+            categories={categories} onDateClick={handleDateSelect} theme={T}
           />
         </div>
       )}
@@ -2200,7 +2257,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                     className="resys-scrollbar">
                     {dailyTasks.map(t => (
                       <SortableTask key={t.id} task={t} onToggle={toggleTaskCompletion}
-                        onEdit={editTask} onDelete={deleteTask} categories={categories} />
+                        onEdit={editTask} onDelete={deleteTask} categories={categories} theme={T} />
                     ))}
                     {dailyTasks.length === 0 && (
                       <div style={{
@@ -2430,33 +2487,33 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
       {/* ── MODALS ───────────────────────────────── */}
       {showCategoryManager && (
         <CategoryManager categories={categories}
-          onSave={setCategories} onClose={() => setShowCategoryManager(false)} />
+          onSave={setCategories} onClose={() => setShowCategoryManager(false)} theme={T} />
       )}
 
       {showRecurringManager && (
         <RecurringManager events={recurringEvents} categories={categories}
           onAdd={addRecurring} onEdit={editRecurring} onDelete={deleteRecurring}
-          onClose={() => setShowRecurringManager(false)} />
+          onClose={() => setShowRecurringManager(false)} theme={T} />
       )}
 
       {showFreeTimeFinder && (
         <FreeTimeFinder dayTasks={dayTasks} recurringEvents={recurringEvents}
-          categories={categories} onClose={() => setShowFreeTimeFinder(false)} />
+          categories={categories} onClose={() => setShowFreeTimeFinder(false)} theme={T} />
       )}
 
       {/* ── ALLOCATED TASKS MODAL ────────────────── */}
       {showAllocatedTasks && (
-        <div style={modalOverlay} onClick={() => setShowAllocatedTasks(false)}>
-          <div style={{ ...modalBox, maxWidth: '600px', maxHeight: '80vh', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+        <div style={tModalOverlay} onClick={() => setShowAllocatedTasks(false)}>
+          <div style={{ ...tModalBox, maxWidth: '600px', maxHeight: '80vh', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.2rem' }}>📅 Allocated Tasks</h3>
-              <button onClick={() => setShowAllocatedTasks(false)} style={{ ...btnGhost, padding: '0.4rem 0.7rem' }}>
+              <h3 style={{ margin: 0, color: T.textHeading, fontSize: '1.2rem' }}>📅 Allocated Tasks</h3>
+              <button onClick={() => setShowAllocatedTasks(false)} style={{ ...tBtnGhost, padding: '0.4rem 0.7rem' }}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div style={{ overflowY: 'auto', maxHeight: 'calc(80vh - 80px)' }} className="resys-scrollbar">
               {Object.keys(dayTasks).length === 0 || Object.values(dayTasks).flat().length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+                <div style={{ textAlign: 'center', color: T.textMuted, padding: '2rem' }}>
                   No allocated tasks yet. Drag tasks from My Tasks to the timeline.
                 </div>
               ) : (
@@ -2466,12 +2523,12 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                   .map(([dateStr, tasks]) => (
                     <div key={dateStr} style={{ marginBottom: '1rem' }}>
                       <div style={{
-                        fontSize: '0.82rem', fontWeight: '700', color: '#a5b4fc',
+                        fontSize: '0.82rem', fontWeight: '700', color: T.accentText,
                         marginBottom: '0.4rem', padding: '0.3rem 0.5rem',
-                        background: 'rgba(99,102,241,0.1)', borderRadius: '6px',
+                        background: T.accentSofter, borderRadius: '6px',
                       }}>
                         📆 {new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
-                        <span style={{ marginLeft: '0.5rem', fontSize: '0.72rem', color: '#94a3b8', fontWeight: '400' }}>
+                        <span style={{ marginLeft: '0.5rem', fontSize: '0.72rem', color: T.textSecondary, fontWeight: '400' }}>
                           ({tasks.length} task{tasks.length !== 1 ? 's' : ''})
                         </span>
                       </div>
@@ -2487,25 +2544,41 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                             {getPriorityDot(t.priority, 6)}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{
-                                fontSize: '0.85rem', fontWeight: '600', color: '#e2e8f0',
+                                fontSize: '0.85rem', fontWeight: '600', color: T.textPrimary,
                                 textDecoration: t.completed ? 'line-through' : 'none',
                                 opacity: t.completed ? 0.6 : 1,
                                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                               }}>{t.content}</div>
                               {t.startTime && (
-                                <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                                <div style={{ fontSize: '0.7rem', color: T.textSecondary }}>
                                   ⏰ {formatTime12(t.startTime)} – {formatTime12(t.endTime)}
                                   {cat && <span style={{ marginLeft: '0.4rem' }}>• {cat.name}</span>}
                                 </div>
                               )}
                             </div>
-                            <button onClick={() => { toggleTaskCompletion(t.id, dateStr); }}
-                              style={{
-                                ...btnGhost, padding: '0.25rem 0.4rem', fontSize: '0.7rem',
-                                color: t.completed ? '#10b981' : '#94a3b8',
-                              }}>
-                              <FontAwesomeIcon icon={t.completed ? faCheckCircle : faCircle} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.3rem' }}>
+                              <button onClick={() => editTask(t, dateStr)}
+                                style={{
+                                  ...tBtnGhost, padding: '0.25rem 0.4rem', fontSize: '0.7rem',
+                                  color: T.textSecondary,
+                                }}>
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button onClick={() => deleteTask(t.id, dateStr)}
+                                style={{
+                                  ...tBtnGhost, padding: '0.25rem 0.4rem', fontSize: '0.7rem',
+                                  color: '#ef4444',
+                                }}>
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                              <button onClick={() => { toggleTaskCompletion(t.id, dateStr); }}
+                                style={{
+                                  ...tBtnGhost, padding: '0.25rem 0.4rem', fontSize: '0.7rem',
+                                  color: t.completed ? '#10b981' : T.textSecondary,
+                                }}>
+                                <FontAwesomeIcon icon={t.completed ? faCheckCircle : faCircle} />
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -2524,6 +2597,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
         task={editingTask}
         dayId={editingDayId}
         categories={categories}
+        theme={T}
       />
     </div>
   );
