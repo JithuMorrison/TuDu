@@ -1182,7 +1182,7 @@ const TimelineSlot = ({ dayId, time, tasks, recurringTasks, onToggle, onDelete, 
       transition: 'all 0.2s',
     }}>
       {recurringTasks.map(t => (
-        <TimelineTask key={`r-${t.id}`} task={t} onToggle={() => {}} onDelete={() => {}} onMoveToTasks={() => {}}
+        <TimelineTask key={`r-${t.id}`} task={t} onToggle={() => { }} onDelete={() => { }} onMoveToTasks={() => { }}
           dayId={dayId} categories={categories} isRecurring />
       ))}
       {tasks.map(t => (
@@ -1535,7 +1535,7 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
   };
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), i + 1);
@@ -1615,7 +1615,7 @@ const MonthlyTimelineView = ({ dayTasks, recurringEvents, categories, onDateClic
                 borderBottom: '1px solid rgba(255,255,255,0.03)',
                 background: 'rgba(15,15,30,0.95)',
               }}>
-                {formatTime12(`${h.toString().padStart(2,'0')}:00`).replace(':00 ',' ')}
+                {formatTime12(`${h.toString().padStart(2, '0')}:00`).replace(':00 ', ' ')}
               </div>
             ))}
           </div>
@@ -2359,7 +2359,7 @@ const RearrangePage = ({ userData, setXp, saveUserData }) => {
                                   {block.isRecurring && (
                                     <FontAwesomeIcon icon={faSync} style={{ fontSize: '0.55rem', color: '#a78bfa' }} />
                                   )}
-                                    <span style={{
+                                  <span style={{
                                     fontSize: '0.75rem', fontWeight: '600', color: T.textPrimary,
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                     textDecoration: block.completed ? 'line-through' : 'none',

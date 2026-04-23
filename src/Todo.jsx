@@ -16,7 +16,7 @@ import CategoryItemManager from './Listing';
 
 function ToDo() {
   const [currentSection, setCurrentSection] = useState('Home');
-  
+
   // Existing state from original code
   const [task, setTask] = useState([]);
   const [newtask, setNewtask] = useState("");
@@ -54,9 +54,9 @@ function ToDo() {
   useEffect(() => {
     const storedData = localStorage.getItem(fetcho);
     const storedCategories = localStorage.getItem('data');
-    localStorage.getItem('userData') ? '' : localStorage.setItem('userData', JSON.stringify({xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, maxLevel: 10, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, maxLevel: 10, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, maxLevel: 10, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, maxLevel: 10, xp:0}]}));
+    localStorage.getItem('userData') ? '' : localStorage.setItem('userData', JSON.stringify({ xp: 0, level: 1, streak: 0, lastCompletedDate: '', achievements: [], todaysGoal: 3, completedToday: 0, stats: { strength: 10, agility: 10, endurance: 10, intelligence: 10, hp: 100, mp: 50 }, skills: [{ id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, maxLevel: 10, xp: 0 }, { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, maxLevel: 10, xp: 0 }, { id: 3, name: 'Organization', description: 'Better task organization', level: 1, maxLevel: 10, xp: 0 }, { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, maxLevel: 10, xp: 0 }] }));
     localStorage.getItem('lastReset') ? '' : localStorage.setItem('lastReset', '');
-    
+
     if (storedCategories) {
       setCato(JSON.parse(storedCategories));
     }
@@ -99,27 +99,27 @@ function ToDo() {
     const checkForNewDay = () => {
       const now = new Date();
       const today = now.toDateString();
-      const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, streak:0, lastCompletedDate:'', achievements:[], todaysGoal:3, completedToday:0, stats: {strength:10, agility:10, endurance:10, intelligence:10, hp:100, mp:50}, skills: [{id:1, name:'Time Management', description:'Complete tasks faster', level:1, maxLevel: 10, xp:0}, {id:2, name:'Focus', description:'Longer task sessions', level:1, maxLevel: 10, xp:0}, {id:3, name:'Organization', description:'Better task organization', level:1, maxLevel: 10, xp:0}, {id:4, name:'Planning', description:'Better deadline management', level:1, maxLevel: 10, xp:0}]};
+      const userData = JSON.parse(localStorage.getItem('userData')) || { xp: 0, level: 1, streak: 0, lastCompletedDate: '', achievements: [], todaysGoal: 3, completedToday: 0, stats: { strength: 10, agility: 10, endurance: 10, intelligence: 10, hp: 100, mp: 50 }, skills: [{ id: 1, name: 'Time Management', description: 'Complete tasks faster', level: 1, maxLevel: 10, xp: 0 }, { id: 2, name: 'Focus', description: 'Longer task sessions', level: 1, maxLevel: 10, xp: 0 }, { id: 3, name: 'Organization', description: 'Better task organization', level: 1, maxLevel: 10, xp: 0 }, { id: 4, name: 'Planning', description: 'Better deadline management', level: 1, maxLevel: 10, xp: 0 }] };
       const lastReset = localStorage.getItem('lastReset');
 
       if (!lastReset || lastReset !== today) {
         const allCategories = JSON.parse(localStorage.getItem('data')) || [];
-  
+
         allCategories.forEach(categoryKey => {
           const tasks = JSON.parse(localStorage.getItem(categoryKey)) || [];
-  
+
           const updatedTasks = tasks.map(task => {
             if (task.isDaily) {
               return { ...task, status: false };
             }
             return task;
           });
-  
+
           localStorage.setItem(categoryKey, JSON.stringify(updatedTasks));
         });
 
         localStorage.setItem('lastReset', today);
-        }
+      }
 
       if (!userData.lastReset || userData.lastReset !== today) {
         const resetData = {
@@ -129,11 +129,11 @@ function ToDo() {
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
-        if (userData.lastCompletedDate === yesterday.toDateString() && 
-            userData.lastCompletedDate !== today) {
+
+        if (userData.lastCompletedDate === yesterday.toDateString() &&
+          userData.lastCompletedDate !== today) {
           const newStreak = (userData.streak || 0);
-          
+
           if (newStreak % 3 === 0) {
             const bonus = Math.floor(newStreak / 3) * 50;
             resetData.xp = (userData.xp || 0) + bonus;
@@ -173,17 +173,17 @@ function ToDo() {
     let updatedStats = { ...userStats };
     let updatedSkills = [...availableSkills];
     taskItem.status = isChecked;
-    
+
     if (isChecked && !wasCompleted) {
       const today = new Date().toDateString();
       let newCompleted = completedToday + 1;
-      
+
       // Always mark as complete and set completion time
       taskItem.completionTime = new Date().toISOString();
 
       if (newCompleted <= todaysGoal && lastCompletedDate !== today) {
         let xpEarned = 50;
-        
+
         // Bonus for completed subtasks
         if (taskItem.subtasks && taskItem.subtasks.length > 0) {
           const completedSubtasks = taskItem.subtasks.filter(st => st.completed).length;
@@ -191,40 +191,40 @@ function ToDo() {
           const subtaskBonus = Math.floor((completedSubtasks / totalSubtasks) * 25);
           xpEarned += subtaskBonus;
         }
-        
+
         if (taskItem.deadline) {
           const deadline = new Date(taskItem.deadline);
           const now = new Date();
-          
+
           if (now < deadline) {
             const earlyFactor = (deadline - now) / (1000 * 60 * 60);
             xpEarned += Math.min(100, Math.floor(earlyFactor * 5));
           }
         }
-        
+
         if (taskItem.isDaily) {
           xpEarned += 25;
         }
-        
+
         if (streak > 0) {
           xpEarned = Math.floor(xpEarned * (1 + streak * 0.1));
         }
-        
+
         addXp(xpEarned);
-        
+
         // Random chance to get stat improvements from regular tasks
         if (Math.random() < 1) {
           const stats = ['strength', 'agility', 'endurance', 'intelligence'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
           const statIncrease = Math.floor(Math.random() * 2) + 1;
-          
+
           updatedStats = {
             ...userStats,
             [randomStat]: userStats[randomStat] + statIncrease
           };
 
           setUserStats(updatedStats);
-          
+
           showTemporaryReward(`${randomStat.toUpperCase()} +${statIncrease}`, 'star');
         }
 
@@ -232,14 +232,14 @@ function ToDo() {
         if (Math.random() < 0.15) {
           const boostType = Math.random() > 0.5 ? 'hp' : 'mp';
           const boostAmount = Math.floor(Math.random() * 10) + 5;
-          
+
           updatedStats = {
             ...userStats,
             [boostType]: userStats[boostType] + boostAmount
           };
 
           setUserStats(updatedStats);
-          
+
           showTemporaryReward(`${boostType.toUpperCase()} +${boostAmount}`, 'heart');
         }
 
@@ -253,16 +253,16 @@ function ToDo() {
         else {
           showTemporaryReward('Daily goal reached!', 'info');
         }
-        
+
         if (newCompleted == todaysGoal) {
           setCompletedToday(newCompleted);
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
-          
-          const newStreak = lastCompletedDate === yesterday.toDateString() 
-            ? streak + 1 
+
+          const newStreak = lastCompletedDate === yesterday.toDateString()
+            ? streak + 1
             : 1;
-          
+
           setStreak(newStreak);
           setLastCompletedDate(today);
           saveUserData({
@@ -272,22 +272,22 @@ function ToDo() {
             stats: updatedStats,
             skills: updatedSkills
           });
-          
+
           // Award streak bonus every 3 days
           if (newStreak % 3 === 0) {
             const bonus = Math.floor(newStreak / 3) * 50;
             addXp(bonus);
             showTemporaryReward(`Streak Bonus! +${bonus} XP`, 'fire');
           }
-          
+
           showTemporaryReward(`New ${newStreak}-day streak!`, 'fire');
         }
-        else{
+        else {
           setCompletedToday(newCompleted);
           saveUserData({ completedToday: newCompleted, stats: updatedStats, skills: updatedSkills });
         }
       }
-      
+
       // Check for random bonus
       if (Math.random() < 0.1) {
         const surpriseXp = Math.floor(Math.random() * 50) + 25;
@@ -299,12 +299,12 @@ function ToDo() {
       const xpDeduction = 100;
       setXp(prev => Math.max(0, prev - xpDeduction));
       showTemporaryReward(`Task Unchecked! -${xpDeduction} XP`, 'warning');
-      
+
       // Decrement completed today if it was counted and we haven't exceeded goal
       if (taskItem.completionTime) {
         const completionDate = new Date(taskItem.completionTime).toDateString();
         const today = new Date().toDateString();
-        
+
         if (completionDate === today && completedToday > 0 && completedToday <= todaysGoal) {
           const newCompleted = Math.min(completedToday - 1, todaysGoal);
           setCompletedToday(newCompleted);
@@ -320,10 +320,10 @@ function ToDo() {
           }
         }
       }
-      
+
       taskItem.completionTime = null;
     }
-    
+
     setTask(updatetask);
     localStorage.setItem(fetcho, JSON.stringify(updatetask));
   };
@@ -381,18 +381,18 @@ function ToDo() {
   const handleClick = (e) => {
     e.preventDefault();
     const storedData = localStorage.getItem(matcho);
-    if (matcho=="") {
+    if (matcho == "") {
       alert("Enter a category");
     }
     else if (storedData) {
       alert("Category already exists");
     }
-    else{
+    else {
       const updatedCat = [...cato, matcho];
       setCato(updatedCat);
       setFetcho(matcho);
       localStorage.setItem('data', JSON.stringify(updatedCat));
-      localStorage.setItem(matcho,JSON.stringify([]));
+      localStorage.setItem(matcho, JSON.stringify([]));
       setTask([]);
       setCategoryAddVisible(false);
     }
@@ -438,7 +438,7 @@ function ToDo() {
         { id: 4, name: 'Planning', description: 'Better deadline management', maxLevel: 10, level: 1, xp: 0 }
       ]
     };
-    
+
     setXp(userData.xp);
     setLevel(userData.level || 1);
     setStreak(userData.streak || 0);
@@ -469,15 +469,15 @@ function ToDo() {
     const today = new Date().toDateString();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (lastCompletedDate === today) return;
-    
+
     if (lastCompletedDate === yesterday.toDateString()) {
       const newStreak = streak + 1;
       setStreak(newStreak);
       checkStreakAchievements(newStreak);
       saveUserData({ streak: newStreak, lastCompletedDate: today });
-      
+
       if (newStreak % 3 === 0) {
         const reward = Math.floor(newStreak / 3) * 50;
         addXp(reward);
@@ -494,7 +494,7 @@ function ToDo() {
   const checkStreakAchievements = (currentStreak) => {
     const newAchievements = [];
     const unlockedAchievements = [];
-    
+
     if (currentStreak >= 3 && !achievements.includes('3-day Streak')) {
       newAchievements.push('3-day Streak');
       unlockedAchievements.push('3-day Streak');
@@ -507,12 +507,12 @@ function ToDo() {
       newAchievements.push('Monthly Streak');
       unlockedAchievements.push('Monthly Streak');
     }
-    
+
     if (newAchievements.length > 0) {
       const updatedAchievements = [...achievements, ...newAchievements];
       setAchievements(updatedAchievements);
       saveUserData({ achievements: updatedAchievements });
-      
+
       unlockedAchievements.forEach(ach => {
         showTemporaryReward(`Achievement: ${ach}`, 'trophy');
         addXp(100 * (ach === 'Monthly Streak' ? 5 : ach === '7-day Streak' ? 3 : 1));
@@ -521,10 +521,10 @@ function ToDo() {
   };
 
   const addXp = (amount) => {
-    const userData = JSON.parse(localStorage.getItem('userData')) || {xp:0, level:1, completedToday:0, todaysGoal:2};
+    const userData = JSON.parse(localStorage.getItem('userData')) || { xp: 0, level: 1, completedToday: 0, todaysGoal: 2 };
     const todayCompleted = userData.completedToday || 0;
     const todaysGoal = userData.todaysGoal || 3;
-    
+
     if (todayCompleted < todaysGoal || amount > 100) {
       let newXp = xp + amount;
       let newLevel = level;
@@ -547,7 +547,7 @@ function ToDo() {
         showTemporaryReward(`Level Up! ${newLevel}`, 'medal');
       }
 
-      saveUserData({ 
+      saveUserData({
         xp: newXp,
         level: newLevel,
         ...(leveledUp && { level: newLevel })
@@ -559,7 +559,7 @@ function ToDo() {
   const checkLevelAchievements = (currentLevel) => {
     const newAchievements = [];
     const unlockedAchievements = [];
-    
+
     if (currentLevel >= 5 && !achievements.includes('Level 5')) {
       newAchievements.push('Level 5');
       unlockedAchievements.push('Level 5');
@@ -572,12 +572,12 @@ function ToDo() {
       newAchievements.push('Level 20');
       unlockedAchievements.push('Level 20');
     }
-    
+
     if (newAchievements.length > 0) {
       const updatedAchievements = [...achievements, ...newAchievements];
       setAchievements(updatedAchievements);
       saveUserData({ achievements: updatedAchievements });
-      
+
       unlockedAchievements.forEach(ach => {
         showTemporaryReward(`Achievement: ${ach}`, 'trophy');
       });
@@ -588,11 +588,11 @@ function ToDo() {
   const showTemporaryReward = (message, icon) => {
     setShowReward({ message, icon });
     setShowConfetti(true);
-    
+
     setTimeout(() => {
       setShowConfetti(false);
     }, 3000);
-    
+
     setTimeout(() => {
       setShowReward(null);
     }, 5000);
@@ -601,8 +601,8 @@ function ToDo() {
   // Save user data to localStorage
   const saveUserData = (updates) => {
     const userData = JSON.parse(localStorage.getItem('userData')) || {};
-    const updatedData = { 
-      ...userData, 
+    const updatedData = {
+      ...userData,
       ...updates,
       stats: updates.stats || userData.stats,
       skills: updates.skills || availableSkills || userData.skills
@@ -648,6 +648,7 @@ function ToDo() {
     boxShadow: '0 10px 30px rgba(67, 56, 202, 0.15)',
     marginBottom: '20px',
     position: 'relative',
+    zIndex: 100,
   };
 
   const topHeaderRowStyle = {
@@ -694,7 +695,7 @@ function ToDo() {
     color: streak > 0 ? '#fbbf24' : 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600'
   };
-  
+
   const timeStyle = {
     fontSize: '0.9rem',
     color: 'rgba(255, 255, 255, 0.7)',
@@ -708,7 +709,7 @@ function ToDo() {
       case 'ToDo':
         return renderToDoSection();
       case 'LevelingSystem':
-        return <LevelingSystem  userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.skills) setAvailableSkills(updates.skills); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills}/>;
+        return <LevelingSystem userData={{ xp, level, streak, achievements, completedToday, todaysGoal, stats: userStats }} onUpdateUserData={(updates) => { if (updates.xp !== undefined) setXp(updates.xp); if (updates.level !== undefined) setLevel(updates.level); if (updates.stats) setUserStats(updates.stats); if (updates.skills) setAvailableSkills(updates.skills); if (updates.achievements) setAchievements(updates.achievements); saveUserData(updates); }} availableSkills={availableSkills} setAvailableSkills={setAvailableSkills} />;
       case 'RearrangePage':
         return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
       case 'Lisp':
@@ -729,7 +730,7 @@ function ToDo() {
       padding: isMobileView ? '16px' : '24px',
       backgroundColor: '#f5f7fa',
       minHeight: 'calc(100vh - 80px)',
-      marginLeft: isMobileView? '-3px' : '52px',
+      marginLeft: isMobileView ? '-3px' : '52px',
     };
 
     const inputContainerStyle = {
@@ -751,8 +752,8 @@ function ToDo() {
       width: isMobileView ? '89%' : '100%',
       maxHeight: isMobileView ? 'auto' : 'calc(100vh - 180px)',
       overflowY: 'auto',
-      marginLeft: isMobileView? '0px' : '50px',
-      marginTop: isMobileView? '-30px' : '0px',
+      marginLeft: isMobileView ? '0px' : '50px',
+      marginTop: isMobileView ? '-30px' : '0px',
       scrollbarWidth: 'none',
       msOverflowStyle: 'none'
     };
@@ -823,7 +824,7 @@ function ToDo() {
             numberOfPieces={500}
           />
         )}
-        
+
         {/* Level Up Modal */}
         {showLevelUp && (
           <div style={{
@@ -849,7 +850,7 @@ function ToDo() {
             </div>
           </div>
         )}
-        
+
         {/* Reward Notification */}
         {showReward && (
           <div style={{
@@ -867,14 +868,14 @@ function ToDo() {
             zIndex: 100,
             animation: 'slideIn 0.5s ease-out'
           }}>
-            <FontAwesomeIcon 
+            <FontAwesomeIcon
               icon={
                 showReward.icon === 'trophy' ? faTrophy :
-                showReward.icon === 'fire' ? faFire :
-                showReward.icon === 'star' ? faStar :
-                showReward.icon === 'medal' ? faMedal :
-                showReward.icon === 'gem' ? faGem : faStar
-              } 
+                  showReward.icon === 'fire' ? faFire :
+                    showReward.icon === 'star' ? faStar :
+                      showReward.icon === 'medal' ? faMedal :
+                        showReward.icon === 'gem' ? faGem : faStar
+              }
               style={{ fontSize: '20px' }}
             />
             <span>{showReward.message}</span>
@@ -884,18 +885,18 @@ function ToDo() {
         {/* Main Content */}
         <div style={containerStyle}>
           {/* Left Column - Inputs and Details */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '24px', 
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
             width: isMobileView ? '100%' : '40%',
             maxWidth: '500px'
           }}>
             {/* Task Input Section */}
             <div style={inputContainerStyle}>
-              <h2 style={{ 
-                marginBottom: '16px', 
-                fontSize: '1.25rem', 
+              <h2 style={{
+                marginBottom: '16px',
+                fontSize: '1.25rem',
                 color: '#2d3748',
                 fontWeight: '600'
               }}>Add New Task</h2>
@@ -936,9 +937,9 @@ function ToDo() {
 
             {/* Category Section */}
             <div style={{ ...inputContainerStyle, marginTop: '-30px' }}>
-              <h2 style={{ 
-                marginBottom: '16px', 
-                fontSize: '1.25rem', 
+              <h2 style={{
+                marginBottom: '16px',
+                fontSize: '1.25rem',
                 color: '#2d3748',
                 fontWeight: '600'
               }}>Manage Categories</h2>
@@ -997,7 +998,7 @@ function ToDo() {
 
             {/* Task Details Section */}
             {!isMobileView && (
-              <div style={{...detailPaneStyle, marginTop: '-30px' }}>
+              <div style={{ ...detailPaneStyle, marginTop: '-30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                   <button
                     style={{
@@ -1015,26 +1016,26 @@ function ToDo() {
                   </button>
                 </div>
                 {show === 1 ? (
-                  <Card2 
-                    name={task[ind]?.name} 
-                    para={task[ind]?.para} 
-                    time={task[ind]?.time} 
-                    index={ind} 
-                    isMobileView={isMobileView} 
-                    status={task[ind]?.status} 
+                  <Card2
+                    name={task[ind]?.name}
+                    para={task[ind]?.para}
+                    time={task[ind]?.time}
+                    index={ind}
+                    isMobileView={isMobileView}
+                    status={task[ind]?.status}
                     isDaily={task[ind]?.isDaily}
                     task={task[ind]}
                   />
                 ) : show === 0 ? (
-                  <Card3 
-                    task={task} 
-                    settask={setTask} 
-                    index={ind} 
-                    isMobileView={isMobileView} 
-                    fetcho={fetcho} 
+                  <Card3
+                    task={task}
+                    settask={setTask}
+                    index={ind}
+                    isMobileView={isMobileView}
+                    fetcho={fetcho}
                   />
                 ) : show === 2 ? (
-                  <SubtaskManager 
+                  <SubtaskManager
                     task={task[ind]}
                     taskIndex={ind}
                     tasks={task}
@@ -1043,9 +1044,9 @@ function ToDo() {
                     onClose={() => setShow(-1)}
                   />
                 ) : (
-                  <div style={{ 
-                    color: '#64748b', 
-                    textAlign: 'center', 
+                  <div style={{
+                    color: '#64748b',
+                    textAlign: 'center',
                     padding: '40px 20px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1083,13 +1084,13 @@ function ToDo() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div style={{ marginTop: '20px' }}>
                     <h3 style={{ marginBottom: '10px' }}>Today's Progress</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ flex: 1, backgroundColor: '#e5e7eb', borderRadius: '10px', height: '10px' }}>
-                        <div style={{ 
-                          width: `${(completedToday / todaysGoal) * 100}%`, 
+                        <div style={{
+                          width: `${(completedToday / todaysGoal) * 100}%`,
                           backgroundColor: completedToday >= todaysGoal ? '#10b981' : '#4f46e5',
                           height: '100%',
                           borderRadius: '10px'
@@ -1110,9 +1111,9 @@ function ToDo() {
 
           {/* Right Column - Task List */}
           <div style={taskListStyle}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: '20px',
               position: 'sticky',
@@ -1124,14 +1125,14 @@ function ToDo() {
               paddingTop: '16px',
               zIndex: 10
             }}>
-              <h2 style={{ 
-                margin: 0, 
-                fontSize: '1.25rem', 
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.25rem',
                 color: '#2d3748',
                 fontWeight: '600',
                 paddingLeft: '24px'
               }}>{fetcho} Tasks</h2>
-              <div style={{ 
+              <div style={{
                 color: '#64748b',
                 fontSize: '14px',
                 paddingRight: '24px'
@@ -1139,12 +1140,12 @@ function ToDo() {
                 {task.length} {task.length === 1 ? 'task' : 'tasks'}
               </div>
             </div>
-            
+
             {task.length === 0 ? (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'center',
                 padding: '40px 20px',
                 color: '#64748b',
@@ -1163,22 +1164,22 @@ function ToDo() {
                 {(Array.isArray(task) ? task : [])
                   .sort((a, b) => {
                     const now = new Date();
-                    
+
                     // Check if tasks are overdue
                     const aDeadline = a.deadline ? new Date(a.deadline) : null;
                     const bDeadline = b.deadline ? new Date(b.deadline) : null;
                     const aIsOverdue = aDeadline && aDeadline < now && !a.status;
                     const bIsOverdue = bDeadline && bDeadline < now && !b.status;
-                    
+
                     // Both overdue - sort by how overdue they are (most overdue first)
                     if (aIsOverdue && bIsOverdue) {
                       return aDeadline - bDeadline;
                     }
-                    
+
                     // One overdue, one not - overdue comes first
                     if (aIsOverdue && !bIsOverdue) return -1;
                     if (!aIsOverdue && bIsOverdue) return 1;
-                    
+
                     // Both not completed and not overdue
                     if (!a.status && !b.status) {
                       // Sort by deadline (soonest first)
@@ -1190,11 +1191,11 @@ function ToDo() {
                       if (!aDeadline && bDeadline) return 1;
                       return 0;
                     }
-                    
+
                     // One completed, one not - not completed comes first
                     if (!a.status && b.status) return -1;
                     if (a.status && !b.status) return 1;
-                    
+
                     // Both completed - sort by completion time (newest first)
                     return new Date(b.completionTime || 0) - new Date(a.completionTime || 0);
                   })
@@ -1223,86 +1224,86 @@ function ToDo() {
 
           {isMobileView && (
             <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', backgroundColor: 'white', borderRadius: '12px', marginTop: '16px' }}>
-                <h3 style={{ marginBottom: '10px' }}>Your Achievements</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  {achievements.map((ach, i) => (
-                    <div key={i} style={{
-                      backgroundColor: '#e0e7ff',
-                      color: '#4f46e5',
-                      padding: '5px 10px',
-                      borderRadius: '20px',
-                      fontSize: '0.8rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}>
-                      <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
-                      {ach.name}
-                    </div>
-                  ))}
-                  {achievements.length === 0 && (
-                    <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                      Complete tasks to unlock achievements!
-                    </div>
-                  )}
-                </div>
-                
-                <div style={{ marginTop: '20px' }}>
-                  <h3 style={{ marginBottom: '10px' }}>Today's Progress</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ flex: 1, backgroundColor: '#e5e7eb', borderRadius: '10px', height: '10px' }}>
-                      <div style={{ 
-                        width: `${(completedToday / todaysGoal) * 100}%`, 
-                        backgroundColor: completedToday >= todaysGoal ? '#10b981' : '#4f46e5',
-                        height: '100%',
-                        borderRadius: '10px'
-                      }}></div>
-                    </div>
-                    <span>{completedToday}/{todaysGoal} tasks</span>
+              <h3 style={{ marginBottom: '10px' }}>Your Achievements</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {achievements.map((ach, i) => (
+                  <div key={i} style={{
+                    backgroundColor: '#e0e7ff',
+                    color: '#4f46e5',
+                    padding: '5px 10px',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <FontAwesomeIcon icon={faTrophy} style={{ fontSize: '12px' }} />
+                    {ach.name}
                   </div>
-                  {completedToday >= todaysGoal && (
-                    <div style={{ color: '#10b981', marginTop: '5px', fontSize: '0.9rem' }}>
-                      Daily goal completed! 🎉
-                    </div>
-                  )}
-                </div>
+                ))}
+                {achievements.length === 0 && (
+                  <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                    Complete tasks to unlock achievements!
+                  </div>
+                )}
               </div>
-            )}
+
+              <div style={{ marginTop: '20px' }}>
+                <h3 style={{ marginBottom: '10px' }}>Today's Progress</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ flex: 1, backgroundColor: '#e5e7eb', borderRadius: '10px', height: '10px' }}>
+                    <div style={{
+                      width: `${(completedToday / todaysGoal) * 100}%`,
+                      backgroundColor: completedToday >= todaysGoal ? '#10b981' : '#4f46e5',
+                      height: '100%',
+                      borderRadius: '10px'
+                    }}></div>
+                  </div>
+                  <span>{completedToday}/{todaysGoal} tasks</span>
+                </div>
+                {completedToday >= todaysGoal && (
+                  <div style={{ color: '#10b981', marginTop: '5px', fontSize: '0.9rem' }}>
+                    Daily goal completed! 🎉
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Mobile Dialog */}
           {isMobileView && show !== -1 && (
             <div style={dialogStyle}>
-              <div style={{ 
-                backgroundColor: '#ffffff', 
-                color: '#000', 
-                padding: '24px', 
-                borderRadius: '12px', 
+              <div style={{
+                backgroundColor: '#ffffff',
+                color: '#000',
+                padding: '24px',
+                borderRadius: '12px',
                 width: '100%',
                 maxWidth: '500px',
                 maxHeight: '80vh',
                 overflowY: 'auto'
               }}>
                 {show === 1 ? (
-                  <Card2 
-                    name={task[ind]?.name} 
-                    para={task[ind]?.para} 
-                    time={task[ind]?.time} 
-                    index={ind} 
-                    isMobileView={isMobileView} 
-                    status={task[ind]?.status} 
+                  <Card2
+                    name={task[ind]?.name}
+                    para={task[ind]?.para}
+                    time={task[ind]?.time}
+                    index={ind}
+                    isMobileView={isMobileView}
+                    status={task[ind]?.status}
                     isDaily={task[ind]?.isDaily}
                     task={task[ind]}
                   />
                 ) : show === 0 ? (
-                  <Card3 
-                    task={task} 
-                    settask={setTask} 
-                    index={ind} 
-                    isMobileView={isMobileView} 
-                    fetcho={fetcho} 
+                  <Card3
+                    task={task}
+                    settask={setTask}
+                    index={ind}
+                    isMobileView={isMobileView}
+                    fetcho={fetcho}
                   />
                 ) : show === 2 ? (
-                  <SubtaskManager 
+                  <SubtaskManager
                     task={task[ind]}
                     taskIndex={ind}
                     tasks={task}
@@ -1344,7 +1345,7 @@ function ToDo() {
       <div style={headerStyle}>
         <div style={topHeaderRowStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ 
+            <div style={{
               background: 'linear-gradient(135deg, #10b981, #3b82f6)',
               padding: '8px',
               borderRadius: '12px',
@@ -1376,35 +1377,35 @@ function ToDo() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px' }}>
           {/* Top Navigation */}
           <nav style={navStyle}>
-            <button 
+            <button
               style={navButtonStyle(currentSection === 'Home')}
               onClick={() => setCurrentSection('Home')}
             >
               <FontAwesomeIcon icon={faHome} />
               Home
             </button>
-            <button 
+            <button
               style={navButtonStyle(currentSection === 'ToDo')}
               onClick={() => setCurrentSection('ToDo')}
             >
               <FontAwesomeIcon icon={faList} />
               Tasks
             </button>
-            <button 
+            <button
               style={navButtonStyle(currentSection === 'LevelingSystem')}
               onClick={() => setCurrentSection('LevelingSystem')}
             >
               <FontAwesomeIcon icon={faChartLine} />
               Stats
             </button>
-            <button 
+            <button
               style={navButtonStyle(currentSection === 'RearrangePage')}
               onClick={() => setCurrentSection('RearrangePage')}
             >
               <FontAwesomeIcon icon={faArrowsAlt} />
               Rearrange
             </button>
-            <button 
+            <button
               style={navButtonStyle(currentSection === 'Lisp')}
               onClick={() => setCurrentSection('Lisp')}
             >
@@ -1412,9 +1413,9 @@ function ToDo() {
               Lists
             </button>
           </nav>
-          
+
           <div style={timeStyle}>
-            {time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            {time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} • {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
       </div>
