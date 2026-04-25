@@ -6,13 +6,14 @@ import SubtaskManager from './Subtask';
 import Button from './Button/button';
 import Confetti from 'react-confetti';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem, faHome, faList, faChartLine, faArrowsAlt, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus, faFire, faStar, faMedal, faTrophy, faGem, faHome, faList, faChartLine, faArrowsAlt, faCheckCircle, faCakeCandles } from "@fortawesome/free-solid-svg-icons";
 
 // Import the page components
 import Home from './Home';
 import LevelingSystem from './LvlSys';
 import RearrangePage from './ReSys';
 import CategoryItemManager from './Listing';
+import BirthdaySys from './BirthdaySys';
 
 function ToDo() {
   const [currentSection, setCurrentSection] = useState('Home');
@@ -85,6 +86,17 @@ function ToDo() {
       setTime(new Date());
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Register service worker for birthday notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/TuDu/sw.js').then((reg) => {
+        console.log('Birthday SW registered:', reg.scope);
+      }).catch((err) => {
+        console.warn('SW registration failed:', err);
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -714,6 +726,8 @@ function ToDo() {
         return <RearrangePage userData={{ xp, level }} saveUserData={saveUserData} setXp={setXp} />;
       case 'Lisp':
         return <CategoryItemManager />;
+      case 'Birthdays':
+        return <BirthdaySys />;
       default:
         return <Home userData={{ xp, level, streak, achievements, completedToday, todaysGoal }} />;
     }
@@ -1411,6 +1425,13 @@ function ToDo() {
             >
               <FontAwesomeIcon icon={faList} />
               Lists
+            </button>
+            <button
+              style={navButtonStyle(currentSection === 'Birthdays')}
+              onClick={() => setCurrentSection('Birthdays')}
+            >
+              <FontAwesomeIcon icon={faCakeCandles} />
+              Birthdays
             </button>
           </nav>
 
